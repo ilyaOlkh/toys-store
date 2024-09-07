@@ -51,7 +51,6 @@ model products {
     description    String?
     stock_quantity Int
     sku_code       String                @unique
-    image_blob     Bytes?
     created_at     DateTime              @default(now())
     types          ProductTypeRelation[]
     tags           ProductTag[]

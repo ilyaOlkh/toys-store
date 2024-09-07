@@ -16,7 +16,9 @@ export default function Header() {
                     <a href="/login">Login</a>
                     <a href="/login">Register</a>
                 </div>
-                <MenuButton />
+                <div className="block md:hidden">
+                    <MenuButton />
+                </div>
             </div>
         </div>
         <div className="py-10 flex justify-center">

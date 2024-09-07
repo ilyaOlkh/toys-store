@@ -11,11 +11,11 @@ export default async function Home() {
         <div>
             <h1>Product Types</h1>
             <ul>
-                {types.map(type => (
+                {types ? types.map(type => (
                     <li key={type.id}>
                         <TypeCard typeObj={type} />
                     </li>
-                ))}
+                )) : <></>}
             </ul>
         </div>
     );

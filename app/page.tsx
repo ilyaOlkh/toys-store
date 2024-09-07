@@ -6,9 +6,6 @@ export default async function Home() {
     const types = await fetchTypes()
 
     if (types.length === 0) return <div>Loading...</div>;
-    if (!Array.isArray(types)) {
-        return <div>Loading...</div>;
-    }
     return (
         <div>
             <h1>Product Types</h1>

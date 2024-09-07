@@ -1,29 +1,8 @@
-import { useEffect, useState } from 'react';
-
-export const revalidate = 60;
-export const dynamicParams = true;
-
-interface ProductType {
-    id: number;
-    name: string;
-    imageBlob: Uint8Array | null; // Если у вас нет изображений, можно заменить на `string` или `null`
-}
+import Image from 'next/image';
+import { fetchTypes } from './utils/fetch';
+import TypeCard from './components/typeCard';
 
 export default async function Home() {
-    async function fetchTypes(): Promise<ProductType[]> {
-        try {
-            const response = await fetch(process.env.URL + '/api/types');
-            if (!response.ok) {
-                throw new Error('Network response was not ok');
-            }
-            const data = await response.json();
-            return data
-        } catch (error) {
-            console.error(error)
-            return []
-        }
-    }
-
     const types = await fetchTypes()
 
     if (types.length === 0) return <div>Loading...</div>;
@@ -34,8 +13,7 @@ export default async function Home() {
             <ul>
                 {types.map(type => (
                     <li key={type.id}>
-                        {type.name}
-                        {/* Если нужно отобразить изображения, вам нужно преобразовать их в URL или обработать соответствующим образом */}
+                        <TypeCard typeObj={type} />
                     </li>
                 ))}
             </ul>

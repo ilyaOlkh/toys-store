@@ -1,0 +1,142 @@
+generator client {
+    provider = "prisma-client-js"
+}
+
+enum PaymentMethod {
+    credit_card
+    cash
+}
+
+datasource db {
+    provider  = "postgresql"
+    url       = env("POSTGRES_PRISMA_URL") // uses connection pooling
+    directUrl = env("POSTGRES_URL_NON_POOLING") // uses a direct connection
+}
+
+model User {
+    id           Int        @id @default(autoincrement())
+    firstName    String
+    lastName     String
+    email        String     @unique
+    passwordHash String
+    createdAt    DateTime   @default(now())
+    orders       Order[]
+    favorites    Favorite[]
+    cartItems    Cart[]
+    comments     Comment[]
+}
+
+model Order {
+    id            Int           @id @default(autoincrement())
+    userId        Int?
+    user          User?         @relation(fields: [userId], references: [id], onDelete: SetNull)
+    firstName     String
+    lastName      String
+    streetAddress String
+    city          String
+    state         String?
+    zipCode       String
+    phone         String
+    email         String
+    paymentMethod PaymentMethod
+    paid          Boolean       @default(false)
+    createdAt     DateTime      @default(now())
+}
+
+model Product {
+    id            Int                   @id @default(autoincrement())
+    name          String
+    price         Float
+    discount      Float                 @default(0)
+    description   String?
+    stockQuantity Int
+    skuCode       String                @unique
+    imageBlob     Bytes?
+    createdAt     DateTime              @default(now())
+    types         ProductTypeRelation[]
+    tags          ProductTag[]
+    images        ProductImage[]
+    favorites     Favorite[]
+    cartItems     Cart[]
+    comments      Comment[]
+    discounts     Discount[]
+}
+
+model types {
+    id         Int                   @id @default(autoincrement())
+    name       String
+    image_blob Bytes?
+    products   ProductTypeRelation[]
+}
+
+model ProductTypeRelation {
+    productId Int
+    typeId    Int
+    product   Product @relation(fields: [productId], references: [id])
+    type      types   @relation(fields: [typeId], references: [id])
+
+    @@id([productId, typeId])
+}
+
+model Tag {
+    id       Int          @id @default(autoincrement())
+    name     String
+    products ProductTag[]
+}
+
+model ProductTag {
+    productId Int
+    tagId     Int
+    product   Product @relation(fields: [productId], references: [id])
+    tag       Tag     @relation(fields: [tagId], references: [id])
+
+    @@id([productId, tagId])
+}
+
+model ProductImage {
+    id        Int     @id @default(autoincrement())
+    productId Int
+    imageBlob Bytes
+    product   Product @relation(fields: [productId], references: [id])
+}
+
+model Favorite {
+    id        Int     @id @default(autoincrement())
+    userId    Int
+    productId Int
+    user      User    @relation(fields: [userId], references: [id])
+    product   Product @relation(fields: [productId], references: [id])
+
+    @@unique([userId, productId])
+}
+
+model Cart {
+    id        Int     @id @default(autoincrement())
+    userId    Int
+    productId Int
+    quantity  Int
+    user      User    @relation(fields: [userId], references: [id])
+    product   Product @relation(fields: [productId], references: [id])
+
+    @@unique([userId, productId])
+}
+
+model Comment {
+    id        Int      @id @default(autoincrement())
+    productId Int
+    userId    Int
+    comment   String
+    rating    Float    @default(1)
+    createdAt DateTime @default(now())
+    product   Product  @relation(fields: [productId], references: [id])
+    user      User     @relation(fields: [userId], references: [id])
+}
+
+model Discount {
+    id        Int      @id @default(autoincrement())
+    productId Int
+    newPrice  Float
+    startDate DateTime
+    endDate   DateTime
+    product   Product  @relation(fields: [productId], references: [id])
+}

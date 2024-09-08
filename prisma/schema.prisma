@@ -90,7 +90,7 @@ model product_tags {
 model product_images {
     id         Int      @id @default(autoincrement())
     product_id Int
-    image_blob Bytes
+    imageBlob  String   @unique
     product    products @relation(fields: [product_id], references: [id], onDelete: Cascade)
 }
 

@@ -23,15 +23,19 @@ export default function Header() {
         </div>
         <div className="py-10 flex justify-center">
             <div className="customContainer flex gap-2 items-center justify-between">
-                <div className="w-12 overflow-hidden sm:w-[144px] flex-shrink-0">
-                    <Image src='/logo.svg' alt="logo" width={144} height={53} className="w-[144px] max-w-[144px]" />
-                </div>
+                <a href="/" className="w-12 overflow-hidden sm:w-[144px] flex-shrink-0">
+                    <Image src='/logo.svg' alt="logo" width={144} height={53} className="w-[144px] max-w-[144px] cursor-pointer" />
+                </a>
                 <ul className="hidden gap-2 max-w-[532px] font-bold w-full justify-around flex-shrink basis-[532px] md:flex">
-                    <li>Home</li>
-                    <li>Shop</li>
-                    <li>Pages</li>
-                    <li>Blog</li>
-                    <li>Contact</li>
+                    <a href='/' className="block p-1"><li>Home</li></a>
+                    <a href='/shop' className="block  p-1"><li>Shop</li></a>
+                    <a href='/pages' className="block p-1"><li>Pages</li></a>
+                    <a href='/blog' className="block p-1"><li>Blog</li></a>
+                    <a href='/contact' className="block p-1"><li>Contact</li></a>
+
+
+
+
                 </ul>
                 <div className="flex flex-shrink basis-[332px] gap-2 items-center md:gap-6">
                     <div className="order-2 pr-3 md:order-1">

@@ -23,6 +23,7 @@ export default function HeaderModal() {
                     boxSizing: 'border-box',
                 },
             }}
+            className='block md:hidden'
         >
             <Box>
 

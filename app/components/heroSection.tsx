@@ -7,7 +7,7 @@ const baloo_Bhaina_2 = Baloo_Bhaina_2({ subsets: ["latin"] });
 
 export default function HeroSection() {
     return <div className='h-screen w-full bg-center bg-no-repeat relative pl-[10%] xs:pl-[30%] md:pl-[50%] flex items-center min-h-[550px]'>
-        <Image src='/hero-bg.png' alt='hero bg' width={1440} height={810} className="absolute top-0 left-0 w-full h-full object-cover" />
+        <Image src='/Hero-bg.png' alt='hero bg' width={1440} height={810} className="absolute top-0 left-0 w-full h-full object-cover" />
         <div className='customContainer relative z-1 flex flex-col gap-5 items-start '>
             <h1 className={baloo_Bhaina_2.className + " text-4xl font-bold text-[#1096B5] textShadow text-[68px] leading-[60px]"}>
                 Play, learn, & grow!

@@ -34,6 +34,6 @@ export default function RootLayout({
                     </Fragment >
                 </StoreProvider>
             </body>
-        </html>
+        </html >
     );
 }

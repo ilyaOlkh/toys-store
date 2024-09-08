@@ -7,7 +7,7 @@ import { Menu } from "@mui/icons-material";
 
 export default function MenuButton() {
     const dispatch = useDispatch<AppDispatch>();
-    return <div onClick={() => dispatch(toggleMenu())}>
+    return <div className='cursor-pointer' onClick={() => dispatch(toggleMenu())}>
         <Menu fontSize="large" />
     </div>
 }

@@ -28,7 +28,7 @@ export default function Header() {
                 </a>
                 <ul className="hidden gap-2 max-w-[532px] font-bold w-full justify-around flex-shrink basis-[532px] md:flex">
                     <a href='/' className="block p-1"><li>Home</li></a>
-                    <a href='/shop' className="block  p-1"><li>Shop</li></a>
+                    <a href='/products' className="block  p-1"><li>Shop</li></a>
                     <a href='/pages' className="block p-1"><li>Pages</li></a>
                     <a href='/blog' className="block p-1"><li>Blog</li></a>
                     <a href='/contact' className="block p-1"><li>Contact</li></a>

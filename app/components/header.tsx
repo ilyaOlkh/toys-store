@@ -37,7 +37,7 @@ export default function Header() {
 
 
                 </ul>
-                <div className="flex flex-shrink basis-[332px] gap-2 items-center md:gap-6">
+                <div className="flex flex-shrink basis-[332px] gap-2 items-center md:gap-6 md:flex-shrink-[0.5]">
                     <div className="order-2 pr-3 md:order-1">
                         <CartIcon />
                     </div>

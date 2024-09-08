@@ -14,7 +14,10 @@ const config: Config = {
                 orange1: '#E3B110',
                 gray1: '#7F7F7F',
                 lightGray1: '#D4D4D4',
-            }
+            },
+            screens: {
+                'xs': '400px',  // Создаем кастомный брейкпоинт для 400px
+            },
         },
     },
     plugins: [],

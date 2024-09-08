@@ -46,7 +46,7 @@ export default function HeaderModal() {
                 <Divider />
                 <nav className="mb-4 font-bold text-xl p-4">
                     <a href='/' className="block mb-2">Home</a>
-                    <a href='/shop' className="block  mb-2">Shop</a>
+                    <a href='/products' className="block  mb-2">Shop</a>
                     <a href='/pages' className="block mb-2">Pages</a>
                     <a href='/blog' className="block mb-2">Blog</a>
                     <a href='/contact' className="block mb-2">Contact</a>

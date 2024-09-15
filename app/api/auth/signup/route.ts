@@ -1,11 +1,10 @@
-import { handleLogin } from '@auth0/nextjs-auth0';
-import { NextApiRequest, NextApiResponse } from 'next';
+import { AppRouteHandlerFnContext, handleLogin } from '@auth0/nextjs-auth0';
+import { NextRequest } from 'next/server';
 
-export const GET = (req: NextApiRequest, res: NextApiResponse) =>
-    handleLogin(req, res, {
+export async function GET(req: NextRequest, ctx: AppRouteHandlerFnContext) {
+    return handleLogin(req, ctx, {
         authorizationParams: {
             screen_hint: 'signup',
         },
     });
-
-// export default signupHandler;
+}

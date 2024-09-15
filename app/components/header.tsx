@@ -27,7 +27,7 @@ export default async function Header() {
                         :
                         <>
                             <a href="/api/auth/login">Login</a>
-                            <a href="/api/auth/login?screen_hint=signup">Register</a>
+                            <a href="/api/auth/signup">Register</a>
                         </>
 
                     }

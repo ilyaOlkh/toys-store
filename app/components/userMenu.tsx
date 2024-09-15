@@ -42,12 +42,14 @@ const UserMenu: React.FC<UserMenuProps> = ({ username }) => {
                 transformOrigin={{ horizontal: 'right', vertical: 'top' }}
                 anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
             >
-                <MenuItem onClick={handleClose}>
-                    Сторінка аккаунту
+                <MenuItem onClick={handleClose} className='p-0'>
+                    <a href="/user" className='size-full py-[6px] px-[16px]'>
+                        Сторінка аккаунту
+                    </a>
                 </MenuItem>
                 <Divider />
-                <MenuItem onClick={handleClose} sx={{ color: 'gray' }}>
-                    <a className='size-full' href='/api/auth/logout'>Вийти</a>
+                <MenuItem onClick={handleClose} sx={{ color: 'gray' }} className='p-0'>
+                    <a className='size-full py-[6px] px-[16px]' href='/api/auth/logout' >Вийти</a>
                 </MenuItem>
             </Menu >
         </>

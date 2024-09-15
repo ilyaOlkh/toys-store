@@ -2,12 +2,13 @@
 import React, { useState } from 'react';
 import { Search } from '@mui/icons-material';
 import Image from 'next/image';
+import Price from './price';
 
 interface IProduct {
     id: number;
     name: string;
     price: number;
-    discount: number;
+    discount: number | undefined;
     description: string | null;
     stock_quantity: number;
     sku_code: string;
@@ -92,8 +93,13 @@ const SearchBar: React.FC = () => {
                                     >
                                         <a href={`/products/${result.id}`} className='flex items-center gap-1'>
                                             <Image src={result.imageUrl} alt='product img' width={50} height={50} />
-                                            <div className='line-clamp-2'>
-                                                {result.name}
+                                            <div className=' overflow-hidden flex flex-col w-full '>
+                                                <div className='text-ellipsis text-nowrap overflow-hidden w-full'>
+                                                    {result.name}
+                                                </div>
+                                                <div className='text-black self-end'>
+                                                    <Price firstPrice={`${result.price}`} discountPrice={`${result.discount}`} />
+                                                </div>
                                             </div>
                                         </a>
                                     </li>

@@ -3,8 +3,16 @@ import CartIcon from "./cartIcon";
 import SearchBar from "./search";
 import { Menu } from "@mui/icons-material";
 import MenuButton from "./menuButton";
+import { Claims, getSession } from '@auth0/nextjs-auth0';
+import UserMenu from "./userMenu";
 
-export default function Header() {
+export default async function Header() {
+    const userResponse = await getSession();
+    let user: Claims | null = null;
+    if (userResponse) {
+        user = userResponse.user
+    }
+
     return <header>
         <div className="bg-blue1 min-h-14 bg-repeat-x flex justify-center pt-3.5 items-start relative before:bg-[url(/header-decor.svg)] before:h-[30px] before:w-full before:absolute before:bottom-0 before:translate-y-1/2">
             <div className="customContainer flex justify-between text-white1 font-bold gap-3 items-center">
@@ -13,8 +21,17 @@ export default function Header() {
                     <span>Free  free shipping with over $150</span>
                 </div>
                 <div className="hidden items-center  gap-10 z-1 relative md:flex">
-                    <a href="/login">Login</a>
-                    <a href="/login">Register</a>
+                    {user ?
+                        <UserMenu username={user.name} />
+                        // <div>{user.name}</div>
+                        :
+                        <>
+                            <a href="/api/auth/login">Login</a>
+                            <a href="/api/auth/login?screen_hint=signup">Register</a>
+                        </>
+
+                    }
+
                 </div>
                 <div className="block md:hidden">
                     <MenuButton />
@@ -48,5 +65,5 @@ export default function Header() {
 
             </div>
         </div>
-    </header>
+    </header >
 }

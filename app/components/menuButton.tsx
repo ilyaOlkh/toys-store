@@ -1,7 +1,7 @@
 'use client'
 
-import { useDispatch, useSelector } from 'react-redux';
-import { RootState, AppDispatch } from '../redux/store';
+import { useDispatch } from 'react-redux';
+import { AppDispatch } from '../redux/store';
 import { toggleMenu } from '../redux/headerSlice';
 import { Menu } from "@mui/icons-material";
 

@@ -9,14 +9,18 @@ import {
     Typography,
     paperClasses,
     Paper,
+    Button,
 } from "@mui/material";
 import AccountCircleIcon from "@mui/icons-material/AccountCircle";
 import Image from "next/image";
 import { useAppSelector } from "../redux/hooks";
+import { Comfortaa } from "next/font/google";
 
 interface UserMenuProps {
     username: string;
 }
+
+const comfortaa = Comfortaa({ subsets: ["latin"] });
 
 const UserMenu: React.FC<UserMenuProps> = ({ username }) => {
     const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
@@ -33,12 +37,13 @@ const UserMenu: React.FC<UserMenuProps> = ({ username }) => {
 
     return (
         <>
-            <IconButton
+            <Button
                 onClick={handleClick}
                 color="inherit"
                 className="rounded-lg gap-1"
+                variant="text"
             >
-                <div className="rounded-full overflow-hidden">
+                <div className="rounded-full overflow-hidden ">
                     <Image
                         src={avatarUrl}
                         alt="avatar"
@@ -46,8 +51,15 @@ const UserMenu: React.FC<UserMenuProps> = ({ username }) => {
                         height={30}
                     />
                 </div>
-                <div className="text-base pl-1">{username}</div>
-            </IconButton>
+                <div
+                    className={
+                        "text-base pl-1 normal-case font-[Comforta] " +
+                        comfortaa.className
+                    }
+                >
+                    {username}
+                </div>
+            </Button>
             <Menu
                 anchorEl={anchorEl}
                 id="account-menu"

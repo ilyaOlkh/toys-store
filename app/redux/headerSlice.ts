@@ -1,5 +1,5 @@
 // headerSlice.ts
-import { createSlice, PayloadAction } from '@reduxjs/toolkit';
+import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 
 interface HeaderState {
     menuOpen: boolean;
@@ -10,7 +10,7 @@ const initialState: HeaderState = {
 };
 
 const headerSlice = createSlice({
-    name: 'header',
+    name: "header",
     initialState,
     reducers: {
         toggleMenu: (state) => {

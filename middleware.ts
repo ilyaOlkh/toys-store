@@ -11,7 +11,7 @@ export async function middleware(req: NextRequest) {
     }
     const userRoles = session.user["https://your-app.com/roles"] || [];
 
-    if (!userRoles.includes("admin1")) {
+    if (!userRoles.includes("admin")) {
         return NextResponse.redirect(new URL("/403", req.url));
     }
 

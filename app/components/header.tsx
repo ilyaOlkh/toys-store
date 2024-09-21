@@ -28,7 +28,10 @@ export default async function Header() {
                     </div>
                     <div className="hidden items-center  gap-10 z-1 relative md:flex">
                         {user ? (
-                            <UserMenu username={user.name} />
+                            <UserMenu
+                                username={user.name}
+                                avatarUrl={user.picture}
+                            />
                         ) : (
                             // <div>{user.name}</div>
                             <>

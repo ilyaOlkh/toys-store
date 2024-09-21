@@ -1,7 +1,6 @@
-// app/api/user/update-profile/route.ts
 import { NextRequest, NextResponse } from "next/server";
 import axios from "axios";
-import { getAccessToken, getSession, updateSession } from "@auth0/nextjs-auth0";
+import { getSession } from "@auth0/nextjs-auth0";
 
 async function getMachineToMachineToken() {
     const response = await axios.post(
@@ -16,17 +15,24 @@ async function getMachineToMachineToken() {
 
     return response.data.access_token;
 }
-export async function PATCH(request: NextRequest, nextResponse: NextResponse) {
-    try {
-        // Получаем данные из запроса
-        const { newPictureUrl } = await request.json();
 
-        // Замените на ваш домен и токен
+export async function GET(request: NextRequest) {
+    try {
         const domain = process.env.AUTH0_ISSUER_BASE_URL;
 
+        // Получаем access token для обращения к API Auth0
         const accessToken = await getMachineToMachineToken();
-        const userResponse = await getSession();
-        const userId = userResponse?.user.sub;
+
+        // Получаем userId из строки запроса
+        const { searchParams } = new URL(request.url);
+        const userId = searchParams.get("userId");
+
+        if (!userId) {
+            return NextResponse.json(
+                { message: "User ID is required" },
+                { status: 400 }
+            );
+        }
 
         if (!domain || !accessToken) {
             return NextResponse.json(
@@ -37,33 +43,24 @@ export async function PATCH(request: NextRequest, nextResponse: NextResponse) {
 
         // Параметры запроса
         const options = {
-            method: "PATCH",
-            url: `${domain}/api/v2/users/${userId}`,
+            method: "GET",
+            url: `${domain}/api/v2/users/${userId}/roles`,
             headers: {
                 Accept: "application/json",
-                authorization: `Bearer ${accessToken}`,
-                "content-type": "application/json",
+                Authorization: `Bearer ${accessToken}`,
             },
-            data: { picture: newPictureUrl },
         };
 
         // Выполняем запрос к Auth0 API
         const response = await axios.request(options);
-        const session = await getSession();
-        if (session) {
-            await updateSession({
-                ...session,
-                user: { ...session.user, picture: newPictureUrl },
-            });
-        }
         return NextResponse.json({
-            message: "User picture updated successfully",
-            data: response.data,
+            message: "User roles retrieved successfully",
+            roles: response.data,
         });
     } catch (error) {
-        console.error("Error updating user picture:", error);
+        console.error("Error retrieving user roles:", error);
         return NextResponse.json(
-            { message: "Error updating user picture" },
+            { message: "Error retrieving user roles" },
             { status: 500 }
         );
     }

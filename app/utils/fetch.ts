@@ -52,3 +52,30 @@ export async function fetchProducts(): Promise<products[] | null> {
         return [];
     }
 }
+
+export async function fetchUserRoles(userId: string): Promise<any> {
+    try {
+        const response = await fetch(
+            `${process.env.URL}/api/user/roles?userId=${encodeURIComponent(
+                userId
+            )}`, // Добавляем userId в строку запроса
+            {
+                method: "GET",
+                headers: {
+                    Accept: "application/json",
+                },
+            }
+        );
+
+        if (!response.ok) {
+            throw "Failed to fetch user roles";
+        }
+
+        const data = await response.json();
+
+        return data.roles; // Возвращаем роли пользователя
+    } catch (error) {
+        console.error("Error fetching user roles:", error);
+        throw error; // Передаем ошибку дальше
+    }
+}

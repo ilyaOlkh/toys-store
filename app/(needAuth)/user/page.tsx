@@ -1,5 +1,5 @@
 import { Claims, getSession, updateSession } from "@auth0/nextjs-auth0";
-import ProfilePictureForm from "../components/ProfilePictureForm";
+import ProfilePictureForm from "../../components/ProfilePictureForm";
 
 export default async function Header() {
     const userResponse = await getSession();
@@ -13,9 +13,14 @@ export default async function Header() {
             <div className="customContainer">
                 {user ? (
                     <div>
+                        <div className="text-[38px] font-bold mb-10">
+                            Налаштування
+                        </div>
+                        <div className="flex justify-start">
+                            <ProfilePictureForm imgUrl={user.picture} />
+                        </div>
                         42 братуха 42 БРАТУХАНЧИК😎🤟🤟🤟🤙🤙🤙 КЕМЕРОВО
                         ЭУУУ🤙🤙😎😎
-                        <ProfilePictureForm imgUrl={user.picture} />
                     </div>
                 ) : (
                     <div>{"авторизируйся, 41 амиго("}</div>

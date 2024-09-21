@@ -1,12 +1,17 @@
-import { configureStore } from '@reduxjs/toolkit';
-import headerReducer from './headerSlice'; // импортируйте редюсер для хедера меню
+import { configureStore } from "@reduxjs/toolkit";
+import headerReducer from "./headerSlice"; // импортируйте редюсер для хедера меню
+import userReducer from "./userSlice";
 
-const store = configureStore({
-    reducer: {
-        header: headerReducer,
-    },
-});
+export const makeStore = () => {
+    return configureStore({
+        reducer: {
+            header: headerReducer,
+            user: userReducer,
+        },
+    });
+};
 
-export default store;
-export type RootState = ReturnType<typeof store.getState>;
-export type AppDispatch = typeof store.dispatch;
+// Определяем типы стора и диспатча
+export type AppStore = ReturnType<typeof makeStore>;
+export type RootState = ReturnType<AppStore["getState"]>;
+export type AppDispatch = AppStore["dispatch"];

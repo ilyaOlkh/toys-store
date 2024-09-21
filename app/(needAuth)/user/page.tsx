@@ -1,4 +1,4 @@
-import { Claims, getSession, updateSession } from "@auth0/nextjs-auth0";
+import { Claims, getSession } from "@auth0/nextjs-auth0";
 import ProfilePictureForm from "../../components/ProfilePictureForm";
 
 export default async function Header() {

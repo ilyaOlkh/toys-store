@@ -15,6 +15,7 @@ import AccountCircleIcon from "@mui/icons-material/AccountCircle";
 import Image from "next/image";
 import { useAppSelector } from "../redux/hooks";
 import { Comfortaa } from "next/font/google";
+import { MENU_ITEM_LOGOUT, MENU_ITEMS } from "../constants/user-menu-constants";
 
 interface UserMenuProps {
     username: string;
@@ -53,8 +54,7 @@ const UserMenu: React.FC<UserMenuProps> = ({ username }) => {
                 </div>
                 <div
                     className={
-                        "text-base pl-1 normal-case font-[Comforta] " +
-                        comfortaa.className
+                        "text-base pl-1 normal-case " + comfortaa.className
                     }
                 >
                     {username}
@@ -75,11 +75,20 @@ const UserMenu: React.FC<UserMenuProps> = ({ username }) => {
                 transformOrigin={{ horizontal: "right", vertical: "top" }}
                 anchorOrigin={{ horizontal: "right", vertical: "bottom" }}
             >
-                <MenuItem onClick={handleClose} className="p-0">
-                    <a href="/user" className="size-full py-[6px] px-[16px]">
-                        Сторінка аккаунту
-                    </a>
-                </MenuItem>
+                {/* <MenuItem onClick={handleClose} className="p-0"> */}
+                {Object.keys(MENU_ITEMS).map((key) => {
+                    return (
+                        <MenuItem onClick={handleClose} className="p-0">
+                            <a
+                                href={MENU_ITEMS[key].link}
+                                className="size-full py-[6px] px-[16px]"
+                            >
+                                {MENU_ITEMS[key].name}
+                            </a>
+                        </MenuItem>
+                    );
+                })}
+                {/* </MenuItem> */}
                 <Divider />
                 <MenuItem
                     onClick={handleClose}
@@ -88,9 +97,9 @@ const UserMenu: React.FC<UserMenuProps> = ({ username }) => {
                 >
                     <a
                         className="size-full py-[6px] px-[16px]"
-                        href="/api/auth/logout"
+                        href={MENU_ITEM_LOGOUT.link}
                     >
-                        Вийти
+                        {MENU_ITEM_LOGOUT.name}
                     </a>
                 </MenuItem>
             </Menu>

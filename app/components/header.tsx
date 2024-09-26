@@ -5,6 +5,7 @@ import { Menu } from "@mui/icons-material";
 import MenuButton from "./menuButton";
 import { Claims, getSession } from "@auth0/nextjs-auth0";
 import UserMenu from "./userMenu";
+import { routes } from "../constants/routes-constants";
 
 export default async function Header() {
     const userResponse = await getSession();
@@ -30,10 +31,9 @@ export default async function Header() {
                         {user ? (
                             <UserMenu username={user.name} />
                         ) : (
-                            // <div>{user.name}</div>
                             <>
-                                <a href="/api/auth/login">Login</a>
-                                <a href="/api/auth/signup">Register</a>
+                                <a href={routes.login}>Login</a>
+                                <a href={routes.register}>Register</a>
                             </>
                         )}
                     </div>

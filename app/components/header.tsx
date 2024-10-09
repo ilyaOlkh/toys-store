@@ -6,6 +6,7 @@ import MenuButton from "./menuButton";
 import { Claims, getSession } from "@auth0/nextjs-auth0";
 import UserMenu from "./userMenu";
 import { routes } from "../constants/routes-constants";
+import FavoriteIcon from "./favoriteIcon";
 
 export default async function Header() {
     const userResponse = await getSession();
@@ -74,8 +75,11 @@ export default async function Header() {
                         </a>
                     </ul>
                     <div className="flex flex-shrink basis-[332px] gap-2 items-center md:gap-6 md:flex-shrink-[0.5]">
-                        <div className="order-2 pr-3 md:order-1">
+                        <div className="order-2 pr-0 md:order-1">
                             <CartIcon />
+                        </div>
+                        <div className="order-2 pr-0 md:order-1">
+                            <FavoriteIcon />
                         </div>
                         <div className="order-1 md:order-2">
                             <SearchBar />

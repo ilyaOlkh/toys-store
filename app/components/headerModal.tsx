@@ -58,20 +58,19 @@ export default function HeaderModal() {
                             id="panel1-header"
                             component={Button}
                             sx={{ width: "100%" }}
-                            elevation={0}
                         >
                             <div className="flex gap-2 items-center">
                                 <div className="rounded-full overflow-hidden shrink-0">
                                     <Image
                                         src={avatarUrl}
                                         alt="avatar"
-                                        width={30}
-                                        height={30}
+                                        width={40}
+                                        height={40}
                                     />
                                 </div>
                                 <div
                                     className={
-                                        "text-base text-black pl-1 normal-case text-left" +
+                                        "text-base text-black pl-1 normal-case text-left self-start " +
                                         comfortaa.className
                                     }
                                 >
@@ -86,14 +85,14 @@ export default function HeaderModal() {
                                     return (
                                         <a
                                             href={MENU_ITEMS[key].link}
-                                            className="size-full py-[6px] font-bold text-xl leading-5"
+                                            className="size-full py-[6px] font-bold text-lg leading-5"
                                         >
                                             {MENU_ITEMS[key].name}
                                         </a>
                                     );
                                 })}
                                 <a
-                                    className="size-full py-[6px] font-bold text-xl leading-5 text-[#b0b2b5]"
+                                    className="size-full py-[6px] font-bold text-lg leading-5 text-[#b0b2b5]"
                                     href={MENU_ITEM_LOGOUT.link}
                                 >
                                     {MENU_ITEM_LOGOUT.name}
@@ -120,7 +119,7 @@ export default function HeaderModal() {
                     </Box>
                 )}
                 <Divider />
-                <nav className="mb-4 font-bold text-xl p-4">
+                <nav className="mb-4 font-bold text-lg p-4">
                     <a href="/" className="block mb-2">
                         Home
                     </a>

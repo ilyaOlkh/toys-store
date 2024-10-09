@@ -16,7 +16,7 @@ export default function FavoriteIcon() {
                 }}
             >
                 <Image
-                    src={"/cart-icon.svg"}
+                    src={"/icons/heart-filled.png"}
                     alt="cart icon"
                     width={32}
                     height={32}

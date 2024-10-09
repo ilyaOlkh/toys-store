@@ -1,14 +1,14 @@
+import { products } from "@prisma/client";
+
 export interface IParams {
     params: {
-        id: string
-    }
+        id: string;
+    };
     searchParams: {
-        [key: string]: string
-    }
+        [key: string]: string;
+    };
 }
 
-export interface ProductType {
-    id: number;
-    name: string;
-    imageBlob: Uint8Array | null; // Если у вас нет изображений, можно заменить на `string` или `null`
-}
+export type ProductType = products & {
+    imageUrl: string;
+};

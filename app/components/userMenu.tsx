@@ -48,8 +48,8 @@ const UserMenu: React.FC<UserMenuProps> = ({ username }) => {
                     <Image
                         src={avatarUrl}
                         alt="avatar"
-                        width={30}
-                        height={30}
+                        width={40}
+                        height={40}
                     />
                 </div>
                 <div

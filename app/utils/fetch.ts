@@ -1,4 +1,5 @@
 import { products, types } from "@prisma/client";
+import { ProductType } from "../types/types";
 export const dynamic = "force-dynamic";
 
 export async function fetchTypes(): Promise<types[]> {
@@ -33,7 +34,7 @@ export async function fetchProduct(id: number): Promise<products | null> {
     }
 }
 
-export async function fetchProducts(): Promise<products[] | null> {
+export async function fetchProducts(): Promise<ProductType[]> {
     try {
         const response = await fetch(
             process.env.NEXT_PUBLIC_API_URL + "/api/products"

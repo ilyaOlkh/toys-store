@@ -6,6 +6,11 @@ import StoreProvider from "./redux/storeProvider";
 import { Fragment } from "react";
 import HeaderModal from "./components/headerModal";
 import { getSession } from "@auth0/nextjs-auth0";
+import { getFavorites } from "./utils/fetchFavorites";
+import { getCart } from "./utils/fetchCart";
+import { cart, favorites, products } from "@prisma/client";
+import { createTheme, ThemeProvider } from "@mui/material";
+import AppProvider from "./components/appProvider";
 
 const comfortaa = Comfortaa({ subsets: ["latin"] });
 
@@ -21,16 +26,29 @@ export default async function RootLayout({
 }>) {
     const session = await getSession();
     const initialUser = session ? session.user : null;
+
+    let favorites: favorites[] | undefined;
+    let cartItems: cart[] | undefined;
+    if (initialUser) {
+        favorites = await getFavorites(initialUser.sub);
+        cartItems = await getCart(initialUser.sub);
+    }
     return (
         <html lang="en">
             <body className={comfortaa.className}>
-                <StoreProvider initialUser={initialUser}>
-                    <Fragment>
-                        <HeaderModal />
-                        <Header />
-                        {children}
-                    </Fragment>
-                </StoreProvider>
+                <AppProvider>
+                    <StoreProvider
+                        initialUser={initialUser}
+                        favorites={favorites}
+                        cartItems={cartItems}
+                    >
+                        <Fragment>
+                            <HeaderModal />
+                            <Header />
+                            {children}
+                        </Fragment>
+                    </StoreProvider>
+                </AppProvider>
             </body>
         </html>
     );

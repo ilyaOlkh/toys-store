@@ -1,7 +1,6 @@
 import Image from "next/image";
 import CartIcon from "./cartIcon";
 import SearchBar from "./search";
-import { Menu } from "@mui/icons-material";
 import MenuButton from "./menuButton";
 import { Claims, getSession } from "@auth0/nextjs-auth0";
 import UserMenu from "./userMenu";

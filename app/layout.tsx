@@ -4,13 +4,14 @@ import "./globals.css";
 import Header from "./components/header";
 import StoreProvider from "./redux/storeProvider";
 import { Fragment } from "react";
-import HeaderModal from "./components/headerModal";
 import { getSession } from "@auth0/nextjs-auth0";
 import { getFavorites } from "./utils/fetchFavorites";
 import { getCart } from "./utils/fetchCart";
-import { cart, favorites, products } from "@prisma/client";
-import { createTheme, ThemeProvider } from "@mui/material";
-import AppProvider from "./components/appProvider";
+import { cart, favorites } from "@prisma/client";
+import AppProvider from "./appComponents/appProvider";
+import AppModals from "./appComponents/appModals";
+import { ModalType, modalTypes } from "./constants/modal-constants";
+import { fetchProductsByIds } from "./utils/fetch";
 
 const comfortaa = Comfortaa({ subsets: ["latin"] });
 
@@ -33,6 +34,12 @@ export default async function RootLayout({
         favorites = await getFavorites(initialUser.sub);
         cartItems = await getCart(initialUser.sub);
     }
+    const ids = favorites ? favorites.map((item) => item.product_id) : [];
+    const favoritesProducts = favorites
+        ? await fetchProductsByIds(ids)
+        : undefined;
+    console.log(favoritesProducts);
+
     return (
         <html lang="en">
             <body className={comfortaa.className}>
@@ -40,10 +47,11 @@ export default async function RootLayout({
                     <StoreProvider
                         initialUser={initialUser}
                         favorites={favorites}
+                        favoritesProducts={favoritesProducts}
                         cartItems={cartItems}
                     >
                         <Fragment>
-                            <HeaderModal />
+                            <AppModals />
                             <Header />
                             {children}
                         </Fragment>

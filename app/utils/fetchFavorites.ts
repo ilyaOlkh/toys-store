@@ -1,4 +1,5 @@
 import { favorites, products } from "@prisma/client";
+import { ProductType } from "../types/types";
 
 export async function getFavorites(
     userIdentifier: string
@@ -20,7 +21,7 @@ export async function getFavorites(
 export async function addFavorite(
     userIdentifier: string,
     productId: number
-): Promise<favorites> {
+): Promise<favorites & { product: ProductType }> {
     try {
         const response = await fetch(
             `${process.env.NEXT_PUBLIC_API_URL}/api/favorites`,

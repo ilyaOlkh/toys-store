@@ -1,6 +1,6 @@
 // store.ts
 import { configureStore } from "@reduxjs/toolkit";
-import headerReducer from "./headerSlice";
+import modalReducer from "./modalSlice";
 import userReducer from "./userSlice";
 import favoritesReducer from "./favoritesSlice";
 import cartReducer from "./cartSlice";
@@ -8,7 +8,7 @@ import cartReducer from "./cartSlice";
 export const makeStore = () => {
     return configureStore({
         reducer: {
-            header: headerReducer,
+            modal: modalReducer,
             user: userReducer,
             favorites: favoritesReducer,
             cart: cartReducer,

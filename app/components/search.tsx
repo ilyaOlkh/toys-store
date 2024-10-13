@@ -3,6 +3,7 @@ import React, { useState } from "react";
 import { Search } from "@mui/icons-material";
 import Image from "next/image";
 import Price from "./price";
+import CompactProductCard from "./compactProductCard";
 
 interface IProduct {
     id: number;
@@ -96,25 +97,12 @@ const SearchBar: React.FC = () => {
                                             href={`/products/${result.id}`}
                                             className="flex items-center gap-1"
                                         >
-                                            <div className=" flex-shrink-0 flex-grow-0 basis-[50px]">
-                                                <Image
-                                                    src={result.imageUrl}
-                                                    alt="product img"
-                                                    width={50}
-                                                    height={50}
-                                                />
-                                            </div>
-                                            <div className=" overflow-hidden flex flex-col w-full ">
-                                                <div className="text-ellipsis text-nowrap overflow-hidden w-full">
-                                                    {result.name}
-                                                </div>
-                                                <div className="text-black self-end">
-                                                    <Price
-                                                        firstPrice={`${result.price}`}
-                                                        discountPrice={`${result.discount}`}
-                                                    />
-                                                </div>
-                                            </div>
+                                            <CompactProductCard
+                                                imageUrl={result.imageUrl}
+                                                name={result.name}
+                                                price={result.price}
+                                                discount={result.discount}
+                                            />
                                         </a>
                                     </li>
                                 ))

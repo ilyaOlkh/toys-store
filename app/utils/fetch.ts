@@ -54,6 +54,37 @@ export async function fetchProducts(): Promise<ProductType[]> {
     }
 }
 
+export async function fetchProductsByIds(
+    ids: number[]
+): Promise<ProductType[]> {
+    if (ids.length === 0) {
+        console.error("No IDs provided");
+        return [];
+    }
+
+    const idsString = ids.join(",");
+
+    try {
+        const response = await fetch(
+            `${process.env.NEXT_PUBLIC_API_URL}/api/products/ids?ids=${idsString}`
+        );
+
+        if (!response.ok) {
+            throw new Error(`Error: ${response.status} ${response.statusText}`);
+        }
+
+        const data = await response.json();
+        if (Array.isArray(data)) {
+            return data;
+        } else {
+            return [];
+        }
+    } catch (error) {
+        console.error(error);
+        return [];
+    }
+}
+
 export async function fetchUserRoles(userId: string): Promise<any> {
     try {
         const response = await fetch(
@@ -74,9 +105,9 @@ export async function fetchUserRoles(userId: string): Promise<any> {
 
         const data = await response.json();
 
-        return data.roles; // Возвращаем роли пользователя
+        return data.roles;
     } catch (error) {
         console.error("Error fetching user roles:", error);
-        throw error; // Передаем ошибку дальше
+        throw error;
     }
 }

@@ -6,6 +6,8 @@ import {
 } from "../utils/fetchFavorites";
 import { RootState, AppDispatch } from "./store";
 import { favorites } from "@prisma/client";
+import { ProductType } from "../types/types";
+import { fetchProductsByIds } from "../utils/fetch";
 
 // Типы
 interface NewFavorite {
@@ -16,7 +18,7 @@ interface LocalFavorite {
     product_id: number;
 }
 
-type FavoriteItem = favorites | LocalFavorite;
+export type FavoriteItem = favorites | LocalFavorite;
 
 interface FavoritesState {
     favorites: FavoriteItem[];
@@ -24,6 +26,7 @@ interface FavoritesState {
     error: string | null;
     nowPending: { productId: number; type: "remove" | "add" }[];
     queue: { productId: number; type: "remove" | "add" }[];
+    favoritesProducts: ProductType[];
 }
 
 // Начальное состояние
@@ -33,6 +36,7 @@ const initialState: FavoritesState = {
     error: null,
     queue: [],
     nowPending: [],
+    favoritesProducts: [],
 };
 
 // Вспомогательные функции
@@ -58,20 +62,19 @@ export const addFavorite = createAsyncThunk(
         { rejectWithValue, getState, dispatch }
     ) => {
         try {
-            const state = getState() as RootState;
-            const user = state.user.user;
+            const user = (getState() as RootState).user.user;
             if (
-                (state.favorites.nowPending.some(
+                ((getState() as RootState).favorites.nowPending.some(
                     (item) =>
                         item.productId === newFavorite.product_id &&
                         item.type === "add"
                 ) &&
-                    state.favorites.queue.some(
+                    (getState() as RootState).favorites.queue.some(
                         (item) =>
                             item.productId === newFavorite.product_id &&
                             item.type === "remove"
                     )) ||
-                state.favorites.nowPending.some(
+                (getState() as RootState).favorites.nowPending.some(
                     (item) =>
                         item.productId === newFavorite.product_id &&
                         item.type === "remove"
@@ -102,7 +105,16 @@ export const addFavorite = createAsyncThunk(
                     ];
                     updateStoredFavorites(updatedFavorites);
 
-                    dispatch(addToFavorites(localFavorite)); // Dispatch to add to state
+                    dispatch(addToFavorites(localFavorite));
+                    dispatch(
+                        addProductsState(
+                            (
+                                await fetchProductsByIds([
+                                    localFavorite.product_id,
+                                ])
+                            )[0]
+                        )
+                    );
                     return { type: "local", data: localFavorite } as const;
                 }
                 return { type: "local", data: newFavorite } as const;
@@ -118,13 +130,22 @@ export const addFavorite = createAsyncThunk(
                     newFavorite.product_id
                 );
                 dispatch(
+                    addToFavorites({
+                        id: dbFavorite.id,
+                        user_identifier: dbFavorite.user_identifier,
+                        product_id: dbFavorite.product_id,
+                    })
+                );
+                dispatch(addProductsState(dbFavorite.product));
+
+                dispatch(
                     clearPending({
                         productId: newFavorite.product_id,
                     })
                 );
-                dispatch(addToFavorites(dbFavorite)); // Dispatch to add to state
+
                 if (
-                    state.favorites.queue.some(
+                    (getState() as RootState).favorites.queue.some(
                         (item) =>
                             item.productId === newFavorite.product_id &&
                             item.type === "remove"
@@ -146,24 +167,23 @@ export const removeFavorite = createAsyncThunk(
     "favorites/removeFavorite",
     async (productId: number, { rejectWithValue, getState, dispatch }) => {
         try {
-            const state = getState() as RootState;
-            const user = state.user.user;
+            const user = (getState() as RootState).user.user;
 
             if (
-                (state.favorites.nowPending.some(
+                ((getState() as RootState).favorites.nowPending.some(
                     (item) =>
                         item.productId === productId && item.type === "remove"
                 ) &&
-                    state.favorites.queue.some(
+                    (getState() as RootState).favorites.queue.some(
                         (item) =>
                             item.productId === productId && item.type === "add"
                     )) ||
-                state.favorites.nowPending.some(
+                (getState() as RootState).favorites.nowPending.some(
                     (item) =>
                         item.productId === productId && item.type === "add"
                 )
             ) {
-                console.log(1);
+                console.log("grgr");
                 dispatch(
                     addToQueue({
                         type: "remove",
@@ -180,7 +200,7 @@ export const removeFavorite = createAsyncThunk(
                 );
                 updateStoredFavorites(updatedFavorites);
 
-                dispatch(removeFromFavorites(productId)); // Dispatch to remove from state
+                dispatch(removeFromFavorites(productId));
                 return { type: "local", productId } as const;
             } else {
                 dispatch(
@@ -189,7 +209,9 @@ export const removeFavorite = createAsyncThunk(
                         productId: productId,
                     })
                 );
-                const favoriteItem = state.favorites.favorites.find(
+                const favoriteItem = (
+                    getState() as RootState
+                ).favorites.favorites.find(
                     (item) => item.product_id === productId
                 );
                 if (!favoriteItem || !("id" in favoriteItem)) {
@@ -197,14 +219,14 @@ export const removeFavorite = createAsyncThunk(
                 }
 
                 await apiRemoveFavorite(favoriteItem.id);
+                dispatch(removeFromFavorites(productId)); // Dispatch to remove from state
                 dispatch(
                     clearPending({
                         productId: productId,
                     })
                 );
-                dispatch(removeFromFavorites(productId)); // Dispatch to remove from state
                 if (
-                    state.favorites.queue.some(
+                    (getState() as RootState).favorites.queue.some(
                         (item) =>
                             item.productId === productId && item.type === "add"
                     )
@@ -216,6 +238,30 @@ export const removeFavorite = createAsyncThunk(
             }
         } catch (error) {
             return rejectWithValue("Не удалось удалить товар из избранного");
+        }
+    }
+);
+
+export const setFavorites = createAsyncThunk(
+    "favorites/setFavorites",
+    async (
+        {
+            favoriteItems,
+            favoriteProducts,
+        }: {
+            favoriteItems: FavoriteItem[];
+            favoriteProducts: ProductType[] | undefined;
+        },
+        { rejectWithValue, getState, dispatch }
+    ) => {
+        dispatch(setFavoritesState(favoriteItems));
+        if (favoriteProducts) {
+            dispatch(setProductsState(favoriteProducts));
+        } else {
+            const ids = favoriteItems.map((item) => item.product_id);
+            const favoritesProducts = await fetchProductsByIds(ids);
+            console.log(favoritesProducts);
+            dispatch(setProductsState(favoritesProducts));
         }
     }
 );
@@ -237,8 +283,19 @@ const favoritesSlice = createSlice({
     name: "favorites",
     initialState,
     reducers: {
-        setFavorites: (state, action: PayloadAction<FavoriteItem[]>) => {
+        setFavoritesState: (state, action: PayloadAction<FavoriteItem[]>) => {
             state.favorites = action.payload;
+            state.status = "succeeded";
+        },
+        setProductsState: (state, action: PayloadAction<ProductType[]>) => {
+            state.favoritesProducts = action.payload;
+            state.status = "succeeded";
+        },
+        addProductsState: (state, action: PayloadAction<ProductType>) => {
+            state.favoritesProducts = [
+                ...state.favoritesProducts,
+                action.payload,
+            ];
             state.status = "succeeded";
         },
         clearFavorites: (state) => {
@@ -302,9 +359,11 @@ const favoritesSlice = createSlice({
             state.nowPending.push(action.payload);
         },
         clearPending: (state, action: PayloadAction<{ productId: number }>) => {
-            state.nowPending = state.nowPending.filter((item) => {
-                item.productId !== action.payload.productId;
-            });
+            console.log(action.payload.productId);
+            state.nowPending = state.nowPending.filter(
+                (item) => item.productId !== action.payload.productId
+            );
+            console.log([...state.nowPending]);
         },
         addToFavorites: (state, action: PayloadAction<FavoriteItem>) => {
             if (
@@ -324,7 +383,9 @@ const favoritesSlice = createSlice({
 });
 
 export const {
-    setFavorites,
+    setFavoritesState,
+    setProductsState,
+    addProductsState,
     clearFavorites,
     syncWithLocalStorage,
     addToQueue,

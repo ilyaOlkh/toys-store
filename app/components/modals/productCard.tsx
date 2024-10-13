@@ -53,7 +53,7 @@ export const ProductCardModal = ({
                             onClick={onClick}
                         >
                             <Image
-                                src={"/x.svg"}
+                                src={"/X.svg"}
                                 alt="cross"
                                 width={15}
                                 height={15}

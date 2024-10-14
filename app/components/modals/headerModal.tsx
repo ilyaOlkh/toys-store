@@ -10,6 +10,7 @@ import {
     AccordionDetails,
     Button,
     useMediaQuery,
+    SwipeableDrawer,
 } from "@mui/material";
 import { useDispatch } from "react-redux";
 import { RootState, AppDispatch } from "../../redux/store";
@@ -40,10 +41,12 @@ export default function HeaderModal() {
     console.log(menuOpen);
     return (
         isMobile && (
-            <Drawer
-                anchor="right"
+            <SwipeableDrawer
                 open={menuOpen}
                 onClose={() => dispatch(closeModal())}
+                disableSwipeToOpen={false}
+                onOpen={() => {}}
+                anchor="right"
                 sx={{
                     width: 240,
                     flexShrink: 0,
@@ -145,7 +148,7 @@ export default function HeaderModal() {
                         </a>
                     </nav>
                 </Box>
-            </Drawer>
+            </SwipeableDrawer>
         )
     );
 }

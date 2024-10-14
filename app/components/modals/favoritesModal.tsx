@@ -30,7 +30,7 @@ export default function FavoriteModal() {
             open={menuOpen}
             onClose={() => dispatch(closeModal())}
             anchor={!isSmallMobile ? "bottom" : "right"}
-            disableSwipeToOpen={false}
+            disableSwipeToOpen={true}
             onOpen={() => {}}
         >
             <div className="bg-white size-full rounded-t-[1rem] sm:rounded-t-[0rem] relative">

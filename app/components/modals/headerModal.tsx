@@ -44,7 +44,7 @@ export default function HeaderModal() {
             <SwipeableDrawer
                 open={menuOpen}
                 onClose={() => dispatch(closeModal())}
-                disableSwipeToOpen={false}
+                disableSwipeToOpen={true}
                 onOpen={() => {}}
                 anchor="right"
                 sx={{

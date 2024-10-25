@@ -11,19 +11,18 @@ import CompactProductCard from "../compactProductCard";
 import Image from "next/image";
 import Price from "../price";
 import { ProductCardModal } from "./productCard";
-import { removeFavorite } from "@/app/redux/favoritesSlice";
+import { removeItemFromCart } from "@/app/redux/cartSlice";
+import CartProductCard from "./productCardForCart";
 
 const comfortaa = Comfortaa({ subsets: ["latin"] });
 
 export default function FavoriteModal() {
     const dispatch = useDispatch<AppDispatch>();
     const menuOpen = useAppSelector(
-        (state: RootState) => state.modal.openModal === "favorites"
+        (state: RootState) => state.modal.openModal === "cart"
     );
     const isSmallMobile = useMediaQuery("(min-width: 640px)");
-    const favoritesState = useAppSelector(
-        (state: RootState) => state.favorites
-    );
+    const cartState = useAppSelector((state: RootState) => state.cart);
 
     return (
         <SwipeableDrawer
@@ -52,10 +51,10 @@ export default function FavoriteModal() {
                         </div>
                     </h2>
                     <div className="flex flex-col p-4 gap-4 flex-auto overflow-auto">
-                        {favoritesState.favorites.map((product) => (
-                            <ProductCardModal
+                        {cartState.items.map((product) => (
+                            <CartProductCard
                                 product={product}
-                                favoritesState={favoritesState}
+                                favoritesState={cartState}
                                 onClick={() => {
                                     dispatch(
                                         removeFavorite(product.product_id)

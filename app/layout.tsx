@@ -6,7 +6,7 @@ import StoreProvider from "./redux/storeProvider";
 import { Fragment } from "react";
 import { getSession } from "@auth0/nextjs-auth0";
 import { getFavorites } from "./utils/fetchFavorites";
-import { getCart } from "./utils/fetchCart";
+import { getCartItems } from "./utils/fetchCart";
 import { cart, favorites } from "@prisma/client";
 import AppProvider from "./appComponents/appProvider";
 import AppModals from "./appComponents/appModals";
@@ -32,13 +32,19 @@ export default async function RootLayout({
     let cartItems: cart[] | undefined;
     if (initialUser) {
         favorites = await getFavorites(initialUser.sub);
-        cartItems = await getCart(initialUser.sub);
+        cartItems = await getCartItems(initialUser.sub);
     }
-    const ids = favorites ? favorites.map((item) => item.product_id) : [];
+    const favoritesIds = favorites
+        ? favorites.map((item) => item.product_id)
+        : [];
     const favoritesProducts = favorites
-        ? await fetchProductsByIds(ids)
+        ? await fetchProductsByIds(favoritesIds)
         : undefined;
-    console.log(favoritesProducts);
+
+    const cartIds = cartItems ? cartItems.map((item) => item.product_id) : [];
+    const cartProducts = favorites
+        ? await fetchProductsByIds(cartIds)
+        : undefined;
 
     return (
         <html lang="en">
@@ -49,6 +55,7 @@ export default async function RootLayout({
                         favorites={favorites}
                         favoritesProducts={favoritesProducts}
                         cartItems={cartItems}
+                        cartProducts={cartProducts}
                     >
                         <Fragment>
                             <AppModals />

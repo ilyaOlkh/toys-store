@@ -345,7 +345,6 @@ const favoritesSlice = createSlice({
                     state.queue.push(action.payload);
                 }
             }
-            console.log(state.queue);
         },
         clearQueue: (state, action: PayloadAction<{ productId: number }>) => {
             state.queue = state.queue.filter((item) => {
@@ -359,11 +358,9 @@ const favoritesSlice = createSlice({
             state.nowPending.push(action.payload);
         },
         clearPending: (state, action: PayloadAction<{ productId: number }>) => {
-            console.log(action.payload.productId);
             state.nowPending = state.nowPending.filter(
                 (item) => item.productId !== action.payload.productId
             );
-            console.log([...state.nowPending]);
         },
         addToFavorites: (state, action: PayloadAction<FavoriteItem>) => {
             if (

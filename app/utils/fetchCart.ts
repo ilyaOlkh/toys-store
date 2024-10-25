@@ -1,6 +1,15 @@
-import { cart } from "@prisma/client";
+import { cart, products } from "@prisma/client";
+import { ProductType } from "../types/types";
 
-export async function getCart(userIdentifier: string): Promise<cart[]> {
+// Интерфейс для элемента корзины с продуктом
+interface CartItemWithProduct extends cart {
+    product: ProductType;
+}
+
+// Получение всех товаров в корзине
+export async function getCartItems(
+    userIdentifier: string
+): Promise<CartItemWithProduct[]> {
     try {
         const response = await fetch(
             `${process.env.NEXT_PUBLIC_API_URL}/api/cart?user_identifier=${userIdentifier}`,
@@ -16,11 +25,12 @@ export async function getCart(userIdentifier: string): Promise<cart[]> {
     }
 }
 
+// Добавление товара в корзину
 export async function addToCart(
     userIdentifier: string,
     productId: number,
     quantity: number
-): Promise<cart> {
+): Promise<CartItemWithProduct> {
     try {
         const response = await fetch(
             `${process.env.NEXT_PUBLIC_API_URL}/api/cart`,
@@ -30,27 +40,51 @@ export async function addToCart(
                 body: JSON.stringify({
                     user_identifier: userIdentifier,
                     product_id: productId,
-                    quantity: quantity,
+                    quantity,
                 }),
             }
         );
         if (!response.ok) {
-            throw new Error("Failed to add to cart");
+            throw new Error("Failed to add item to cart");
         }
         return await response.json();
     } catch (error) {
-        console.error("Error adding to cart:", error);
+        console.error("Error adding item to cart:", error);
         throw error;
     }
 }
 
-type DeleteResponse = {
-    success: boolean;
-};
+// Обновление количества товара в корзине
+export async function updateCartItemQuantity(
+    cartItemId: number,
+    quantity: number
+): Promise<CartItemWithProduct> {
+    try {
+        const response = await fetch(
+            `${process.env.NEXT_PUBLIC_API_URL}/api/cart`,
+            {
+                method: "PATCH",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    cartItemId,
+                    quantity,
+                }),
+            }
+        );
+        if (!response.ok) {
+            throw new Error("Failed to update cart item quantity");
+        }
+        return await response.json();
+    } catch (error) {
+        console.error("Error updating cart item quantity:", error);
+        throw error;
+    }
+}
 
+// Удаление отдельного товара из корзины
 export async function removeFromCart(
     cartItemId: number
-): Promise<DeleteResponse> {
+): Promise<{ message: string }> {
     try {
         const response = await fetch(
             `${process.env.NEXT_PUBLIC_API_URL}/api/cart`,
@@ -61,11 +95,45 @@ export async function removeFromCart(
             }
         );
         if (!response.ok) {
-            throw new Error("Failed to remove cart item");
+            throw new Error("Failed to remove item from cart");
         }
         return await response.json();
     } catch (error) {
-        console.error("Error removing cart item:", error);
+        console.error("Error removing item from cart:", error);
         throw error;
     }
+}
+
+// Очистка всей корзины пользователя
+export async function clearCart(
+    userIdentifier: string
+): Promise<{ message: string }> {
+    try {
+        const response = await fetch(
+            `${process.env.NEXT_PUBLIC_API_URL}/api/cart`,
+            {
+                method: "DELETE",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ user_identifier: userIdentifier }),
+            }
+        );
+        if (!response.ok) {
+            throw new Error("Failed to clear cart");
+        }
+        return await response.json();
+    } catch (error) {
+        console.error("Error clearing cart:", error);
+        throw error;
+    }
+}
+
+export function calculateCartTotal(cartItems: CartItemWithProduct[]): number {
+    return cartItems.reduce((total, item) => {
+        const price = item.product.discount || item.product.price;
+        return total + price * item.quantity;
+    }, 0);
+}
+
+export function calculateTotalItems(cartItems: CartItemWithProduct[]): number {
+    return cartItems.reduce((total, item) => total + item.quantity, 0);
 }

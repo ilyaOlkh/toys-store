@@ -4,7 +4,7 @@ import Price from "./price";
 import { Rating } from "@mui/material";
 import { useAppSelector, useAppDispatch } from "../redux/hooks";
 import { addFavorite, removeFavorite } from "../redux/favoritesSlice";
-import { addToCart, removeFromCart } from "../redux/cartSlice";
+import { addCartItem, removeCartItem } from "../redux/cartSlice";
 
 interface ProductCardProps {
     id: number;
@@ -41,9 +41,20 @@ export function ProductCard({
             ? isInNowPending.type === "add"
             : isInFavorites;
     });
-    const isInCart = useAppSelector((store) =>
-        store.cart.items.some((item) => item.product_id === id)
-    );
+    const isInCart = useAppSelector((store) => {
+        const isInCart = store.cart.cart.some((item) => item.product_id === id);
+        const isInQueue = store.cart.queue.find(
+            (item) => item.productId === id
+        );
+        const isInNowPending = store.cart.nowPending.find(
+            (item) => item.productId === id
+        );
+        return isInQueue
+            ? isInQueue.type === "add"
+            : isInNowPending
+            ? isInNowPending.type === "add"
+            : isInCart;
+    });
 
     const handleFavoriteToggle = () => {
         if (isFavorite) {
@@ -53,11 +64,19 @@ export function ProductCard({
         }
     };
 
+    const handleCartToggle = () => {
+        if (isFavorite) {
+            dispatch(removeCartItem(id));
+        } else {
+            dispatch(addCartItem({ product_id: id, quantity: 1 }));
+        }
+    };
+
     const handleAddToCart = () => {
         if (isInCart) {
-            dispatch(removeFromCart(id));
+            dispatch(removeCartItem(id));
         } else {
-            dispatch(addToCart({ product_id: id }));
+            dispatch(addCartItem({ product_id: id, quantity: 1 }));
         }
     };
 

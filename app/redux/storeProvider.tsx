@@ -4,7 +4,7 @@ import { useRef } from "react";
 import { Provider } from "react-redux";
 import { makeStore, AppStore } from "./store";
 import { setUser } from "./userSlice"; // Экшен для установки пользователя
-import { setCartItems } from "./cartSlice";
+import { setCart, setCartState } from "./cartSlice";
 import { setFavorites, setProductsState } from "./favoritesSlice";
 import { Claims } from "@auth0/nextjs-auth0";
 import { cart, favorites } from "@prisma/client";
@@ -18,12 +18,14 @@ export default function StoreProvider({
     favorites,
     favoritesProducts,
     cartItems,
+    cartProducts,
     children,
 }: {
     initialUser: Claims | null;
     favorites: favorites[] | undefined;
     favoritesProducts: ProductType[] | undefined;
     cartItems: cart[] | undefined;
+    cartProducts: ProductType[] | undefined;
     children: React.ReactNode;
 }) {
     const storeRef = useRef<AppStore | null>(null);
@@ -32,7 +34,7 @@ export default function StoreProvider({
 
         initializeUser(storeRef.current, initialUser);
         initializeFavorites(storeRef.current, favorites, favoritesProducts);
-        initializeCart(storeRef.current, cartItems);
+        initializeCart(storeRef.current, cartItems, cartProducts);
         initializeModal(storeRef.current);
     }
 
@@ -56,22 +58,16 @@ function initializeFavorites(
             favoriteProducts: favoritesProducts,
         })
     );
-    // if (favoritesProducts) {
-    //     store.dispatch(setProductsState(favoritesProducts));
-    // } else {
-    //     const ids = favoritesArr.map((item: favorites) => item.product_id);
-    //     const favoritesProducts = favorites
-    //         ? await fetchProductsByIds(ids ?? [])
-    //         : undefined;
-    // }
 }
 
-function initializeCart(store: AppStore, cartItems: cart[] | undefined) {
-    store.dispatch(
-        setCartItems(
-            cartItems ?? JSON.parse(localStorage.getItem("cartToys") ?? "[]")
-        )
-    );
+function initializeCart(
+    store: AppStore,
+    cart: cart[] | undefined,
+    cartProducts: ProductType[] | undefined
+) {
+    const cartArr =
+        cart ?? JSON.parse(localStorage.getItem("cartItems") ?? "[]");
+    store.dispatch(setCart({ CartItems: cartArr, CartProducts: cartProducts }));
 }
 
 function initializeModal(store: AppStore) {

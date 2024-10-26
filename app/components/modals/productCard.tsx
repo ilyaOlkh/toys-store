@@ -1,70 +1,158 @@
+import React from "react";
 import Image from "next/image";
 import Price from "../price";
 import { ProductType } from "@/app/types/types";
 import { RootState } from "@/app/redux/store";
-import { favorites } from "@prisma/client";
-import { FavoriteItem } from "@/app/redux/favoritesSlice";
-import { Button } from "@mui/material";
+import { Button, IconButton } from "@mui/material";
+import { Plus, Minus } from "lucide-react";
 
-export const ProductCardModal = ({
+export type ProductCardVariant = "favorites" | "cart";
+export type ProductItemType = {
+    product_id: number;
+    quantity?: number;
+};
+
+type ProductCardProps = {
+    product: ProductItemType;
+    variant: ProductCardVariant;
+    productsState: {
+        products: ProductType[];
+        queue: Array<{ type: string; productId: number; quantity?: number }>;
+        nowPending: Array<{
+            type: string;
+            productId: number;
+            quantity?: number;
+        }>;
+    };
+    onRemove?: () => void;
+    onQuantityChange?: (quantity: number) => void;
+};
+
+const getActualQuantity = (
+    product: ProductItemType,
+    productsState: ProductCardProps["productsState"]
+) => {
+    // Проверяем очередь (наивысший приоритет)
+    const queueItem = productsState.queue.findLast(
+        (item) =>
+            item.productId === product.product_id &&
+            item.type === "update" &&
+            item.quantity !== undefined
+    );
+    if (queueItem && queueItem.quantity !== undefined) {
+        return queueItem.quantity;
+    }
+
+    // Проверяем pending (средний приоритет)
+    const pendingItem = productsState.nowPending.findLast(
+        (item) =>
+            item.productId === product.product_id &&
+            item.type === "update" &&
+            item.quantity !== undefined
+    );
+    if (pendingItem && pendingItem.quantity !== undefined) {
+        return pendingItem.quantity;
+    }
+
+    // Возвращаем реальное количество (низший приоритет)
+    return product.quantity || 1;
+};
+
+export const ProductCard = ({
     product,
-    favoritesState,
-    onClick,
-}: {
-    product: FavoriteItem;
-    favoritesState: RootState["favorites"];
-    onClick?: () => void;
-}) => {
-    const productInfo = favoritesState.favoritesProducts.find(
+    variant,
+    productsState,
+    onRemove,
+    onQuantityChange,
+}: ProductCardProps) => {
+    const productInfo = productsState.products.find(
         (item: ProductType) => item.id === product.product_id
     );
 
-    if (isRemoving(favoritesState, product.product_id)) return null;
-    console.log({ ...favoritesState });
-    if (isAdding(favoritesState, product.product_id))
+    if (isRemoving(productsState, product.product_id)) return null;
+    if (isAdding(productsState, product.product_id))
         return <span>завантаження...</span>;
 
     if (!productInfo) return <span>немає інформації про продукт</span>;
 
+    const currentQuantity = getActualQuantity(product, productsState);
+
+    const handleQuantityChange = (delta: number) => {
+        if (!onQuantityChange) return;
+        const newQuantity = Math.max(1, currentQuantity + delta);
+        onQuantityChange(newQuantity);
+    };
+
     return (
-        <div className="flex gap-2 justify-between">
-            <div className="flex gap-2 w-full">
-                <div className="flex-shrink-0 flex-grow-0 basis-[90px] border-[#D4D4D4] border p-1 rounded-[1.25rem]">
+        <div className="flex gap-2 justify-between border border-gray-200 rounded-xl xs:p-4">
+            <div className="flex gap-2 w-full items-center">
+                <div className="flex-shrink-0 flex-grow-0 basis-[90px] xs:border border-gray-300 p-1 rounded-xl">
                     <Image
                         src={productInfo.imageUrl}
                         alt="product img"
                         width={90}
                         height={90}
-                        className="rounded-[1.25rem]"
+                        className="rounded-xl object-cover"
                     />
                 </div>
-                <div className="overflow-hidden flex flex-col w-full justify-between">
-                    <div className="flex gap-2 justify-between items-center">
-                        <div className="text-ellipsis text-nowrap overflow-hidden w-full">
-                            {productInfo.name}
+                <div className="overflow-hidden flex flex-col size-full justify-between p-2 pl-0 xs:p-0 ">
+                    <div className="flex gap-2 justify-between items-start">
+                        <div className="text-ellipsis overflow-hidden">
+                            <h3 className="font-medium text-gray-900 text-sm xs:text-base">
+                                {productInfo.name}
+                            </h3>
                         </div>
+
                         <Button
-                            className="basis-4 flex justify-end items-start"
+                            className="basis-4 flex justify-end items-start min-w-[24px] xs:min-w-[32px] p-1 xs:p-2"
                             sx={{
-                                minWidth: "32px",
-                                padding: "8px",
                                 borderRadius: "9999px",
                             }}
-                            onClick={onClick}
+                            onClick={onRemove}
                         >
                             <Image
-                                src={"/X.svg"}
-                                alt="cross"
-                                width={15}
-                                height={15}
+                                src="/X.svg"
+                                alt="remove"
+                                width={12}
+                                height={12}
+                                className="w-3 h-3 xs:w-4 xs:h-4"
                             />
                         </Button>
                     </div>
-                    <div className="text-black self-end">
-                        <Price
-                            firstPrice={`${productInfo.price}`}
-                            discountPrice={`${productInfo.discount}`}
-                        />
+
+                    <div className="flex justify-between xs:items-center gap-0 xs:gap-2 mt-2 flex-col xs:flex-row">
+                        <div className="text-black">
+                            <Price
+                                firstPrice={`${productInfo.price}`}
+                                discountPrice={`${productInfo.discount}`}
+                                hideOriginalPrice={variant === "cart"}
+                            />
+                        </div>
+
+                        {variant === "cart" && onQuantityChange && (
+                            <div className="flex items-center xs:gap-2 self-end">
+                                <IconButton
+                                    onClick={() => handleQuantityChange(-1)}
+                                    disabled={currentQuantity === 1}
+                                    size="small"
+                                    className="h-6 w-6"
+                                >
+                                    <Minus className="h-4 w-4" />
+                                </IconButton>
+
+                                <span className="min-w-[2rem] text-center text-sm xs:text-base">
+                                    {currentQuantity}
+                                </span>
+
+                                <IconButton
+                                    onClick={() => handleQuantityChange(1)}
+                                    size="small"
+                                    className="h-6 w-6"
+                                >
+                                    <Plus className="h-4 w-4" />
+                                </IconButton>
+                            </div>
+                        )}
                     </div>
                 </div>
             </div>
@@ -73,20 +161,25 @@ export const ProductCardModal = ({
 };
 
 const isRemoving = (
-    favoritesState: RootState["favorites"],
+    productsState: ProductCardProps["productsState"],
     productId: number
 ) =>
-    favoritesState.queue.some(
+    productsState.queue.some(
         (item) => item.type === "remove" && item.productId === productId
     ) ||
-    favoritesState.nowPending.some(
+    productsState.nowPending.some(
         (item) => item.type === "remove" && item.productId === productId
     );
 
-const isAdding = (favoritesState: RootState["favorites"], productId: number) =>
-    favoritesState.queue.some(
+const isAdding = (
+    productsState: ProductCardProps["productsState"],
+    productId: number
+) =>
+    productsState.queue.some(
         (item) => item.type === "add" && item.productId === productId
     ) ||
-    favoritesState.nowPending.some(
+    productsState.nowPending.some(
         (item) => item.type === "add" && item.productId === productId
     );
+
+export default ProductCard;

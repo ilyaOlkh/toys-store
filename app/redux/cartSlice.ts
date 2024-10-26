@@ -25,7 +25,11 @@ interface CartState {
     cart: CartItem[];
     status: "idle" | "loading" | "succeeded" | "failed";
     error: string | null;
-    nowPending: { productId: number; type: "add" | "remove" | "update" }[];
+    nowPending: {
+        productId: number;
+        type: "add" | "remove" | "update";
+        quantity?: number;
+    }[];
     queue: {
         productId: number;
         type: "add" | "remove" | "update";
@@ -200,17 +204,45 @@ export const updateCartItem = createAsyncThunk(
         try {
             const user = (getState() as RootState).user.user;
 
+            // Проверяем, есть ли конфликтующие операции в обработке
+            if (
+                (getState() as RootState).cart.nowPending.some(
+                    (item) =>
+                        (item.productId === productId &&
+                            item.type === "update") ||
+                        item.type === "add" ||
+                        item.type === "remove"
+                )
+            ) {
+                dispatch(
+                    addToQueue({
+                        type: "update",
+                        productId: productId,
+                        quantity: quantity,
+                    })
+                );
+                return rejectWithValue("add to queue");
+            }
+
             if (!user) {
-                // Local cart handling (unauthenticated)
+                // Локальная корзина (без авторизации)
                 const storedCart = getStoredCart();
                 const updatedCart = storedCart.map((item) =>
                     item.product_id === productId ? { ...item, quantity } : item
                 );
                 updateStoredCart(updatedCart);
-                dispatch(setCartState(updatedCart));
+                dispatch(updateCartQuantity({ productId, quantity }));
                 return { type: "local", productId, quantity } as const;
             } else {
-                // Authenticated cart handling
+                // Авторизованная корзина
+                dispatch(
+                    addToPending({
+                        type: "update",
+                        productId: productId,
+                        quantity: quantity,
+                    })
+                );
+
                 const cartItem = (getState() as RootState).cart.cart.find(
                     (item) => item.product_id === productId
                 );
@@ -226,6 +258,39 @@ export const updateCartItem = createAsyncThunk(
 
                 dispatch(updateCartQuantity({ productId, quantity }));
 
+                dispatch(
+                    clearPending({
+                        productId: productId,
+                    })
+                );
+
+                // Проверяем очередь на наличие следующих операций
+                const state = getState() as RootState;
+                const nextQueueItem = state.cart.queue.find(
+                    (item) => item.productId === productId
+                );
+
+                if (nextQueueItem) {
+                    if (nextQueueItem.type === "add") {
+                        dispatch(
+                            addCartItem({ product_id: productId, quantity: 1 })
+                        );
+                    } else if (nextQueueItem.type === "remove") {
+                        dispatch(removeCartItem(productId));
+                    } else if (
+                        nextQueueItem.type === "update" &&
+                        nextQueueItem.quantity
+                    ) {
+                        dispatch(
+                            updateCartItem({
+                                productId,
+                                quantity: nextQueueItem.quantity,
+                            })
+                        );
+                    }
+                }
+
+                dispatch(clearQueue({ productId: productId }));
                 return { type: "db", productId, quantity } as const;
             }
         } catch (error) {
@@ -359,6 +424,7 @@ const cartSlice = createSlice({
             action: PayloadAction<{
                 type: "add" | "remove" | "update";
                 productId: number;
+                quantity?: number;
             }>
         ) => {
             state.nowPending.push(action.payload);
@@ -380,7 +446,7 @@ const cartSlice = createSlice({
                     )
                 ) {
                     state.queue = state.queue.filter((item) => {
-                        item.productId !== action.payload.productId;
+                        return item.productId !== action.payload.productId;
                     });
                 } else {
                     state.queue.push(action.payload);
@@ -394,16 +460,21 @@ const cartSlice = createSlice({
                     )
                 ) {
                     state.queue = state.queue.filter((item) => {
-                        item.productId !== action.payload.productId;
+                        return item.productId !== action.payload.productId;
                     });
                 } else {
                     state.queue.push(action.payload);
                 }
             } else if (action.payload.type === "update") {
+                console.log(state.queue);
                 state.queue = state.queue.filter((item) => {
-                    item.productId !== action.payload.productId ||
-                        item.type !== "update";
+                    return (
+                        item.productId !== action.payload.productId ||
+                        item.type !== "update"
+                    );
                 });
+                console.log(state.queue);
+
                 state.queue.push(action.payload);
             }
         },
@@ -414,7 +485,7 @@ const cartSlice = createSlice({
         },
         clearQueue: (state, action: PayloadAction<{ productId: number }>) => {
             state.queue = state.queue.filter((item) => {
-                item.productId !== action.payload.productId;
+                return item.productId !== action.payload.productId;
             });
         },
         addProductsState: (state, action: PayloadAction<ProductType>) => {

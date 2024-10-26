@@ -7,10 +7,8 @@ import { RootState, AppDispatch } from "../../redux/store";
 import { useAppSelector } from "../../redux/hooks";
 import { Comfortaa } from "next/font/google";
 import { closeModal } from "../../redux/modalSlice";
-import CompactProductCard from "../compactProductCard";
 import Image from "next/image";
-import Price from "../price";
-import { ProductCardModal } from "./productCard";
+import { ProductCard } from "./productCard";
 import { removeFavorite } from "@/app/redux/favoritesSlice";
 
 const comfortaa = Comfortaa({ subsets: ["latin"] });
@@ -53,10 +51,15 @@ export default function FavoriteModal() {
                     </h2>
                     <div className="flex flex-col p-4 gap-4 flex-auto overflow-auto">
                         {favoritesState.favorites.map((product) => (
-                            <ProductCardModal
+                            <ProductCard
                                 product={product}
-                                favoritesState={favoritesState}
-                                onClick={() => {
+                                variant={"favorites"}
+                                productsState={{
+                                    products: favoritesState.favoritesProducts,
+                                    queue: favoritesState.queue,
+                                    nowPending: favoritesState.nowPending,
+                                }}
+                                onRemove={() => {
                                     dispatch(
                                         removeFavorite(product.product_id)
                                     );

@@ -325,7 +325,7 @@ const favoritesSlice = createSlice({
                     )
                 ) {
                     state.queue = state.queue.filter((item) => {
-                        item.productId !== action.payload.productId;
+                        return item.productId !== action.payload.productId;
                     });
                 } else {
                     state.queue.push(action.payload);
@@ -339,7 +339,7 @@ const favoritesSlice = createSlice({
                     )
                 ) {
                     state.queue = state.queue.filter((item) => {
-                        item.productId !== action.payload.productId;
+                        return item.productId !== action.payload.productId;
                     });
                 } else {
                     state.queue.push(action.payload);
@@ -348,7 +348,7 @@ const favoritesSlice = createSlice({
         },
         clearQueue: (state, action: PayloadAction<{ productId: number }>) => {
             state.queue = state.queue.filter((item) => {
-                item.productId !== action.payload.productId;
+                return item.productId !== action.payload.productId;
             });
         },
         addToPending: (

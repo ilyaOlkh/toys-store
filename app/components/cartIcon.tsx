@@ -6,28 +6,13 @@ import { useDispatch } from "react-redux";
 import { AppDispatch, RootState } from "../redux/store";
 import { toggleModal } from "../redux/modalSlice";
 import { useAppSelector } from "../redux/hooks";
+import { selectTotalQuantity } from "../redux/cartSelectors";
 
 const poppins = Poppins({ weight: "500", subsets: ["latin"] });
 
 export default function CartIcon() {
     const dispatch = useDispatch<AppDispatch>();
-
-    // Подсчет общего количества товаров в корзине
-    const cartItemsNum = useAppSelector((state: RootState) => {
-        const baseCount = state.cart.cart.reduce(
-            (sum, item) => sum + (item.quantity || 1),
-            0
-        );
-        const addingCount =
-            state.cart.queue.filter((item) => item.type === "add").length +
-            state.cart.nowPending.filter((item) => item.type === "add").length;
-        const removingCount =
-            state.cart.queue.filter((item) => item.type === "remove").length +
-            state.cart.nowPending.filter((item) => item.type === "remove")
-                .length;
-
-        return baseCount + addingCount - removingCount;
-    });
+    const cartItemsNum = useAppSelector(selectTotalQuantity);
 
     return (
         <Button

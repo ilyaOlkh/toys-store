@@ -11,3 +11,36 @@
 .textShadow {
     text-shadow: 4px 0px 0px #ffffff;
 }
+
+.product-main-slider {
+    --swiper-navigation-color: #0f83b2;
+    --swiper-pagination-color: #0f83b2;
+}
+
+.product-main-slider .swiper-button-next,
+.product-main-slider .swiper-button-prev {
+    background-color: white;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.product-main-slider .swiper-button-next:after,
+.product-main-slider .swiper-button-prev:after {
+    font-size: 20px;
+}
+
+.product-thumbs-slider .swiper-slide {
+    opacity: 0.4;
+    transition: opacity 0.3s;
+}
+
+.product-thumbs-slider .swiper-slide-thumb-active {
+    opacity: 1;
+    border-color: #0f83b2;
+}
+
+.swiper-slide-active {
+    z-index: 1;
+}

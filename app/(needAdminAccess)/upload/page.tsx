@@ -39,8 +39,7 @@ export default function UploadPage() {
             }
 
             const uploadData = await uploadResponse.json();
-            const filePath = uploadData.filePath;
-
+            const uploadedImageUrl = uploadData.uploadedImageUrl;
             // Отправляем путь к файлу и SKU на сервер для сохранения в базе данных
             const savePathResponse = await fetch(
                 process.env.NEXT_PUBLIC_API_URL + "/api/products/upload-img",
@@ -49,7 +48,10 @@ export default function UploadPage() {
                     headers: {
                         "Content-Type": "application/json",
                     },
-                    body: JSON.stringify({ sku_code: sku, filePath: filePath }),
+                    body: JSON.stringify({
+                        sku_code: sku,
+                        filePath: uploadedImageUrl,
+                    }),
                 }
             );
 

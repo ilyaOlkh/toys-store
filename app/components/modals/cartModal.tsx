@@ -10,6 +10,11 @@ import Image from "next/image";
 import { ProductCard } from "./productCard";
 import { removeCartItem, updateCartItem } from "@/app/redux/cartSlice";
 import { Poppins } from "next/font/google";
+import {
+    selectActiveCartItems,
+    selectCartTotals,
+    selectIsAddingItems,
+} from "@/app/redux/cartSelectors";
 
 const poppins = Poppins({ weight: ["500", "600"], subsets: ["latin"] });
 
@@ -20,10 +25,12 @@ export default function CartModal() {
     );
     const isSmallMobile = useMediaQuery("(min-width: 640px)");
     const cartState = useAppSelector((state: RootState) => state.cart);
-    const { totalOriginal, totalWithDiscount } = {
-        totalOriginal: 0,
-        totalWithDiscount: 0,
-    };
+
+    // Используем селекторы
+    const { totalOriginal, totalWithDiscount } =
+        useAppSelector(selectCartTotals);
+    const activeCartItems = useAppSelector(selectActiveCartItems);
+    const isAddingItems = useAppSelector(selectIsAddingItems);
 
     return (
         <SwipeableDrawer
@@ -52,46 +59,53 @@ export default function CartModal() {
                         </div>
                     </h2>
 
-                    <div className="flex flex-col p-4 gap-4 flex-auto overflow-auto">
-                        {cartState.cart.map((cartItem) => (
-                            <ProductCard
-                                key={cartItem.product_id}
-                                product={cartItem}
-                                variant="cart"
-                                productsState={{
-                                    products: cartState.cartProducts,
-                                    queue: cartState.queue,
-                                    nowPending: cartState.nowPending,
-                                }}
-                                onRemove={() => {
-                                    dispatch(
-                                        removeCartItem(cartItem.product_id)
-                                    );
-                                }}
-                                onQuantityChange={(quantity) => {
-                                    dispatch(
-                                        updateCartItem({
-                                            productId: cartItem.product_id,
-                                            quantity,
-                                        })
-                                    );
-                                }}
-                            />
-                        ))}
-                        {[...cartState.nowPending, ...cartState.queue]
-                            .filter(
-                                (item) =>
-                                    item.type !== "remove" &&
-                                    item.type !== "update"
-                            )
-                            .map((item) => (
-                                <span key={item.productId}>
-                                    завантаження...
-                                </span>
+                    {(activeCartItems.length > 0 || isAddingItems) && (
+                        <div className="flex flex-col p-4 gap-4 flex-auto overflow-auto">
+                            {[...cartState.cart].map((cartItem) => (
+                                <ProductCard
+                                    key={cartItem.product_id}
+                                    product={cartItem}
+                                    variant="cart"
+                                    productsState={{
+                                        products: cartState.cartProducts,
+                                        queue: cartState.queue,
+                                        nowPending: cartState.nowPending,
+                                    }}
+                                    onRemove={() => {
+                                        dispatch(
+                                            removeCartItem(cartItem.product_id)
+                                        );
+                                    }}
+                                    onQuantityChange={(quantity) => {
+                                        dispatch(
+                                            updateCartItem({
+                                                productId: cartItem.product_id,
+                                                quantity,
+                                            })
+                                        );
+                                    }}
+                                />
                             ))}
-                    </div>
+                            {[...cartState.nowPending, ...cartState.queue]
+                                .filter(
+                                    (item) =>
+                                        item.type !== "remove" &&
+                                        item.type !== "update"
+                                )
+                                .map((item) => (
+                                    <div className="flex gap-2 justify-center border border-gray-200 rounded-xl p-4 min-h-[118px]">
+                                        <Image
+                                            src="/loading.svg"
+                                            alt="loading"
+                                            height={80}
+                                            width={80}
+                                        />
+                                    </div>
+                                ))}
+                        </div>
+                    )}
 
-                    {cartState.cart.length > 0 && (
+                    {(activeCartItems.length > 0 || isAddingItems) && (
                         <div className="border-t p-4 mt-auto">
                             <div className="flex justify-between items-start mb-4">
                                 <span className="text-lg font-medium">
@@ -132,10 +146,20 @@ export default function CartModal() {
                         </div>
                     )}
 
-                    {cartState.cart.length === 0 && (
-                        <div className="flex flex-col items-center justify-center flex-grow p-4">
-                            <span className="text-xl mb-2">Кошик порожній</span>
-                            <span className="text-gray-500">
+                    {activeCartItems.length === 0 && !isAddingItems && (
+                        <div className="flex flex-col items-center justify-center flex-grow p-4 gap-3">
+                            <div className="">
+                                <Image
+                                    src="/empty-cart.svg"
+                                    alt="empty-cart"
+                                    width={200}
+                                    height={200}
+                                />
+                            </div>
+                            <span className="text-xl text-center">
+                                Кошик порожній
+                            </span>
+                            <span className="text-gray-500 text-center">
                                 Додайте товари до кошика
                             </span>
                         </div>

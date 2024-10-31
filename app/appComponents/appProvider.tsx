@@ -25,16 +25,15 @@ const theme = createTheme({
         },
     },
     components: {
-        MuiBackdrop: {
-            styleOverrides: {
-                root: {
-                    backdropFilter: "blur(10px)",
-                    backgroundColor: "rgba(0, 0, 0, 0.5)",
-                },
-            },
-        },
         MuiDrawer: {
             styleOverrides: {
+                root: {
+                    "& .MuiBackdrop-root": {
+                        backdropFilter: "blur(10px)",
+                        backgroundColor: "rgba(0, 0, 0, 0.5)",
+                    },
+                },
+
                 paper: {
                     width: "100%",
                     marginTop: "100px",

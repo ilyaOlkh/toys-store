@@ -130,7 +130,7 @@ export const addCartItem = createAsyncThunk(
                 if (!isExist) {
                     const localCartItem: LocalCartItem = {
                         product_id: newCartItem.product_id,
-                        quantity: 1,
+                        quantity: newCartItem.quantity,
                     };
                     const updatedCart = [...storedCart, localCartItem];
                     updateStoredCart(updatedCart);
@@ -153,19 +153,20 @@ export const addCartItem = createAsyncThunk(
                     addToPending({
                         type: "add",
                         productId: newCartItem.product_id,
+                        quantity: newCartItem.quantity,
                     })
                 );
                 const dbCartItem = await apiAddToCart(
                     user.sub,
                     newCartItem.product_id,
-                    1
+                    newCartItem.quantity
                 );
                 dispatch(
                     addToCart({
                         id: dbCartItem.id,
                         user_identifier: dbCartItem.user_identifier,
                         product_id: dbCartItem.product_id,
-                        quantity: 1,
+                        quantity: newCartItem.quantity,
                     })
                 );
                 dispatch(addProductsState(dbCartItem.product));
@@ -273,7 +274,10 @@ export const updateCartItem = createAsyncThunk(
                 if (nextQueueItem) {
                     if (nextQueueItem.type === "add") {
                         dispatch(
-                            addCartItem({ product_id: productId, quantity: 1 })
+                            addCartItem({
+                                product_id: productId,
+                                quantity: nextQueueItem.quantity || 1,
+                            })
                         );
                     } else if (nextQueueItem.type === "remove") {
                         dispatch(removeCartItem(productId));
@@ -361,14 +365,18 @@ export const removeCartItem = createAsyncThunk(
                         productId: productId,
                     })
                 );
-                if (
-                    (getState() as RootState).cart.queue.some(
-                        (item) =>
-                            item.productId === productId && item.type === "add"
-                    )
-                ) {
+
+                const nextQueueItem = (getState() as RootState).cart.queue.find(
+                    (item) =>
+                        item.productId === productId && item.type === "add"
+                );
+
+                if (nextQueueItem) {
                     dispatch(
-                        addCartItem({ product_id: productId, quantity: 1 })
+                        addCartItem({
+                            product_id: productId,
+                            quantity: nextQueueItem.quantity || 1,
+                        })
                     );
                 }
                 dispatch(clearQueue({ productId: productId }));

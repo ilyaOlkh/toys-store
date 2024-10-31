@@ -32,7 +32,6 @@ export async function POST(request: NextRequest) {
         const uploadResponse = await cloudinary.uploader.upload(dataUrl, {
             folder: uploadPath, // Сохраняем изображение в указанную папку
         });
-
         // Возвращаем URL загруженного изображения
         return NextResponse.json({
             uploadedImageUrl: uploadResponse.secure_url,

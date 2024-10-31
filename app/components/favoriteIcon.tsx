@@ -39,9 +39,11 @@ export default function FavoriteIcon() {
                     height={32}
                 />
             </div>
-            <div className="absolute top-2 right-2 rounded-full bg-orange1 w-5 h-5 text-sm flex items-center justify-center translate-x-1/2 -translate-y-1/2 text-black">
-                {favoritesNum}
-            </div>
+            {favoritesNum > 0 && (
+                <div className="absolute top-2 right-2 rounded-full bg-orange1 w-5 h-5 text-sm flex items-center justify-center translate-x-1/2 -translate-y-1/2 text-black">
+                    {favoritesNum}
+                </div>
+            )}
         </Button>
     );
 }

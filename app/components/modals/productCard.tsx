@@ -5,6 +5,8 @@ import { ProductType } from "@/app/types/types";
 import { RootState } from "@/app/redux/store";
 import { Button, IconButton } from "@mui/material";
 import { Plus, Minus } from "lucide-react";
+import { useAppSelector } from "@/app/redux/hooks";
+import { selectActualItemQuantity } from "@/app/redux/cartSelectors";
 
 export type ProductCardVariant = "favorites" | "cart";
 export type ProductItemType = {
@@ -28,36 +30,6 @@ type ProductCardProps = {
     onQuantityChange?: (quantity: number) => void;
 };
 
-const getActualQuantity = (
-    product: ProductItemType,
-    productsState: ProductCardProps["productsState"]
-) => {
-    // Проверяем очередь (наивысший приоритет)
-    const queueItem = productsState.queue.findLast(
-        (item) =>
-            item.productId === product.product_id &&
-            item.type === "update" &&
-            item.quantity !== undefined
-    );
-    if (queueItem && queueItem.quantity !== undefined) {
-        return queueItem.quantity;
-    }
-
-    // Проверяем pending (средний приоритет)
-    const pendingItem = productsState.nowPending.findLast(
-        (item) =>
-            item.productId === product.product_id &&
-            item.type === "update" &&
-            item.quantity !== undefined
-    );
-    if (pendingItem && pendingItem.quantity !== undefined) {
-        return pendingItem.quantity;
-    }
-
-    // Возвращаем реальное количество (низший приоритет)
-    return product.quantity || 1;
-};
-
 export const ProductCard = ({
     product,
     variant,
@@ -68,14 +40,29 @@ export const ProductCard = ({
     const productInfo = productsState.products.find(
         (item: ProductType) => item.id === product.product_id
     );
-
+    console.log(
+        isAdding(productsState, product.product_id),
+        product.product_id
+    );
     if (isRemoving(productsState, product.product_id)) return null;
-    if (isAdding(productsState, product.product_id))
-        return <span>завантаження...</span>;
+    if (isAdding(productsState, product.product_id)) {
+        return (
+            <div className="flex gap-2 justify-center border border-gray-200 rounded-xl p-4 min-h-[118px]">
+                <Image
+                    src="/loading.svg"
+                    alt="loading"
+                    height={80}
+                    width={80}
+                />
+            </div>
+        );
+    }
 
     if (!productInfo) return <span>немає інформації про продукт</span>;
 
-    const currentQuantity = getActualQuantity(product, productsState);
+    const currentQuantity = useAppSelector((state) =>
+        selectActualItemQuantity(state, product.product_id)
+    );
 
     const handleQuantityChange = (delta: number) => {
         if (!onQuantityChange) return;

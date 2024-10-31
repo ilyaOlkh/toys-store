@@ -64,14 +64,6 @@ export function ProductCard({
         }
     };
 
-    const handleCartToggle = () => {
-        if (isFavorite) {
-            dispatch(removeCartItem(id));
-        } else {
-            dispatch(addCartItem({ product_id: id, quantity: 1 }));
-        }
-    };
-
     const handleAddToCart = () => {
         if (isInCart) {
             dispatch(removeCartItem(id));

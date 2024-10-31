@@ -1,5 +1,5 @@
 import { products, types } from "@prisma/client";
-import { ProductType } from "../types/types";
+import { ProductDetailType, ProductType } from "../types/types";
 export const dynamic = "force-dynamic";
 
 export async function fetchTypes(): Promise<types[]> {
@@ -18,18 +18,48 @@ export async function fetchTypes(): Promise<types[]> {
     }
 }
 
-export async function fetchProduct(id: number): Promise<products | null> {
+export async function fetchProduct(
+    id: number
+): Promise<(ProductType & ProductDetailType) | null> {
     try {
         const response = await fetch(
-            process.env.NEXT_PUBLIC_API_URL + "/api/products/" + id
+            `${process.env.NEXT_PUBLIC_API_URL}/api/products/${id}`
         );
+        console.log(response);
         if (!response.ok) {
+            if (response.status === 404) {
+                return null;
+            }
             throw new Error(`Error: ${response.status} ${response.statusText}`);
         }
+
         const data = await response.json();
-        return data;
+
+        // Если нет данных, возвращаем null
+        if (!data) {
+            return null;
+        }
+
+        // Преобразуем даты
+        const formattedProduct = {
+            ...data,
+            created_at: new Date(data.created_at),
+            comments: data.comments.map((comment: any) => ({
+                ...comment,
+                created_at: new Date(comment.created_at),
+            })),
+            // Добавляем поле imageUrl для совместимости с ProductType
+            imageUrl: data.images[0]?.url || "/noPhoto.png",
+            // Убеждаемся, что все числовые значения корректны
+            price: Number(data.price),
+            discount: Number(data.current_discount),
+            stock_quantity: Number(data.stock_quantity),
+            average_rating: Number(data.average_rating),
+        };
+
+        return formattedProduct;
     } catch (error) {
-        console.error(error);
+        console.error("Error fetching product:", error);
         return null;
     }
 }

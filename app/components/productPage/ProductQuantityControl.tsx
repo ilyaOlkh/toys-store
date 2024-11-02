@@ -10,13 +10,7 @@ import {
 } from "@/app/redux/cartSlice";
 import Image from "next/image";
 
-export function ProductQuantityControl({
-    productId,
-    price,
-}: {
-    productId: number;
-    price: number;
-}) {
+export function ProductQuantityControl({ productId }: { productId: number }) {
     const dispatch = useAppDispatch();
     const [quantity, setQuantity] = useState(1);
 
@@ -105,7 +99,7 @@ export function ProductQuantityControl({
     };
 
     return (
-        <div className="flex gap-4 mt-4 flex-col items-start xs:flex-row">
+        <div className="flex gap-4 flex-wrap items-start ">
             {/* Контроль количества */}
             <div className="flex  rounded-lg border-2 border-blue1 items-stretch">
                 <button
@@ -129,7 +123,7 @@ export function ProductQuantityControl({
             {/* Кнопка добавления/удаления из корзины */}
             <button
                 onClick={handleCartAction}
-                className={`px-8 py-2 rounded-lg transition-colors flex flex-nowrap gap-2 items-center min-h-12 ${
+                className={`px-8 py-2 rounded-lg transition-colors flex flex-nowrap text-nowrap gap-2 items-center min-h-12 ${
                     isInCart
                         ? "bg-red-500 hover:bg-red-600 text-white"
                         : "bg-[#0F83B2] hover:bg-[#0d7aa6] text-white"

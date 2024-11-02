@@ -7,7 +7,7 @@ import { ProductCard } from "./components/productCard";
 export default async function Home() {
     const types = await fetchTypes();
     const products = await fetchProducts();
-    console.log(products);
+
     if (types.length === 0) return <div>Loading...</div>;
     return (
         <div>
@@ -33,7 +33,7 @@ export default async function Home() {
                                     title={product.name}
                                     firstPrice={String(product.price)}
                                     discountPrice={String(product.discount)}
-                                    rating={4.5}
+                                    rating={product.average_rating}
                                 />
                             ))}
                         </div>

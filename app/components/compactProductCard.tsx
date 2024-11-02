@@ -18,7 +18,7 @@ const CompactProductCard: React.FC<CompactProductCardProps> = ({
     imgSize = 50,
 }) => {
     return (
-        <div className="flex">
+        <div className="flex w-full gap-1">
             <div className="flex-shrink-0 flex-grow-0 basis-[50px]">
                 <Image
                     src={imageUrl}

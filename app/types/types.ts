@@ -20,6 +20,7 @@ export interface IParams {
 
 export type ProductType = products & {
     imageUrl: string;
+    average_rating: number;
 };
 
 // export interface ProductType extends products {

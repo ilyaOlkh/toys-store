@@ -1,8 +1,14 @@
+// userSlice.ts
 import { Claims } from "@auth0/nextjs-auth0";
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
+import { RootState } from "./store";
+
+interface Role {
+    name: string;
+}
 
 interface UserState {
-    user: Claims | null;
+    user: (Claims & { roles?: Role[] }) | null;
 }
 
 const initialState: UserState = {
@@ -13,8 +19,16 @@ const userSlice = createSlice({
     name: "user",
     initialState,
     reducers: {
-        setUser: (state, action: PayloadAction<any>) => {
+        setUser: (
+            state,
+            action: PayloadAction<(Claims & { roles?: Role[] }) | null>
+        ) => {
             state.user = action.payload;
+        },
+        setUserRoles: (state, action: PayloadAction<Role[]>) => {
+            if (state.user) {
+                state.user.roles = action.payload;
+            }
         },
         clearUser: (state) => {
             state.user = null;
@@ -27,5 +41,10 @@ const userSlice = createSlice({
     },
 });
 
-export const { setUser, clearUser, setUserPicture } = userSlice.actions;
+export const selectIsAdmin = (state: RootState) =>
+    state.user.user?.roles?.some((role) => role.name === "admin") ?? false;
+
+export const { setUser, clearUser, setUserPicture, setUserRoles } =
+    userSlice.actions;
+
 export default userSlice.reducer;

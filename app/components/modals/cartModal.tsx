@@ -136,7 +136,14 @@ export default function CartModal() {
                             <Button
                                 variant="contained"
                                 fullWidth
-                                className="bg-black hover:bg-gray-800 text-white py-3 rounded-full"
+                                sx={{
+                                    backgroundColor: "#000",
+                                    borderRadius: "9999px",
+                                    padding: "0.75rem",
+                                    "&:hover": {
+                                        backgroundColor: "#1f2937",
+                                    },
+                                }}
                                 onClick={() => {
                                     console.log("Оформить заказ");
                                 }}

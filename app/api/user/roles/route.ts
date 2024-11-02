@@ -1,3 +1,5 @@
+// "api/user/roles"
+
 import { NextRequest, NextResponse } from "next/server";
 import axios from "axios";
 import { getSession } from "@auth0/nextjs-auth0";

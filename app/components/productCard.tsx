@@ -41,6 +41,7 @@ export function ProductCard({
             ? isInNowPending.type === "add"
             : isInFavorites;
     });
+
     const isInCart = useAppSelector((store) => {
         const isInCart = store.cart.cart.some((item) => item.product_id === id);
         const isInQueue = store.cart.queue.find(
@@ -128,7 +129,7 @@ export function ProductCard({
                         firstPrice={firstPrice}
                         discountPrice={discountPrice}
                     />
-                    <Rating value={rating} readOnly />
+                    <Rating precision={0.1} value={rating} readOnly />
                 </div>
             </a>
         </div>

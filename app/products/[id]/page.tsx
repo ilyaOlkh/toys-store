@@ -12,6 +12,8 @@ import {
 } from "react-icons/fa";
 import { ProductQuantityControl } from "@/app/components/productPage/ProductQuantityControl";
 import ProductTabs from "@/app/components/productPage/ProductTabs";
+import { getProductComments } from "@/app/utils/fetchComments";
+import FavoriteButton from "@/app/components/productPage/FavoriteButton";
 
 export const dynamic = "force-dynamic";
 
@@ -99,10 +101,10 @@ export default async function ProductPage(params: IParams) {
                         </div>
 
                         {/* Add to Cart Section */}
-                        <ProductQuantityControl
-                            productId={product.id}
-                            price={Number(product.price)}
-                        />
+                        <div className="flex gap-4 flex-wrap items-end">
+                            <ProductQuantityControl productId={product.id} />
+                            <FavoriteButton productId={product.id} />
+                        </div>
 
                         {/* Short Description */}
                         <div className="border border-[#E8E8E8] rounded-lg p-3 flex flex-col gap-4">
@@ -197,7 +199,11 @@ export default async function ProductPage(params: IParams) {
                 </div>
 
                 {/* Description and Reviews Tabs */}
-                <ProductTabs description={product.description} />
+                <ProductTabs
+                    description={product.description}
+                    reviews={await getProductComments(product.id)}
+                    product_id={product.id}
+                />
             </div>
         </div>
     );

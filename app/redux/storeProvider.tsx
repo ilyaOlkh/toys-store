@@ -2,7 +2,7 @@
 import { useRef } from "react";
 import { Provider } from "react-redux";
 import { makeStore, AppStore } from "./store";
-import { setUser } from "./userSlice"; // Экшен для установки пользователя
+import { setUser, setUserRoles } from "./userSlice"; // Экшен для установки пользователя
 import { setCart, setCartState } from "./cartSlice";
 import { setFavorites, setProductsState } from "./favoritesSlice";
 import { Claims } from "@auth0/nextjs-auth0";
@@ -10,10 +10,14 @@ import { cart, favorites } from "@prisma/client";
 import { ModalType, modalTypes } from "../constants/modal-constants";
 import { initModalFromHash } from "./modalSlice";
 import { ProductType } from "../types/types";
-import { fetchProductsByIds } from "../utils/fetch";
+
+interface Role {
+    name: string;
+}
 
 export default function StoreProvider({
     initialUser,
+    userRoles,
     favorites,
     favoritesProducts,
     cartItems,
@@ -21,6 +25,7 @@ export default function StoreProvider({
     children,
 }: {
     initialUser: Claims | null;
+    userRoles: Role[] | null;
     favorites: favorites[] | undefined;
     favoritesProducts: ProductType[] | undefined;
     cartItems: cart[] | undefined;
@@ -30,18 +35,23 @@ export default function StoreProvider({
     const storeRef = useRef<AppStore | null>(null);
     if (!storeRef.current) {
         storeRef.current = makeStore();
-
-        initializeUser(storeRef.current, initialUser);
+        initializeUser(storeRef.current, initialUser, userRoles);
         initializeFavorites(storeRef.current, favorites, favoritesProducts);
         initializeCart(storeRef.current, cartItems, cartProducts);
-        initializeModal(storeRef.current);
     }
 
     return <Provider store={storeRef.current}>{children}</Provider>;
 }
 
-function initializeUser(store: AppStore, initialUser: Claims | null) {
+function initializeUser(
+    store: AppStore,
+    initialUser: Claims | null,
+    userRoles: Role[] | null
+) {
     store.dispatch(setUser(initialUser));
+    if (initialUser && userRoles) {
+        store.dispatch(setUserRoles(userRoles));
+    }
 }
 
 function initializeFavorites(

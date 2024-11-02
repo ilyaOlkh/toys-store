@@ -1,11 +1,16 @@
 "use client";
+import { useAppSelector } from "@/app/redux/hooks";
 import { UserInfo } from "@/app/types/users";
+import { deleteComment } from "@/app/utils/fetchComments";
 import { fetchUsersInfo } from "@/app/utils/fetchUsers";
-import { Rating, Tab, Tabs, Avatar } from "@mui/material";
+import { Rating, Tab, Tabs, Avatar, Tooltip, IconButton } from "@mui/material";
 import { styled } from "@mui/material/styles";
 import { comments } from "@prisma/client";
-import Image from "next/image";
 import { SyntheticEvent, useEffect, useState } from "react";
+import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
+import CommentForm from "./CommentForm";
+import { selectIsAdmin } from "@/app/redux/userSlice";
+import ReviewCard from "./ReviewCard";
 
 interface TabPanelProps {
     children?: React.ReactNode;
@@ -16,6 +21,7 @@ interface TabPanelProps {
 interface ProductTabsProps {
     description: string | null;
     reviews: comments[];
+    product_id: number;
 }
 
 const StyledTabs = styled(Tabs)({
@@ -52,48 +58,46 @@ function TabPanel(props: TabPanelProps) {
     );
 }
 
-const reviewsSample: comments[] = [
-    {
-        id: 1,
-        product_id: 1,
-        user_identifier: "google-oauth2|112469676930996239500",
-        rating: 5,
-        created_at: new Date("March 15, 2024"),
-        comment: "**кинул зигу**",
-    },
-    {
-        id: 2,
-        product_id: 1,
-        user_identifier: "auth0|66efcd3e412f3adf7f2c6acb",
-        rating: 4,
-        created_at: new Date("March 15, 2024"),
-        comment: "я бля щас вскрою себе вены и забрызгаю кровью стены",
-    },
-    {
-        id: 3,
-        product_id: 1,
-        user_identifier: "google-oauth2|103272541962828866987",
-        rating: 5,
-        created_at: new Date("March 15, 2024"),
-        comment: "йоу пацаны я репер",
-    },
-];
-
 const ProductTabs = ({
     description,
-    reviews = reviewsSample,
+    reviews,
+    product_id,
 }: ProductTabsProps) => {
     const [value, setValue] = useState(0);
     const [usersInfo, setUsersInfo] = useState<Record<string, UserInfo>>({});
+    const [localReviews, setLocalReviews] = useState(reviews);
+    const [deletingComments, setDeletingComments] = useState<number[]>([]);
+    const user = useAppSelector((state) => state.user.user);
+    const isAdmin = useAppSelector(selectIsAdmin);
+
+    const handleDeleteComment = async (commentId: number) => {
+        if (window.confirm("Are you sure you want to delete this comment?")) {
+            try {
+                setDeletingComments((prev) => [...prev, commentId]);
+                await deleteComment(commentId);
+                setLocalReviews((prevReviews) =>
+                    prevReviews.filter((review) => review.id !== commentId)
+                );
+            } catch (error) {
+                console.error("Failed to delete comment:", error);
+                alert("Failed to delete comment");
+            } finally {
+                setDeletingComments((prev) =>
+                    prev.filter((id) => id !== commentId)
+                );
+            }
+        }
+    };
 
     useEffect(() => {
         const loadUserInfo = async () => {
             const userIds = [
                 ...Array.from(
-                    new Set(reviews.map((review) => review.user_identifier))
+                    new Set(
+                        localReviews.map((review) => review.user_identifier)
+                    )
                 ),
             ];
-            console.log(userIds);
             const users = await fetchUsersInfo(userIds);
             const usersMap = users.reduce(
                 (acc: Record<string, UserInfo>, user: UserInfo) => {
@@ -105,18 +109,22 @@ const ProductTabs = ({
             setUsersInfo(usersMap);
         };
 
-        if (reviews.length > 0) {
+        if (localReviews.length > 0) {
             loadUserInfo();
         }
-    }, [reviews]);
+    }, [localReviews]);
 
     const handleChange = (event: SyntheticEvent, newValue: number) => {
         setValue(newValue);
     };
 
+    const handleCommentAdded = (newComment: comments) => {
+        setLocalReviews((prevReviews) => [newComment, ...prevReviews]);
+    };
+
     const averageRating =
-        reviews.reduce((acc, review) => acc + review.rating, 0) /
-        reviews.length;
+        localReviews.reduce((acc, review) => acc + review.rating, 0) /
+            localReviews.length || 0;
 
     return (
         <div className="mt-16">
@@ -126,7 +134,7 @@ const ProductTabs = ({
                 aria-label="product information tabs"
             >
                 <StyledTab label="Description" />
-                <StyledTab label={`Reviews (${reviews.length})`} />
+                <StyledTab label={`Reviews (${localReviews.length})`} />
             </StyledTabs>
 
             <TabPanel value={value} index={0}>
@@ -151,55 +159,35 @@ const ProductTabs = ({
                                 }}
                             />
                             <div className="text-gray1 text-sm">
-                                Based on {reviews.length} reviews
+                                Based on {localReviews.length} reviews
                             </div>
                         </div>
                     </div>
 
-                    {reviews.map((review) => {
+                    {user && (
+                        <CommentForm
+                            productId={product_id}
+                            onCommentAdded={handleCommentAdded}
+                        />
+                    )}
+
+                    {localReviews.map((review) => {
                         const userInfo = usersInfo[review.user_identifier];
+                        const canDelete =
+                            user &&
+                            (user.sub === review.user_identifier || isAdmin);
+
                         return (
-                            <div
+                            <ReviewCard
                                 key={review.id}
-                                className="border-b border-[#E8E8E8] pb-6"
-                            >
-                                <div className="flex items-center gap-4 mb-3">
-                                    <Avatar
-                                        src={
-                                            userInfo?.picture ||
-                                            "/api/placeholder/40/40"
-                                        }
-                                        alt={userInfo?.name || "User"}
-                                        sx={{ width: 40, height: 40 }}
-                                    />
-                                    <div className="flex flex-col">
-                                        <div className="font-semibold">
-                                            {userInfo?.name || "Anonymous"}
-                                        </div>
-                                        <div className="text-gray1 text-sm">
-                                            {new Date(
-                                                review.created_at
-                                            ).toLocaleDateString("en-US", {
-                                                year: "numeric",
-                                                month: "long",
-                                                day: "numeric",
-                                            })}
-                                        </div>
-                                    </div>
-                                </div>
-                                <Rating
-                                    value={review.rating}
-                                    readOnly
-                                    size="small"
-                                    className="mb-2"
-                                    sx={{
-                                        "& .MuiRating-iconFilled": {
-                                            color: "#FFD700",
-                                        },
-                                    }}
-                                />
-                                <p className="text-gray1">{review.comment}</p>
-                            </div>
+                                review={review}
+                                userInfo={userInfo}
+                                onDelete={() => handleDeleteComment(review.id)}
+                                isDeleting={deletingComments.includes(
+                                    review.id
+                                )}
+                                canDelete={canDelete}
+                            />
                         );
                     })}
                 </div>

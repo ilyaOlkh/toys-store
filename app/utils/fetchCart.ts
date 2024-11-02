@@ -127,13 +127,6 @@ export async function clearCart(
     }
 }
 
-export function calculateCartTotal(cartItems: CartItemWithProduct[]): number {
-    return cartItems.reduce((total, item) => {
-        const price = item.product.discount || item.product.price;
-        return total + price * item.quantity;
-    }, 0);
-}
-
 export function calculateTotalItems(cartItems: CartItemWithProduct[]): number {
     return cartItems.reduce((total, item) => total + item.quantity, 0);
 }

@@ -17,10 +17,9 @@ export async function getProductComments(
     productId: number
 ): Promise<comments[]> {
     try {
-        const response = await fetch(
-            `${process.env.URL}/api/comments?productId=${productId}`,
-            { method: "GET" }
-        );
+        const response = await fetch(`/api/comments?productId=${productId}`, {
+            method: "GET",
+        });
 
         if (!response.ok) {
             const error = await response.json();
@@ -39,7 +38,7 @@ export async function createComment(
     data: CommentCreateData
 ): Promise<comments> {
     try {
-        const response = await fetch(`${process.env.URL}/api/comments`, {
+        const response = await fetch(`/api/comments`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             credentials: "include",
@@ -63,7 +62,7 @@ export async function updateComment(
     data: CommentUpdateData
 ): Promise<comments> {
     try {
-        const response = await fetch(`${process.env.URL}/api/comments`, {
+        const response = await fetch(`/api/comments`, {
             method: "PATCH",
             headers: { "Content-Type": "application/json" },
             credentials: "include",
@@ -87,13 +86,10 @@ export async function deleteComment(
     commentId: number
 ): Promise<{ message: string }> {
     try {
-        const response = await fetch(
-            `${process.env.URL}/api/comments?id=${commentId}`,
-            {
-                method: "DELETE",
-                credentials: "include",
-            }
-        );
+        const response = await fetch(`/api/comments?id=${commentId}`, {
+            method: "DELETE",
+            credentials: "include",
+        });
 
         if (!response.ok) {
             const error = await response.json();

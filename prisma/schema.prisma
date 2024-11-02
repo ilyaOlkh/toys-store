@@ -28,7 +28,7 @@ model orders {
     zip_code       String
     phone          String
     email          String
-    payment_method String
+    payment_method PaymentMethod
     paid           Boolean   @default(false)
     created_at     DateTime  @default(now())
 }
@@ -94,6 +94,8 @@ model favorites {
     user_identifier String
     product_id      Int
     product         products @relation(fields: [product_id], references: [id], onDelete: Cascade)
+
+    @@unique([product_id])
 }
 
 model cart {
@@ -102,6 +104,8 @@ model cart {
     product_id      Int
     quantity        Int
     product         products @relation(fields: [product_id], references: [id], onDelete: Cascade)
+
+    @@unique([product_id])
 }
 
 model comments {
@@ -111,6 +115,7 @@ model comments {
     comment         String   @db.Text
     rating          Float
     created_at      DateTime @default(now())
+    edited_at       DateTime?
     product         products @relation(fields: [product_id], references: [id], onDelete: Cascade)
 }
 
@@ -121,4 +126,9 @@ model discounts {
     start_date DateTime @db.Date
     end_date   DateTime @db.Date
     product    products @relation(fields: [product_id], references: [id], onDelete: Cascade)
+}
+
+enum PaymentMethod {
+    credit_card
+    cash
 }

@@ -3,14 +3,15 @@ import { IParams } from "../../types/types";
 import Image from "next/image";
 import { Rating } from "@mui/material";
 import Price from "@/app/components/price";
-import ProductGallery from "@/app/components/productGallery";
+import ProductGallery from "@/app/components/productPage/productGallery";
 import {
     FaInstagram,
     FaTwitter,
     FaFacebook,
     FaPinterest,
 } from "react-icons/fa";
-import { ProductQuantityControl } from "@/app/components/ProductQuantityControl";
+import { ProductQuantityControl } from "@/app/components/productPage/ProductQuantityControl";
+import ProductTabs from "@/app/components/productPage/ProductTabs";
 
 export const dynamic = "force-dynamic";
 
@@ -196,23 +197,7 @@ export default async function ProductPage(params: IParams) {
                 </div>
 
                 {/* Description and Reviews Tabs */}
-                <div className="mt-16">
-                    <div className="border-b border-[#E8E8E8]">
-                        <div className="flex gap-8">
-                            <button className="px-4 py-2 border-b-2 border-[#0F83B2] text-[#0F83B2] font-medium">
-                                Description
-                            </button>
-                            <button className="px-4 py-2 text-gray1 hover:text-[#375259]">
-                                Reviews ({product.comments.length})
-                            </button>
-                        </div>
-                    </div>
-                    <div className="py-8">
-                        <div className="prose max-w-none text-gray1">
-                            {product.description}
-                        </div>
-                    </div>
-                </div>
+                <ProductTabs description={product.description} />
             </div>
         </div>
     );

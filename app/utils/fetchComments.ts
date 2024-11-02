@@ -18,7 +18,7 @@ export async function getProductComments(
 ): Promise<comments[]> {
     try {
         const response = await fetch(
-            `${process.env.NEXT_PUBLIC_API_URL}/api/comments?productId=${productId}`,
+            `${process.env.URL}/api/comments?productId=${productId}`,
             { method: "GET" }
         );
 
@@ -39,15 +39,12 @@ export async function createComment(
     data: CommentCreateData
 ): Promise<comments> {
     try {
-        const response = await fetch(
-            `${process.env.NEXT_PUBLIC_API_URL}/api/comments`,
-            {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                credentials: "include",
-                body: JSON.stringify(data),
-            }
-        );
+        const response = await fetch(`${process.env.URL}/api/comments`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            credentials: "include",
+            body: JSON.stringify(data),
+        });
 
         if (!response.ok) {
             const error = await response.json();
@@ -66,15 +63,12 @@ export async function updateComment(
     data: CommentUpdateData
 ): Promise<comments> {
     try {
-        const response = await fetch(
-            `${process.env.NEXT_PUBLIC_API_URL}/api/comments`,
-            {
-                method: "PATCH",
-                headers: { "Content-Type": "application/json" },
-                credentials: "include",
-                body: JSON.stringify(data),
-            }
-        );
+        const response = await fetch(`${process.env.URL}/api/comments`, {
+            method: "PATCH",
+            headers: { "Content-Type": "application/json" },
+            credentials: "include",
+            body: JSON.stringify(data),
+        });
 
         if (!response.ok) {
             const error = await response.json();
@@ -94,7 +88,7 @@ export async function deleteComment(
 ): Promise<{ message: string }> {
     try {
         const response = await fetch(
-            `${process.env.NEXT_PUBLIC_API_URL}/api/comments?id=${commentId}`,
+            `${process.env.URL}/api/comments?id=${commentId}`,
             {
                 method: "DELETE",
                 credentials: "include",

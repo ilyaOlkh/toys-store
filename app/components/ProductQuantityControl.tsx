@@ -8,6 +8,7 @@ import {
     removeCartItem,
     updateCartItem,
 } from "@/app/redux/cartSlice";
+import Image from "next/image";
 
 export function ProductQuantityControl({
     productId,
@@ -36,7 +37,13 @@ export function ProductQuantityControl({
         const isRemoveInNowPending = store.cart.nowPending.find(
             (item) => item.productId === productId && item.type === "remove"
         );
-
+        console.log(
+            isInCart,
+            isInQueue,
+            isRemoveInQueue,
+            isInNowPending,
+            isRemoveInNowPending
+        );
         return isInQueue
             ? isInQueue.type !== "remove" &&
                   !isRemoveInQueue &&
@@ -98,25 +105,22 @@ export function ProductQuantityControl({
     };
 
     return (
-        <div className="flex gap-4 mt-4">
+        <div className="flex gap-4 mt-4 flex-col items-start xs:flex-row">
             {/* Контроль количества */}
-            <div className="flex border border-[#E8E8E8] rounded-lg">
+            <div className="flex  rounded-lg border-2 border-blue1 items-stretch">
                 <button
                     onClick={() => handleQuantityChange(-1)}
-                    className="px-4 py-2 hover:bg-gray-50 text-xl font-medium"
+                    className="px-4 py-2 hover:bg-gray-50 text-xl font-medium rounded-l-lg"
                     disabled={isInCart ? cartQuantity === 1 : quantity === 1}
                 >
                     -
                 </button>
-                <input
-                    type="number"
-                    className="w-16 text-center border-x border-[#E8E8E8]"
-                    value={isInCart ? cartQuantity : quantity}
-                    readOnly
-                />
+                <div className="w-16 text-center border-blue1 outline-none flex items-center justify-center border-x-2">
+                    {isInCart ? cartQuantity : quantity}
+                </div>
                 <button
                     onClick={() => handleQuantityChange(1)}
-                    className="px-4 py-2 hover:bg-gray-50 text-xl font-medium"
+                    className="px-4 py-2 hover:bg-gray-50 text-xl font-medium rounded-r-lg"
                 >
                     +
                 </button>
@@ -125,12 +129,18 @@ export function ProductQuantityControl({
             {/* Кнопка добавления/удаления из корзины */}
             <button
                 onClick={handleCartAction}
-                className={`px-8 py-2 rounded-lg transition-colors ${
+                className={`px-8 py-2 rounded-lg transition-colors flex flex-nowrap gap-2 items-center min-h-12 ${
                     isInCart
                         ? "bg-red-500 hover:bg-red-600 text-white"
                         : "bg-[#0F83B2] hover:bg-[#0d7aa6] text-white"
                 }`}
             >
+                <Image
+                    src={"/cart-icon-white.svg"}
+                    width={25}
+                    height={25}
+                    alt={"cart icon"}
+                />
                 {isInCart ? "Remove from cart" : "Add to cart"}
             </button>
         </div>

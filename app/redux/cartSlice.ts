@@ -116,6 +116,7 @@ export const addCartItem = createAsyncThunk(
                     addToQueue({
                         type: "add",
                         productId: newCartItem.product_id,
+                        quantity: newCartItem.quantity,
                     })
                 );
                 return rejectWithValue("add to queue");
@@ -351,6 +352,9 @@ export const removeCartItem = createAsyncThunk(
                         productId: productId,
                     })
                 );
+
+                dispatch(clearQueue({ productId: productId }));
+
                 const cartItem = (getState() as RootState).cart.cart.find(
                     (item) => item.product_id === productId
                 );

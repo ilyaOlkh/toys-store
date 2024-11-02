@@ -99,7 +99,7 @@ export async function deleteComment(
                 method: "DELETE",
                 credentials: "include",
             }
-        );
+        ); //
 
         if (!response.ok) {
             const error = await response.json();

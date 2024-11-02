@@ -118,9 +118,9 @@ export async function fetchProductsByIds(
 export async function fetchUserRoles(userId: string): Promise<any> {
     try {
         const response = await fetch(
-            `${process.env.URL}/api/user/roles?userId=${encodeURIComponent(
-                userId
-            )}`, // Добавляем userId в строку запроса
+            `${
+                process.env.NEXT_PUBLIC_URL
+            }/api/user/roles?userId=${encodeURIComponent(userId)}`, // Добавляем userId в строку запроса
             {
                 method: "GET",
                 headers: {

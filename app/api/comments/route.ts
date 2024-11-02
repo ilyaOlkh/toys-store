@@ -17,12 +17,15 @@ async function getUserFromCookie(request: NextRequest) {
         if (!appSession) {
             return null;
         }
-        console.log(`${process.env.URL}/api/auth/me`);
-        const response = await axios.get(`${process.env.URL}/api/auth/me`, {
-            headers: {
-                Cookie: `appSession=${appSession}`,
-            },
-        });
+        console.log(`${process.env.NEXT_PUBLIC_URL}/api/auth/me`);
+        const response = await axios.get(
+            `${process.env.NEXT_PUBLIC_URL}/api/auth/me`,
+            {
+                headers: {
+                    Cookie: `appSession=${appSession}`,
+                },
+            }
+        );
         console.log(3);
         console.log(response.data);
 
@@ -39,7 +42,7 @@ async function getUserFromCookie(request: NextRequest) {
 async function isAdmin(userId: string) {
     try {
         const response = await axios.get(
-            `${process.env.URL}/api/user/roles?userId=${userId}`
+            `${process.env.NEXT_PUBLIC_URL}/api/user/roles?userId=${userId}`
         );
         return response.data.roles.some(
             (role: { name: string }) => role.name === "admin"

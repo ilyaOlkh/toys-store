@@ -53,6 +53,9 @@ export default function HeaderModal() {
                     "& .MuiDrawer-paper": {
                         width: 240,
                         boxSizing: "border-box",
+                        height: "100%",
+                        borderRadius: "0px",
+                        margin: "0px",
                     },
                 }}
                 className="block md:hidden"

@@ -1,16 +1,14 @@
+// components/CommentForm.tsx
 "use client";
-import { createComment } from "@/app/utils/fetchComments";
+
 import { Rating, Button, TextField } from "@mui/material";
-import { comments } from "@prisma/client";
 import { useState } from "react";
 
-const CommentForm = ({
-    productId,
-    onCommentAdded,
-}: {
-    productId: number;
-    onCommentAdded: (newComment: comments) => void;
-}) => {
+interface CommentFormProps {
+    onSubmit: (data: { comment: string; rating: number }) => Promise<void>;
+}
+
+const CommentForm = ({ onSubmit }: CommentFormProps) => {
     const [comment, setComment] = useState("");
     const [rating, setRating] = useState<number | null>(null);
     const [isSubmitting, setIsSubmitting] = useState(false);
@@ -31,13 +29,12 @@ const CommentForm = ({
         setError(null);
 
         try {
-            const newComment = await createComment({
-                product_id: productId,
+            await onSubmit({
                 comment: comment.trim(),
                 rating: rating,
             });
 
-            onCommentAdded(newComment);
+            // Очищаем форму после успешной отправки
             setComment("");
             setRating(null);
         } catch (err) {
@@ -62,6 +59,7 @@ const CommentForm = ({
                         setRating(newValue);
                         setError(null);
                     }}
+                    disabled={isSubmitting}
                     sx={{
                         "& .MuiRating-iconFilled": {
                             color: "#FFD700",
@@ -79,6 +77,7 @@ const CommentForm = ({
                     setComment(e.target.value);
                     setError(null);
                 }}
+                disabled={isSubmitting}
                 placeholder="Write your review here..."
                 variant="outlined"
                 className="mb-4"
@@ -97,7 +96,14 @@ const CommentForm = ({
                     },
                 }}
             >
-                {isSubmitting ? "Posting..." : "Post Review"}
+                {isSubmitting ? (
+                    <span className="flex items-center">
+                        Posting...
+                        <span className="ml-2 w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
+                    </span>
+                ) : (
+                    "Post Review"
+                )}
             </Button>
         </form>
     );

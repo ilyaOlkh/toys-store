@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { PrismaClient } from "@prisma/client";
 import axios from "axios";
+import { pusher } from "@/app/lib/pusher";
 
 const prisma = new PrismaClient();
 
@@ -115,6 +116,12 @@ export async function POST(request: NextRequest) {
             },
         });
 
+        await pusher.trigger(
+            `product-${product_id}`,
+            "comment:new",
+            newComment
+        );
+
         return NextResponse.json(newComment, { status: 201 });
     } catch (error) {
         console.error("Error creating comment:", error);
@@ -125,7 +132,6 @@ export async function POST(request: NextRequest) {
     }
 }
 
-// PATCH update comment
 export async function PATCH(request: NextRequest) {
     try {
         const user = await getUserFromCookie(request);
@@ -138,7 +144,7 @@ export async function PATCH(request: NextRequest) {
 
         const { id, comment, rating } = await request.json();
 
-        // Check if comment exists and belongs to user
+        // Проверяем существование комментария
         const existingComment = await prisma.comments.findUnique({
             where: { id: parseInt(id) },
         });
@@ -150,7 +156,9 @@ export async function PATCH(request: NextRequest) {
             );
         }
 
-        if (existingComment.user_identifier !== user.sub) {
+        // Проверяем права на редактирование
+        const userIsAdmin = await isAdmin(user.sub);
+        if (!userIsAdmin && existingComment.user_identifier !== user.sub) {
             return NextResponse.json(
                 { error: "Not authorized to edit this comment" },
                 { status: 403 }
@@ -165,6 +173,13 @@ export async function PATCH(request: NextRequest) {
                 edited_at: new Date(),
             },
         });
+
+        // Отправляем событие обновления через Pusher
+        await pusher.trigger(
+            `product-${existingComment.product_id}`,
+            "comment:update",
+            updatedComment
+        );
 
         return NextResponse.json(updatedComment);
     } catch (error) {
@@ -221,6 +236,12 @@ export async function DELETE(request: NextRequest) {
         await prisma.comments.delete({
             where: { id: parseInt(commentId) },
         });
+
+        await pusher.trigger(
+            `product-${existingComment.product_id}`,
+            "comment:delete",
+            { id: parseInt(commentId) }
+        );
 
         return NextResponse.json(
             { message: "Comment deleted successfully" },

@@ -2,10 +2,8 @@
 
 import React, { useState } from "react";
 import Image from "next/image";
-// Import Swiper React components
 import { Swiper, SwiperSlide } from "swiper/react";
-import { FreeMode, Navigation, Thumbs, Autoplay } from "swiper/modules";
-// Import Swiper styles
+import { FreeMode, Navigation, Thumbs } from "swiper/modules";
 import "swiper/css";
 import "swiper/css/free-mode";
 import "swiper/css/navigation";
@@ -20,6 +18,7 @@ interface ProductGalleryProps {
 
 export default function ProductGallery({ images }: ProductGalleryProps) {
     const [thumbsSwiper, setThumbsSwiper] = useState<any>(null);
+    const [thumbsSwiperLoaded, setThumbsSwiperLoaded] = useState(false);
 
     if (!images || images.length === 0) {
         return (
@@ -36,7 +35,7 @@ export default function ProductGallery({ images }: ProductGalleryProps) {
 
     return (
         <div className="w-full">
-            {/* Main Slider */}
+            {/* Main Gallery Container */}
             <div className="border border-lightGray1 rounded-3xl p-4">
                 <Swiper
                     spaceBetween={10}
@@ -61,9 +60,15 @@ export default function ProductGallery({ images }: ProductGalleryProps) {
                 </Swiper>
             </div>
 
-            {/* Thumbs Slider */}
+            {/* Thumbnails Container */}
             {images.length > 1 && (
-                <div className="mt-4">
+                <div
+                    className={`mt-4 ${
+                        thumbsSwiperLoaded
+                            ? ""
+                            : "pt-[calc(22.2222%-2.22222px-5.5px)]"
+                    }`}
+                >
                     <Swiper
                         onSwiper={setThumbsSwiper}
                         spaceBetween={10}
@@ -71,7 +76,10 @@ export default function ProductGallery({ images }: ProductGalleryProps) {
                         freeMode={true}
                         watchSlidesProgress={true}
                         modules={[FreeMode, Navigation, Thumbs]}
-                        className="product-thumbs-slider"
+                        className={`product-thumbs-slider ${
+                            thumbsSwiperLoaded ? "" : "opacity-0 h-0 max-h-0"
+                        } transition-opacity duration-300`}
+                        onInit={() => setThumbsSwiperLoaded(true)}
                     >
                         {images.map((image) => (
                             <SwiperSlide key={image.id}>

@@ -34,14 +34,14 @@ export default async function ProductPage(params: IParams) {
         <div className="flex justify-center">
             <div className="customContainer py-10">
                 {/* Product Info Section */}
-                <div className="flex flex-col gap-12 md:flex-row">
+                <div className="grid grid-cols-1 gap-12 md:grid-cols-2">
                     {/* Gallery Section */}
-                    <div className="w-full md:w-1/2">
+                    <div className="w-full">
                         <ProductGallery images={product.images} />
                     </div>
 
                     {/* Product Details Section */}
-                    <div className="w-full md:w-1/2 flex flex-col gap-6">
+                    <div className="w-full flex flex-col gap-6">
                         <h1 className="text-[32px] font-bold">
                             {product.name}
                         </h1>

@@ -169,35 +169,30 @@ const ProductTabs = ({
 
                     {error && <div className="text-red-500 mt-4">{error}</div>}
 
-                    {isLoading ? (
-                        <div className="text-center">Loading...</div>
-                    ) : (
-                        <div className="space-y-6">
-                            {comments.map((review) => {
-                                const userInfo =
-                                    usersInfo[review.user_identifier];
-                                const canDelete =
-                                    user &&
-                                    (user.sub === review.user_identifier ||
-                                        isAdmin);
+                    <div className="space-y-6">
+                        {comments.map((review) => {
+                            const userInfo = usersInfo[review.user_identifier];
+                            const canDelete =
+                                user &&
+                                (user.sub === review.user_identifier ||
+                                    isAdmin);
 
-                                return (
-                                    <ReviewCard
-                                        key={review.id}
-                                        review={review}
-                                        userInfo={userInfo}
-                                        onDelete={() =>
-                                            handleDeleteComment(review.id)
-                                        }
-                                        canDelete={canDelete}
-                                        isDeleting={deletingComments.includes(
-                                            review.id
-                                        )}
-                                    />
-                                );
-                            })}
-                        </div>
-                    )}
+                            return (
+                                <ReviewCard
+                                    key={review.id}
+                                    review={review}
+                                    userInfo={userInfo}
+                                    onDelete={() =>
+                                        handleDeleteComment(review.id)
+                                    }
+                                    canDelete={canDelete}
+                                    isDeleting={deletingComments.includes(
+                                        review.id
+                                    )}
+                                />
+                            );
+                        })}
+                    </div>
                 </div>
             </TabPanel>
         </div>

@@ -4,10 +4,9 @@
 import { useAppSelector } from "@/app/redux/hooks";
 import { UserInfo } from "@/app/types/users";
 import { fetchUsersInfo } from "@/app/utils/fetchUsers";
-import { Divider, Rating, Tab, Tabs } from "@mui/material";
-import { styled } from "@mui/material/styles";
+import { Divider, Rating } from "@mui/material";
 import { comments } from "@prisma/client";
-import { SyntheticEvent, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import CommentForm from "./CommentForm";
 import { selectIsAdmin } from "@/app/redux/userSlice";
 import ReviewCard from "./ReviewCard";
@@ -27,8 +26,16 @@ const ProductTabs = ({
     const [value, setValue] = useState(0);
     const [usersInfo, setUsersInfo] = useState<Record<string, UserInfo>>({});
     const [deletingComments, setDeletingComments] = useState<number[]>([]);
-    const { comments, isLoading, error, addComment, deleteComment } =
-        useComments(product_id, reviews);
+    const [updatingComments, setUpdatingComments] = useState<number[]>([]);
+
+    const {
+        comments,
+        isLoading,
+        error,
+        addComment,
+        deleteComment,
+        updateComment,
+    } = useComments(product_id, reviews);
     const user = useAppSelector((state) => state.user.user);
     const isAdmin = useAppSelector(selectIsAdmin);
 
@@ -76,6 +83,22 @@ const ProductTabs = ({
             await addComment(data);
         } catch (err) {
             console.error("Error submitting comment:", err);
+        }
+    };
+
+    const handleUpdateComment = async (
+        commentId: number,
+        data: { comment: string; rating: number }
+    ) => {
+        try {
+            setUpdatingComments((prev) => [...prev, commentId]);
+            await updateComment({ id: commentId, ...data });
+        } catch (err) {
+            console.error("Error updating comment:", err);
+        } finally {
+            setUpdatingComments((prev) =>
+                prev.filter((id) => id !== commentId)
+            );
         }
     };
 
@@ -133,6 +156,9 @@ const ProductTabs = ({
                         const canDelete =
                             user &&
                             (user.sub === review.user_identifier || isAdmin);
+                        const canUpdate =
+                            user &&
+                            (user.sub === review.user_identifier || isAdmin);
 
                         return (
                             <ReviewCard
@@ -140,8 +166,15 @@ const ProductTabs = ({
                                 review={review}
                                 userInfo={userInfo}
                                 onDelete={() => handleDeleteComment(review.id)}
+                                onUpdate={(data) =>
+                                    handleUpdateComment(review.id, data)
+                                }
                                 canDelete={canDelete}
+                                canUpdate={canUpdate}
                                 isDeleting={deletingComments.includes(
+                                    review.id
+                                )}
+                                isUpdating={updatingComments.includes(
                                     review.id
                                 )}
                             />

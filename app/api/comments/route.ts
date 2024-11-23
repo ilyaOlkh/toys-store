@@ -2,11 +2,12 @@ import { NextRequest, NextResponse } from "next/server";
 import { PrismaClient } from "@prisma/client";
 import axios from "axios";
 import { pusher } from "@/app/lib/pusher";
+import { Claims } from "@auth0/nextjs-auth0";
 
 const prisma = new PrismaClient();
 
 // Helper function to get user from Auth0 session cookie
-async function getUserFromCookie(request: NextRequest) {
+async function getUserFromCookie(request: NextRequest): Promise<Claims | null> {
     try {
         const appSession = request.cookies.get("appSession")?.value;
 
@@ -162,6 +163,7 @@ export async function PATCH(request: NextRequest) {
                 comment: comment,
                 rating: rating ? parseFloat(rating) : undefined,
                 edited_at: new Date(),
+                edited_by: user.sub,
             },
         });
 

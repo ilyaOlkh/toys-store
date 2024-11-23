@@ -1,9 +1,11 @@
 import ProductScreen from "@/app/components/productPage/productScreen";
+import { getUserIds } from "@/app/service/getUserIds";
 import { IParams } from "@/app/types/types";
 import { UserInfo } from "@/app/types/users";
 import { fetchProduct } from "@/app/utils/fetch";
 import { getProductComments } from "@/app/utils/fetchComments";
 import { fetchUsersInfo } from "@/app/utils/fetchUsers";
+import { comments } from "@prisma/client";
 
 // app/components/productPage/ProductPage.tsx (Server Component)
 export default async function ProductPage(params: IParams) {
@@ -19,9 +21,7 @@ export default async function ProductPage(params: IParams) {
     }
 
     const reviews = await getProductComments(product.id);
-    const users = await fetchUsersInfo(
-        Array.from(new Set(reviews.map((review) => review.user_identifier)))
-    );
+    const users = await fetchUsersInfo(getUserIds(reviews));
 
     const usersInfo = users.reduce(
         (acc: Record<string, UserInfo>, user: UserInfo) => {

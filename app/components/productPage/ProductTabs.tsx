@@ -11,6 +11,7 @@ import CommentForm from "./CommentForm";
 import { selectIsAdmin } from "@/app/redux/userSlice";
 import ReviewCard from "./ReviewCard";
 import { UpdateCommentData } from "@/app/hooks/useComments";
+import { getUserIds } from "@/app/service/getUserIds";
 
 interface ReviewsSectionProps {
     comments: comments[];
@@ -42,9 +43,7 @@ export default function ReviewsSection({
     useEffect(() => {
         const loadUserInfo = async () => {
             // Получаем все уникальные ID пользователей из комментариев
-            const allUserIds = Array.from(
-                new Set(comments.map((review) => review.user_identifier))
-            );
+            const allUserIds = getUserIds(comments);
 
             // Фильтруем только тех пользователей, информации о которых у нас еще нет
             const newUserIds = allUserIds.filter((id) => !usersInfo[id]);
@@ -165,6 +164,11 @@ export default function ReviewsSection({
                                 key={review.id}
                                 review={review}
                                 userInfo={userInfo}
+                                editorInfo={
+                                    review.edited_by
+                                        ? usersInfo[review.edited_by]
+                                        : undefined
+                                }
                                 onDelete={() => handleDeleteComment(review.id)}
                                 onUpdate={(data) =>
                                     handleUpdateComment(review.id, data)

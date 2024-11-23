@@ -6,7 +6,9 @@ export const fetchCache = "force-cache";
 export async function fetchUsersInfo(userIds: string[]): Promise<UserInfo[]> {
     try {
         const response = await fetch(
-            `/api/user/info?userIds=${userIds.join(",")}`,
+            `${
+                process.env.NEXT_PUBLIC_URL
+            }/api/user/info?userIds=${userIds.join(",")}`,
             {
                 method: "GET",
                 next: {

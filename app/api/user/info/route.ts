@@ -29,7 +29,7 @@ async function fetchUserInfo(
             Authorization: `Bearer ${accessToken}`,
             Accept: "application/json",
         },
-        next: { revalidate: 10 }, // кэш на час для каждого отдельного пользователя
+        next: { revalidate: Number(process.env.NEXT_PUBLIC_REVALIDATE) || 60 },
     });
 
     const data = await response.json();

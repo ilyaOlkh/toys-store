@@ -10,7 +10,7 @@ interface AddCommentData {
     rating: number;
 }
 
-interface UpdateCommentData {
+export interface UpdateCommentData {
     id: number;
     comment: string;
     rating?: number;

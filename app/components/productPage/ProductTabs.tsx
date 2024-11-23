@@ -10,32 +10,32 @@ import { useEffect, useState } from "react";
 import CommentForm from "./CommentForm";
 import { selectIsAdmin } from "@/app/redux/userSlice";
 import ReviewCard from "./ReviewCard";
-import { useComments } from "@/app/hooks/useComments";
+import { UpdateCommentData } from "@/app/hooks/useComments";
 
-interface ProductTabsProps {
-    description: string | null;
-    reviews: comments[];
-    product_id: number;
+interface ReviewsSectionProps {
+    comments: comments[];
+    initialUsersInfo: Record<string, UserInfo>;
+    isLoading: boolean;
+    error: string | null;
+    onAddComment: (data: { comment: string; rating: number }) => Promise<void>;
+    onDeleteComment: (commentId: number) => Promise<void>;
+    onUpdateComment: (data: UpdateCommentData) => Promise<void>;
 }
 
-const ProductTabs = ({
-    description,
-    reviews,
-    product_id,
-}: ProductTabsProps) => {
-    const [value, setValue] = useState(0);
-    const [usersInfo, setUsersInfo] = useState<Record<string, UserInfo>>({});
+export default function ReviewsSection({
+    comments,
+    initialUsersInfo,
+    isLoading,
+    error,
+    onAddComment,
+    onDeleteComment,
+    onUpdateComment,
+}: ReviewsSectionProps) {
+    const [usersInfo, setUsersInfo] =
+        useState<Record<string, UserInfo>>(initialUsersInfo);
     const [deletingComments, setDeletingComments] = useState<number[]>([]);
     const [updatingComments, setUpdatingComments] = useState<number[]>([]);
 
-    const {
-        comments,
-        isLoading,
-        error,
-        addComment,
-        deleteComment,
-        updateComment,
-    } = useComments(product_id, reviews);
     const user = useAppSelector((state) => state.user.user);
     const isAdmin = useAppSelector(selectIsAdmin);
 
@@ -80,7 +80,7 @@ const ProductTabs = ({
         rating: number;
     }) => {
         try {
-            await addComment(data);
+            await onAddComment(data);
         } catch (err) {
             console.error("Error submitting comment:", err);
         }
@@ -92,7 +92,7 @@ const ProductTabs = ({
     ) => {
         try {
             setUpdatingComments((prev) => [...prev, commentId]);
-            await updateComment({ id: commentId, ...data });
+            await onUpdateComment({ id: commentId, ...data });
         } catch (err) {
             console.error("Error updating comment:", err);
         } finally {
@@ -106,7 +106,7 @@ const ProductTabs = ({
         if (window.confirm("Are you sure you want to delete this comment?")) {
             try {
                 setDeletingComments((prev) => [...prev, commentId]);
-                await deleteComment(commentId);
+                await onDeleteComment(commentId);
             } catch (err) {
                 console.error("Error deleting comment:", err);
             } finally {
@@ -184,6 +184,4 @@ const ProductTabs = ({
             </div>
         </div>
     );
-};
-
-export default ProductTabs;
+}

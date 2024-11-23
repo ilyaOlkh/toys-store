@@ -25,7 +25,6 @@ export async function fetchProduct(
         const response = await fetch(
             `${process.env.NEXT_PUBLIC_API_URL}/api/products/${id}`
         );
-        console.log(response);
         if (!response.ok) {
             if (response.status === 404) {
                 return null;

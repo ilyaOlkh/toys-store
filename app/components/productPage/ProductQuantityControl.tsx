@@ -31,13 +31,7 @@ export function ProductQuantityControl({ productId }: { productId: number }) {
         const isRemoveInNowPending = store.cart.nowPending.find(
             (item) => item.productId === productId && item.type === "remove"
         );
-        console.log(
-            isInCart,
-            isInQueue,
-            isRemoveInQueue,
-            isInNowPending,
-            isRemoveInNowPending
-        );
+
         return isInQueue
             ? isInQueue.type !== "remove" &&
                   !isRemoveInQueue &&
@@ -88,7 +82,6 @@ export function ProductQuantityControl({ productId }: { productId: number }) {
         if (isInCart) {
             dispatch(removeCartItem(productId));
         } else {
-            console.log(quantity);
             dispatch(
                 addCartItem({
                     product_id: productId,

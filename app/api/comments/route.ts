@@ -8,17 +8,12 @@ const prisma = new PrismaClient();
 // Helper function to get user from Auth0 session cookie
 async function getUserFromCookie(request: NextRequest) {
     try {
-        console.log(1);
-
         const appSession = request.cookies.get("appSession")?.value;
-        console.log(2);
-
-        console.log(request.cookies.getAll());
 
         if (!appSession) {
             return null;
         }
-        console.log(`${process.env.NEXT_PUBLIC_URL}/api/auth/me`);
+
         const response = await axios.get(
             `${process.env.NEXT_PUBLIC_URL}/api/auth/me`,
             {
@@ -27,13 +22,9 @@ async function getUserFromCookie(request: NextRequest) {
                 },
             }
         );
-        console.log(3);
-        console.log(response.data);
 
         return response.data;
     } catch (error) {
-        console.log(4);
-
         console.error("Error getting user from cookie:", error);
         return null;
     }

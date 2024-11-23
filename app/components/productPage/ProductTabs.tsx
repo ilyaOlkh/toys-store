@@ -34,28 +34,39 @@ const ProductTabs = ({
 
     useEffect(() => {
         const loadUserInfo = async () => {
-            const userIds = Array.from(
+            // Получаем все уникальные ID пользователей из комментариев
+            const allUserIds = Array.from(
                 new Set(comments.map((review) => review.user_identifier))
             );
-            const users = await fetchUsersInfo(userIds);
-            const usersMap = users.reduce(
-                (acc: Record<string, UserInfo>, user: UserInfo) => {
-                    acc[user.user_id] = user;
-                    return acc;
-                },
-                {}
-            );
-            setUsersInfo(usersMap);
+
+            // Фильтруем только тех пользователей, информации о которых у нас еще нет
+            const newUserIds = allUserIds.filter((id) => !usersInfo[id]);
+
+            // Если нет новых пользователей, не делаем запрос
+            if (newUserIds.length === 0) {
+                return;
+            }
+
+            // Загружаем информацию только о новых пользователях
+            const users = await fetchUsersInfo(newUserIds);
+
+            // Обновляем состояние, сохраняя существующую информацию
+            setUsersInfo((prevUsersInfo) => ({
+                ...prevUsersInfo,
+                ...users.reduce(
+                    (acc: Record<string, UserInfo>, user: UserInfo) => {
+                        acc[user.user_id] = user;
+                        return acc;
+                    },
+                    {}
+                ),
+            }));
         };
 
         if (comments.length > 0) {
             loadUserInfo();
         }
-    }, [comments]);
-
-    const handleChange = (event: SyntheticEvent, newValue: number) => {
-        setValue(newValue);
-    };
+    }, [comments, usersInfo]);
 
     const handleCommentSubmit = async (data: {
         comment: string;
@@ -90,7 +101,6 @@ const ProductTabs = ({
     return (
         <div className="mt-16 flex flex-col gap-12">
             <Divider />
-
             <div className="flex flex-col gap-8">
                 <div className="flex items-center gap-4 mb-6">
                     <div className="text-4xl font-bold">

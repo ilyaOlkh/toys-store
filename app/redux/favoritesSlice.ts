@@ -157,7 +157,6 @@ export const addFavorite = createAsyncThunk(
                 return { type: "db", data: dbFavorite } as const;
             }
         } catch (error) {
-            console.log(error);
             return rejectWithValue("Не удалось добавить товар в избранное");
         }
     }
@@ -183,7 +182,6 @@ export const removeFavorite = createAsyncThunk(
                         item.productId === productId && item.type === "add"
                 )
             ) {
-                console.log("grgr");
                 dispatch(
                     addToQueue({
                         type: "remove",
@@ -260,7 +258,6 @@ export const setFavorites = createAsyncThunk(
         } else {
             const ids = favoriteItems.map((item) => item.product_id);
             const favoritesProducts = await fetchProductsByIds(ids);
-            console.log(favoritesProducts);
             dispatch(setProductsState(favoritesProducts));
         }
     }

@@ -38,7 +38,6 @@ export default function HeaderModal() {
         (state: RootState) => state.user.user?.name ?? state.user.user?.nickname
     );
     const isMobile = useMediaQuery("(max-width: 768px)");
-    console.log(menuOpen);
     return (
         isMobile && (
             <SwipeableDrawer

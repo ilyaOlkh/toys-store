@@ -191,7 +191,6 @@ export const addCartItem = createAsyncThunk(
                 return { type: "db", data: dbCartItem } as const;
             }
         } catch (error) {
-            console.log(error);
             return rejectWithValue("Не удалось добавить товар в избранное");
         }
     }
@@ -340,7 +339,6 @@ export const removeCartItem = createAsyncThunk(
                 const updatedCart = storedCart.filter(
                     (item) => item.product_id !== productId
                 );
-                console.log(updatedCart);
                 updateStoredCart(updatedCart);
 
                 dispatch(removeFromCart(productId));
@@ -478,14 +476,12 @@ const cartSlice = createSlice({
                     state.queue.push(action.payload);
                 }
             } else if (action.payload.type === "update") {
-                console.log(state.queue);
                 state.queue = state.queue.filter((item) => {
                     return (
                         item.productId !== action.payload.productId ||
                         item.type !== "update"
                     );
                 });
-                console.log(state.queue);
 
                 state.queue.push(action.payload);
             }

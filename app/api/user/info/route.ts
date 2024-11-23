@@ -2,6 +2,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import axios from "axios";
 
+export const dynamic = "force-dynamic";
+export const fetchCache = "force-cache";
+
 async function getMachineToMachineToken() {
     const response = await axios.post(
         `${process.env.AUTH0_ISSUER_BASE_URL}/oauth/token`,
@@ -14,6 +17,28 @@ async function getMachineToMachineToken() {
     );
 
     return response.data.access_token;
+}
+
+async function fetchUserInfo(
+    userId: string,
+    domain: string,
+    accessToken: string
+) {
+    const response = await fetch(`${domain}/api/v2/users/${userId}`, {
+        headers: {
+            Authorization: `Bearer ${accessToken}`,
+            Accept: "application/json",
+        },
+        next: { revalidate: 10 }, // кэш на час для каждого отдельного пользователя
+    });
+
+    const data = await response.json();
+
+    return {
+        user_id: data.user_id,
+        name: data.name || data.nickname,
+        picture: data.picture,
+    };
 }
 
 export async function GET(request: NextRequest) {
@@ -46,20 +71,10 @@ export async function GET(request: NextRequest) {
 
         // Получаем информацию о каждом пользователе
         const userPromises = userIdArray.map((userId) =>
-            axios.get(`${domain}/api/v2/users/${userId}`, {
-                headers: {
-                    Authorization: `Bearer ${accessToken}`,
-                    Accept: "application/json",
-                },
-            })
+            fetchUserInfo(userId, domain, accessToken)
         );
 
-        const responses = await Promise.all(userPromises);
-        const users = responses.map((response) => ({
-            user_id: response.data.user_id,
-            name: response.data.name || response.data.nickname,
-            picture: response.data.picture,
-        }));
+        const users = await Promise.all(userPromises);
 
         return NextResponse.json({
             message: "User info retrieved successfully",

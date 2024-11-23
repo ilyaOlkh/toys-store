@@ -28,7 +28,12 @@ export const useComments = (productId: number, initialComments: comments[]) => {
 
         // Обработка новых комментариев
         channel.bind("comment:new", (newComment: comments) => {
-            setComments((prevComments) => [newComment, ...prevComments]);
+            setComments((prevComments) => [
+                newComment,
+                ...prevComments.filter(
+                    (comment) => comment.id !== newComment.id
+                ),
+            ]);
         });
 
         // Обработка обновления комментариев
@@ -81,8 +86,14 @@ export const useComments = (productId: number, initialComments: comments[]) => {
                 throw new Error(errorData.error || "Failed to add comment");
             }
 
-            // Нет необходимости обновлять состояние здесь,
-            // так как это произойдет через Pusher
+            // Добавляем локальное обновление состояния
+            const newComment = await response.json();
+            setComments((prevComments) => [
+                newComment,
+                ...prevComments.filter(
+                    (comment) => comment.id !== newComment.id
+                ),
+            ]);
         } catch (err) {
             setError(
                 err instanceof Error ? err.message : "Failed to add comment"
@@ -116,7 +127,13 @@ export const useComments = (productId: number, initialComments: comments[]) => {
                 throw new Error(errorData.error || "Failed to update comment");
             }
 
-            // Обновление произойдет через Pusher
+            // Добавляем локальное обновление состояния
+            const updatedComment = await response.json();
+            setComments((prevComments) =>
+                prevComments.map((comment) =>
+                    comment.id === data.id ? updatedComment : comment
+                )
+            );
         } catch (err) {
             setError(
                 err instanceof Error ? err.message : "Failed to update comment"
@@ -146,7 +163,10 @@ export const useComments = (productId: number, initialComments: comments[]) => {
                 throw new Error(errorData.error || "Failed to delete comment");
             }
 
-            // Удаление произойдет через Pusher
+            // Добавляем локальное обновление состояния
+            setComments((prevComments) =>
+                prevComments.filter((comment) => comment.id !== commentId)
+            );
         } catch (err) {
             setError(
                 err instanceof Error ? err.message : "Failed to delete comment"

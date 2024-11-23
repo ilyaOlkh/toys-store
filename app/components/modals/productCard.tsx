@@ -40,10 +40,6 @@ export const ProductCard = ({
     const productInfo = productsState.products.find(
         (item: ProductType) => item.id === product.product_id
     );
-    console.log(
-        isAdding(productsState, product.product_id),
-        product.product_id
-    );
     if (isRemoving(productsState, product.product_id)) return null;
     if (isAdding(productsState, product.product_id)) {
         return (

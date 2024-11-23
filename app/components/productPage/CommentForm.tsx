@@ -49,10 +49,10 @@ const CommentForm = ({ onSubmit }: CommentFormProps) => {
     return (
         <form
             onSubmit={handleSubmit}
-            className="mb-8 border-b border-[#E8E8E8] pb-8"
+            className="mb-8 border-b border-[#E8E8E8] pb-8 flex flex-col gap-4 items-start"
         >
-            <div className="mb-4">
-                <div className="mb-2">Your rating</div>
+            <div className=" flex flex-col gap-2 items-start">
+                <div>Your rating</div>
                 <Rating
                     value={rating}
                     onChange={(_, newValue) => {
@@ -80,7 +80,6 @@ const CommentForm = ({ onSubmit }: CommentFormProps) => {
                 disabled={isSubmitting}
                 placeholder="Write your review here..."
                 variant="outlined"
-                className="mb-4"
                 error={!!error}
                 helperText={error}
             />

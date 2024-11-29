@@ -1,5 +1,3 @@
-"use server";
-
 import { Filter } from "../types/filters";
 
 // Определяем все фильтры с их серверной логикой

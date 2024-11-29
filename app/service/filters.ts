@@ -1,3 +1,5 @@
+"use server";
+
 import { serverFilters } from "../constants/filtersSettings";
 import { ActiveFilter, ClientFilter } from "../types/filters";
 import { Prisma } from "@prisma/client";
@@ -5,7 +7,7 @@ import { Prisma } from "@prisma/client";
 /**
  * Получает фильтры без серверной логики для использования на клиенте
  */
-export function getClientFilters(): ClientFilter[] {
+export async function getClientFilters() {
     return serverFilters.map(
         ({ prismaQuery, ...clientFilter }) => clientFilter
     );
@@ -15,9 +17,7 @@ export function getClientFilters(): ClientFilter[] {
  * Строит Prisma запрос на основе активных фильтров
  * @param activeFilters - массив активных фильтров с их значениями
  */
-export function buildPrismaQuery(
-    activeFilters: ActiveFilter[]
-): Prisma.productsWhereInput {
+export async function buildPrismaQuery(activeFilters: ActiveFilter[]) {
     const whereConditions = activeFilters
         .map(({ name, value }) => {
             const filter = serverFilters.find((f) => f.name === name);

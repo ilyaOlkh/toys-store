@@ -3,7 +3,7 @@ import { createSlice, createAsyncThunk, PayloadAction } from "@reduxjs/toolkit";
 import { ProductType } from "@/app/types/types";
 import { ClientFilter, FilterValue } from "../types/filters";
 
-interface ProductsState {
+export interface ProductsState {
     products: ProductType[];
     filterValues: {
         [key: string]: FilterValue;

@@ -1,6 +1,10 @@
+"use client";
+
 import React from "react";
 import { ProductType } from "@/app/types/types";
 import { ProductCard } from "@/app/components/productCard";
+import { ProductsStoreProvider, useProducts } from "../ProductsContext";
+import { ClientFilter } from "@/app/types/filters";
 
 const categories = [
     { id: "playsets", name: "Playsets" },
@@ -12,11 +16,37 @@ const categories = [
     { id: "type-2", name: "Type 2" },
 ];
 
+interface ProductsStoreProviderProps {
+    initialProducts: ProductType[];
+    initialFilters: ClientFilter[];
+}
+
 export default function ProductsListScreen({
-    products,
-}: {
-    products: ProductType[];
-}) {
+    initialProducts,
+    initialFilters,
+}: ProductsStoreProviderProps) {
+    return (
+        <ProductsStoreProvider
+            initialProducts={initialProducts}
+            filters={initialFilters}
+        >
+            <ProductsContent />;
+        </ProductsStoreProvider>
+    );
+}
+
+function ProductsContent() {
+    const {
+        products,
+        filterValues,
+        filterConfigs,
+        sort,
+        loading,
+        error,
+        isInitialized,
+        dispatch,
+    } = useProducts();
+
     return (
         <div className="flex justify-center">
             <div className="customContainer py-8">

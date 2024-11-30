@@ -31,6 +31,7 @@ export async function POST(request: NextRequest) {
         // Загружаем изображение в Cloudinary по указанному пути
         const uploadResponse = await cloudinary.uploader.upload(dataUrl, {
             folder: uploadPath, // Сохраняем изображение в указанную папку
+            phash: true,
         });
         // Возвращаем URL загруженного изображения
         return NextResponse.json({
@@ -40,6 +41,37 @@ export async function POST(request: NextRequest) {
         console.error("Error while trying to upload a file to Cloudinary\n", e);
         return NextResponse.json(
             { error: "Something went wrong during file upload." },
+            { status: 500 }
+        );
+    }
+}
+
+export async function DELETE(request: NextRequest) {
+    try {
+        const { searchParams } = new URL(request.url);
+        const publicId = searchParams.get("publicId");
+
+        if (!publicId) {
+            return NextResponse.json(
+                { error: "Public ID is required" },
+                { status: 400 }
+            );
+        }
+
+        // Удаляем изображение из Cloudinary
+        const result = await cloudinary.uploader.destroy(publicId);
+
+        if (result.result === "ok") {
+            return NextResponse.json({
+                message: "Image successfully deleted from Cloudinary",
+            });
+        } else {
+            throw new Error("Failed to delete image from Cloudinary");
+        }
+    } catch (error) {
+        console.error("Error deleting image from Cloudinary:", error);
+        return NextResponse.json(
+            { error: "Failed to delete image from Cloudinary" },
             { status: 500 }
         );
     }

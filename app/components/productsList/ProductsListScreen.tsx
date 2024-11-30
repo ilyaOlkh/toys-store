@@ -32,7 +32,7 @@ export default function ProductsListScreen({
             initialProducts={initialProducts}
             filters={initialFilters}
         >
-            <ProductsContent />;
+            <ProductsContent />
         </ProductsStoreProvider>
     );
 }

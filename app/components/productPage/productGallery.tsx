@@ -4,7 +4,7 @@ import React, { useState } from "react";
 import Image from "next/image";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { FreeMode, Navigation, Thumbs } from "swiper/modules";
-import { Plus } from "lucide-react";
+import { Plus, X } from "lucide-react";
 import "swiper/css";
 import "swiper/css/free-mode";
 import "swiper/css/navigation";
@@ -38,6 +38,7 @@ export default function ProductGallery({
         []
     );
     const [isUploading, setIsUploading] = useState(false);
+    const [deletingImageIds, setDeletingImageIds] = useState<number[]>([]);
 
     const allImages = [
         ...images,
@@ -72,12 +73,36 @@ export default function ProductGallery({
             console.error("Error uploading images:", error);
         } finally {
             setIsUploading(false);
-            // Clean up successful uploads after a delay
-            // setTimeout(() => {
-            //     setUploadingImages((prev) =>
-            //         prev.filter((img) => img.status !== "success")
-            //     );
-            // }, 1000);
+        }
+    };
+
+    const handleDeleteImage = async (imageId: number) => {
+        if (confirm("Are you sure you want to delete this image?")) {
+            try {
+                setDeletingImageIds((prev) => [...prev, imageId]);
+
+                const response = await fetch(
+                    process.env.NEXT_PUBLIC_API_URL +
+                        `/api/products/upload-img?imageId=${imageId}`,
+                    {
+                        method: "DELETE",
+                    }
+                );
+
+                if (!response.ok) {
+                    throw new Error("Failed to delete image");
+                }
+
+                // Перезагрузка страницы или обновление списка изображений
+                window.location.reload();
+            } catch (error) {
+                console.error("Error deleting image:", error);
+                alert("Failed to delete image");
+            } finally {
+                setDeletingImageIds((prev) =>
+                    prev.filter((id) => id !== imageId)
+                );
+            }
         }
     };
 
@@ -122,7 +147,7 @@ export default function ProductGallery({
                     >
                         {allImages.map((image) => (
                             <SwiperSlide key={image.id}>
-                                <div className="relative aspect-square w-full">
+                                <div className="group relative aspect-square w-full">
                                     <Image
                                         src={image.url}
                                         alt="Product image"
@@ -130,6 +155,25 @@ export default function ProductGallery({
                                         className="object-contain"
                                         priority
                                     />
+                                    {isAdmin && allImages.length === 1 && (
+                                        <button
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                handleDeleteImage(image.id);
+                                            }}
+                                            className={`absolute z-10 top-0 right-0 p-2 rounded-lg bg-white/70 hover:bg-white/90 transition-colors 
+                                    ${
+                                        deletingImageIds.includes(image.id)
+                                            ? "opacity-50 cursor-not-allowed"
+                                            : "opacity-0 group-hover:opacity-100"
+                                    }`}
+                                            disabled={deletingImageIds.includes(
+                                                image.id
+                                            )}
+                                        >
+                                            <X className="w-8 h-8 relative z-10 text-red-500" />
+                                        </button>
+                                    )}
                                 </div>
                             </SwiperSlide>
                         ))}
@@ -178,13 +222,34 @@ export default function ProductGallery({
                         >
                             {allImages.map((image) => (
                                 <SwiperSlide key={image.id}>
-                                    <div className="relative aspect-square border border-lightGray1 rounded-xl p-2 cursor-pointer">
+                                    <div className="relative aspect-square border border-lightGray1 rounded-xl p-2 cursor-pointer group">
                                         <Image
                                             src={image.url}
                                             alt="Product thumbnail"
                                             fill
-                                            className="object-contain rounded-lg"
+                                            className="object-contain rounded-xl"
                                         />
+                                        {isAdmin && (
+                                            <button
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    handleDeleteImage(image.id);
+                                                }}
+                                                className={`absolute top-1 right-1 p-1 rounded-lg bg-white/70 hover:bg-white/90 transition-colors 
+                                                    ${
+                                                        deletingImageIds.includes(
+                                                            image.id
+                                                        )
+                                                            ? "opacity-50 cursor-not-allowed"
+                                                            : "opacity-0 group-hover:opacity-100"
+                                                    }`}
+                                                disabled={deletingImageIds.includes(
+                                                    image.id
+                                                )}
+                                            >
+                                                <X className="w-4 h-4 text-red-500" />
+                                            </button>
+                                        )}
                                     </div>
                                 </SwiperSlide>
                             ))}

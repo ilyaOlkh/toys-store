@@ -88,10 +88,10 @@ export default function RangeSlider({
                 </FormLabel>
             </AccordionSummary>
             <AccordionDetails
-                className="flex flex-col pt-0 px-4"
+                className="flex flex-col pt-0"
                 sx={{
-                    paddingLeft: 1,
-                    paddingRight: 1,
+                    paddingLeft: 2,
+                    paddingRight: 2,
                     paddingBottom: 0,
                     paddingTop: 0,
                 }}

@@ -22,14 +22,14 @@ interface BaseFilter {
 interface SelectFilter extends BaseFilter {
     type: "select";
     options: { value: string; label: string }[];
-    prismaQuery?: (value: string) => Prisma.productsWhereInput;
+    prismaQuery: (value: string) => Prisma.productsWhereInput;
 }
 
 interface RangeFilter extends BaseFilter {
     type: "range";
     min: number;
     max: number;
-    prismaQuery?: (value: {
+    prismaQuery: (value: {
         from: number;
         to: number;
     }) => Prisma.productsWhereInput;
@@ -38,12 +38,12 @@ interface RangeFilter extends BaseFilter {
 interface MultiSelectFilter extends BaseFilter {
     type: "multi-select";
     options: { value: string; label: string }[];
-    prismaQuery?: (values: string[]) => Prisma.productsWhereInput;
+    prismaQuery: (values: string[]) => Prisma.productsWhereInput;
 }
 
 interface ToggleFilter extends BaseFilter {
     type: "toggle";
-    prismaQuery?: (value: boolean) => Prisma.productsWhereInput;
+    prismaQuery: (value: boolean) => Prisma.productsWhereInput;
 }
 
 export type Filter =
@@ -52,7 +52,11 @@ export type Filter =
     | MultiSelectFilter
     | ToggleFilter;
 
-export type ClientFilter = Omit<Filter, "prismaQuery">;
+export type ClientFilter =
+    | Omit<SelectFilter, "prismaQuery">
+    | Omit<RangeFilter, "prismaQuery">
+    | Omit<MultiSelectFilter, "prismaQuery">
+    | Omit<ToggleFilter, "prismaQuery">;
 
 export interface ActiveFilter {
     name: string;

@@ -31,43 +31,50 @@ const initialState: ProductsState = {
     isInitialized: false,
 };
 
-export const fetchFilteredProducts = createAsyncThunk(
-    "products/fetchFilteredProducts",
-    async (_, { getState }) => {
-        const state = getState() as { products: ProductsState };
+export const fetchFilteredProducts = createAsyncThunk<
+    ProductType[],
+    void,
+    { state: { products: ProductsState } }
+>("products/fetchFiltered", async (_, { getState }) => {
+    const state = getState();
+    const { filterValues } = state.products;
 
-        const activeFilters = Object.entries(state.products.filterValues)
-            .filter(([name, filter]) => {
-                const config = state.products.filterConfigs.find(
-                    (f) => f.name === name
-                );
-                return filter !== config?.defaultValue;
-            })
-            .map(([name, filter]) => ({
-                name,
-                value: filter,
-            }));
-
-        const response = await fetch(
-            `${process.env.NEXT_PUBLIC_API_URL}/api/products/filter`,
-            {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify({
-                    filters: activeFilters,
-                    sort: state.products.sort,
-                }),
-            }
-        );
-
-        if (!response.ok) {
-            throw new Error("Failed to fetch products");
-        }
-        return response.json();
+    // Преобразуем фильтры в query параметры
+    const params = new URLSearchParams();
+    if (Object.keys(filterValues).length > 0) {
+        params.append("filters", JSON.stringify(filterValues));
     }
-);
+
+    // Выполняем запрос
+    const response = await fetch(
+        `${
+            process.env.NEXT_PUBLIC_URL
+        }/api/products/filtered?${params.toString()}`,
+        {
+            method: "GET",
+            headers: {
+                "Content-Type": "application/json",
+            },
+        }
+    );
+
+    if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const data = await response.json();
+    return data.products;
+});
+
+export const setFilter = createAsyncThunk<
+    void,
+    { name: string; value: FilterValue },
+    { state: { products: ProductsState } }
+>("products/setFilter", async ({ name, value }, { dispatch, getState }) => {
+    // Сначала устанавливаем фильтр
+    dispatch(setFilterState({ name, value }));
+    dispatch(fetchFilteredProducts());
+});
 
 const productsSlice = createSlice({
     name: "products",
@@ -95,7 +102,7 @@ const productsSlice = createSlice({
 
             state.isInitialized = true;
         },
-        setFilter: (
+        setFilterState: (
             state,
             action: PayloadAction<{ name: string; value: FilterValue }>
         ) => {
@@ -113,6 +120,8 @@ const productsSlice = createSlice({
                 // Просто устанавливаем новое значение
                 state.filterValues[name] = value;
             }
+
+            fetchFilteredProducts();
         },
         setSort: (state, action: PayloadAction<ProductsState["sort"]>) => {
             state.sort = action.payload;
@@ -146,7 +155,7 @@ const productsSlice = createSlice({
     },
 });
 
-export const { initializeProducts, setFilter, setSort, resetFilters } =
+export const { initializeProducts, setFilterState, setSort, resetFilters } =
     productsSlice.actions;
 
 export default productsSlice.reducer;

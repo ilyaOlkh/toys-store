@@ -5,6 +5,8 @@ import { ProductType } from "@/app/types/types";
 import { ProductCard } from "@/app/components/productCard";
 import { ProductsStoreProvider, useProducts } from "../ProductsContext";
 import { ClientFilter } from "@/app/types/filters";
+import { FiltersList } from "./FiltersList";
+import { setFilter } from "@/app/redux/productsSlice";
 
 const categories = [
     { id: "playsets", name: "Playsets" },
@@ -54,51 +56,15 @@ function ProductsContent() {
                     {/* Sidebar */}
                     <div className="hidden md:block w-[240px] flex-shrink-0">
                         <div className="flex flex-col gap-6">
-                            {/* Categories */}
-                            <div className="border border-lightGray1 rounded-xl p-4">
-                                <div className="flex flex-col gap-4">
-                                    <h2 className="text-xl font-bold">
-                                        Product categories
-                                    </h2>
-                                    <div className="flex flex-col gap-3">
-                                        {categories.map((category) => (
-                                            <button
-                                                key={category.id}
-                                                className="flex items-center text-left hover:text-blue1"
-                                            >
-                                                <span className="text-xl pr-2">
-                                                    +
-                                                </span>
-                                                {category.name}
-                                            </button>
-                                        ))}
-                                    </div>
-                                </div>
-                            </div>
-
-                            {/* Price Filter */}
-                            <div className="border border-lightGray1 rounded-xl p-4">
-                                <div className="flex flex-col gap-4">
-                                    <h2 className="text-xl font-bold">
-                                        Filter by price
-                                    </h2>
-                                    <input
-                                        type="range"
-                                        className="w-full"
-                                        min="20"
-                                        max="200"
-                                        step="1"
-                                    />
-                                    <div className="flex items-center gap-2">
-                                        <span className="text-gray1">$20</span>
-                                        <div className="h-px bg-gray1 flex-grow"></div>
-                                        <span className="text-gray1">$200</span>
-                                    </div>
-                                    <button className="bg-blue1 text-white py-2 px-4 rounded-lg hover:bg-opacity-90">
-                                        Apply
-                                    </button>
-                                </div>
-                            </div>
+                            {/* Filters */}
+                            <FiltersList
+                                filterConfigs={filterConfigs}
+                                filterValues={filterValues}
+                                onFilterChange={(name, value) => {
+                                    dispatch(setFilter({ name, value }));
+                                }}
+                            />
+                            {JSON.stringify(filterValues)}
                         </div>
                     </div>
 

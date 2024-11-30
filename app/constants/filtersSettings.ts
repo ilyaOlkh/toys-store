@@ -1,15 +1,17 @@
 import { Filter } from "../types/filters";
 
-// Определяем все фильтры с их серверной логикой
 export const serverFilters: Filter[] = [
     {
-        name: "category",
+        name: "Типи",
         type: "select",
         defaultValue: null,
-        title: "Category",
+        title: "Типи",
         options: [
-            { value: "toys", label: "Toys" },
-            { value: "electronics", label: "Electronics" },
+            { value: "Набори для гри", label: "Набори для гри" },
+            { value: "Іграшки для керування", label: "Іграшки для керування" },
+            { value: "Навчальні іграшки", label: "Навчальні іграшки" },
+            { value: "Еко-іграшки", label: "Еко-іграшки" },
+            { value: "М'які іграшки", label: "М'які іграшки" },
         ],
         prismaQuery: (value) => ({
             types: {
@@ -24,10 +26,10 @@ export const serverFilters: Filter[] = [
     {
         name: "price",
         type: "range",
-        defaultValue: { from: 0, to: 1000 },
+        defaultValue: { from: 0, to: 10000 },
         title: "Price",
         min: 0,
-        max: 1000,
+        max: 10000,
         prismaQuery: (value) => ({
             AND: [{ price: { gte: value.from } }, { price: { lte: value.to } }],
         }),

@@ -23,7 +23,13 @@ export async function fetchProduct(
 ): Promise<(ProductType & ProductDetailType) | null> {
     try {
         const response = await fetch(
-            `${process.env.NEXT_PUBLIC_API_URL}/api/products/${id}`
+            `${process.env.NEXT_PUBLIC_API_URL}/api/products/${id}`,
+            {
+                next: {
+                    revalidate:
+                        Number(process.env.NEXT_PUBLIC_REVALIDATE) || 60,
+                },
+            }
         );
         if (!response.ok) {
             if (response.status === 404) {

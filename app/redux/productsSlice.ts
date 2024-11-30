@@ -64,6 +64,9 @@ export const fetchFilteredProducts = createAsyncThunk<
             headers: {
                 "Content-Type": "application/json",
             },
+            next: {
+                revalidate: Number(process.env.NEXT_PUBLIC_REVALIDATE) || 60,
+            },
         }
     );
 

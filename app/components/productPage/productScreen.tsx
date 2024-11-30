@@ -47,7 +47,10 @@ export default function ProductScreen({
             <div className="customContainer py-10">
                 <div className="grid grid-cols-1 gap-12 md:grid-cols-2">
                     <div className="w-full">
-                        <ProductGallery images={product.images} />
+                        <ProductGallery
+                            images={product.images}
+                            productSku={product.sku_code}
+                        />
                     </div>
 
                     <div className="w-full flex flex-col gap-6">

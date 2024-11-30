@@ -16,12 +16,14 @@ interface RangeSliderProps {
     config: Omit<RangeFilter, "prismaQuery">;
     value: { from: number; to: number };
     onChange: (value: FilterValue) => void;
+    defaultExpanded?: boolean;
 }
 
 export default function RangeSlider({
     config,
     value,
     onChange,
+    defaultExpanded,
 }: RangeSliderProps) {
     const initialValue = {
         from: value?.from ?? config.min,
@@ -70,7 +72,7 @@ export default function RangeSlider({
     if (config.type !== "range") return null;
 
     return (
-        <Accordion defaultExpanded elevation={0}>
+        <Accordion defaultExpanded={defaultExpanded} elevation={0}>
             <AccordionSummary
                 expandIcon={<ExpandMoreIcon />}
                 className="hover:bg-gray-50"

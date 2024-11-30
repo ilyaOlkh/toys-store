@@ -15,6 +15,7 @@ interface SelectFilterProps {
     config: ClientFilter;
     value: FilterValue;
     onChange: (value: FilterValue) => void;
+    defaultExpanded?: boolean;
 }
 
 const CustomRadio = (props: RadioProps) => {
@@ -49,6 +50,7 @@ export default function SelectFilter({
     config,
     value,
     onChange,
+    defaultExpanded,
 }: SelectFilterProps) {
     const [selectedValue, setSelectedValue] = useState<FilterValue>(value);
 
@@ -68,7 +70,7 @@ export default function SelectFilter({
     if (config.type !== "select") return null;
 
     return (
-        <Accordion defaultExpanded elevation={0}>
+        <Accordion defaultExpanded={defaultExpanded} elevation={0}>
             <AccordionSummary
                 expandIcon={<ExpandMoreIcon />}
                 className="hover:bg-gray-50"
@@ -78,10 +80,8 @@ export default function SelectFilter({
                 </FormLabel>
             </AccordionSummary>
             <AccordionDetails
-                className="flex flex-col gap-1 pt-0 px-4"
+                className="flex flex-col gap-1 px-4"
                 sx={{
-                    paddingLeft: 0,
-                    paddingRight: 0,
                     paddingBottom: 0,
                     paddingTop: 0,
                 }}

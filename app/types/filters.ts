@@ -16,6 +16,7 @@ interface BaseFilter {
     type: FilterType;
     defaultValue: any;
     title: string; // Человекочитаемое название для UI
+    defaultExpanded?: boolean;
 }
 
 // Определяем типы для разных видов фильтров

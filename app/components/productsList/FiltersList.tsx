@@ -14,11 +14,18 @@ export function FiltersList({
     onFilterChange,
 }: FiltersListProps) {
     return (
-        <div className="flex flex-col gap-4 border border-lightGray1 rounded-xl">
+        <div className="flex flex-col border border-lightGray1 rounded-xl">
             <h2 className="text-xl font-bold p-4">Фільтри</h2>
             <div className="flex flex-col">
                 {filterConfigs.map((config, index) => (
-                    <div key={config.name}>
+                    <div
+                        key={config.name}
+                        className={
+                            index === filterConfigs.length - 1
+                                ? "rounded-b-xl overflow-hidden"
+                                : ""
+                        }
+                    >
                         <Filter
                             config={config}
                             value={

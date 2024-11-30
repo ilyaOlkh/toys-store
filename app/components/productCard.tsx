@@ -117,8 +117,8 @@ export function ProductCard({
                 <div className="border-lightGray1 border size-full rounded-3xl p-2">
                     <Image
                         src={img}
-                        width={400}
-                        height={400}
+                        width={600}
+                        height={600}
                         alt="product img"
                         className="rounded-3xl"
                     />

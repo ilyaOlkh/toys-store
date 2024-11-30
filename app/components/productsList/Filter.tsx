@@ -17,6 +17,7 @@ export function Filter({ config, value, onChange }: FilterProps) {
                     config={config}
                     value={value}
                     onChange={onChange}
+                    defaultExpanded={config.defaultExpanded}
                 />
             );
 
@@ -26,6 +27,7 @@ export function Filter({ config, value, onChange }: FilterProps) {
                     config={config}
                     value={value as { from: number; to: number }}
                     onChange={onChange}
+                    defaultExpanded={config.defaultExpanded}
                 />
             );
 

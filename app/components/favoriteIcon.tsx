@@ -47,5 +47,3 @@ export default function FavoriteIcon() {
         </Button>
     );
 }
-
-// "/icons/heart-filled.png"

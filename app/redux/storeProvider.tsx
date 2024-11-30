@@ -1,5 +1,5 @@
 "use client";
-import { useRef } from "react";
+import { useEffect, useRef } from "react";
 import { Provider } from "react-redux";
 import { makeStore, AppStore } from "./store";
 import { setUser, setUserRoles } from "./userSlice"; // Экшен для установки пользователя
@@ -33,11 +33,26 @@ export default function StoreProvider({
     children: React.ReactNode;
 }) {
     const storeRef = useRef<AppStore | null>(null);
+
+    useEffect(() => {
+        if (!storeRef.current) {
+            storeRef.current = makeStore();
+        }
+        if (!favorites) {
+            initializeFavorites(storeRef.current, favorites, favoritesProducts);
+        }
+        if (!cartItems) {
+            initializeCart(storeRef.current, cartItems, cartProducts);
+        }
+    });
+
     if (!storeRef.current) {
         storeRef.current = makeStore();
         initializeUser(storeRef.current, initialUser, userRoles);
-        initializeFavorites(storeRef.current, favorites, favoritesProducts);
-        initializeCart(storeRef.current, cartItems, cartProducts);
+        if (favorites)
+            initializeFavorites(storeRef.current, favorites, favoritesProducts);
+        if (cartItems)
+            initializeCart(storeRef.current, cartItems, cartProducts);
     }
 
     return <Provider store={storeRef.current}>{children}</Provider>;

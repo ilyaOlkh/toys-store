@@ -64,7 +64,6 @@ function ProductsContent() {
                                     dispatch(setFilter({ name, value }));
                                 }}
                             />
-                            {JSON.stringify(filterValues)}
                         </div>
                     </div>
 
@@ -116,7 +115,7 @@ function ProductsContent() {
                             </div>
 
                             {/* Product Grid */}
-                            <div className="grid grid-cols-1 gap-6 sm:grid-cols-[repeat(auto-fit,minmax(280px,1fr))]">
+                            <div className="grid grid-cols-1 gap-6 sm:grid-cols-[repeat(auto-fill,minmax(280px,1fr))]">
                                 {products.map((product) => (
                                     <ProductCard
                                         key={product.id}

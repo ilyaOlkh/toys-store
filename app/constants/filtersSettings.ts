@@ -2,7 +2,7 @@ import { Filter } from "../types/filters";
 
 export const serverFilters: Filter[] = [
     {
-        name: "Типи",
+        name: "типи",
         type: "select",
         defaultValue: null,
         title: "Типи",
@@ -22,28 +22,17 @@ export const serverFilters: Filter[] = [
                 },
             },
         }),
+        defaultExpanded: true,
     },
     {
-        name: "price",
+        name: "ціна",
         type: "range",
         defaultValue: { from: 0, to: 10000 },
-        title: "Price",
+        title: "Ціна",
         min: 0,
         max: 10000,
         prismaQuery: (value) => ({
             AND: [{ price: { gte: value.from } }, { price: { lte: value.to } }],
         }),
-    },
-    {
-        name: "inStock",
-        type: "toggle",
-        defaultValue: false,
-        title: "In Stock",
-        prismaQuery: (value) =>
-            value
-                ? {
-                      stock_quantity: { gt: 0 },
-                  }
-                : {},
     },
 ];

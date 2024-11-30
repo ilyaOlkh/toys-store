@@ -1,6 +1,7 @@
 import { ClientFilter, FilterValue } from "@/app/types/filters";
 import SelectFilter from "./SelectFilter";
 import { Radio } from "@mui/material";
+import RangeSlider from "./RangeSlider";
 
 interface FilterProps {
     config: ClientFilter;
@@ -20,43 +21,12 @@ export function Filter({ config, value, onChange }: FilterProps) {
             );
 
         case "range":
-            const rangeValue = (value as { from: number; to: number }) || {
-                from: config.min,
-                to: config.max,
-            };
             return (
-                <div className="flex flex-col gap-2">
-                    <label className="font-medium">{config.title}</label>
-                    <div className="flex gap-2 items-center">
-                        <input
-                            type="number"
-                            min={config.min}
-                            max={config.max}
-                            value={rangeValue.from}
-                            onChange={(e) =>
-                                onChange({
-                                    ...rangeValue,
-                                    from: Number(e.target.value),
-                                })
-                            }
-                            className="p-2 border border-lightGray1 rounded-lg w-24"
-                        />
-                        <span>-</span>
-                        <input
-                            type="number"
-                            min={config.min}
-                            max={config.max}
-                            value={rangeValue.to}
-                            onChange={(e) =>
-                                onChange({
-                                    ...rangeValue,
-                                    to: Number(e.target.value),
-                                })
-                            }
-                            className="p-2 border border-lightGray1 rounded-lg w-24"
-                        />
-                    </div>
-                </div>
+                <RangeSlider
+                    config={config}
+                    value={value as { from: number; to: number }}
+                    onChange={onChange}
+                />
             );
 
         case "multi-select":
@@ -101,7 +71,7 @@ export function Filter({ config, value, onChange }: FilterProps) {
 
         case "toggle":
             return (
-                <label className="flex items-center gap-2">
+                <label className="flex items-center gap-2 p-4">
                     <input
                         type="checkbox"
                         checked={value as boolean}

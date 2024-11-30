@@ -60,7 +60,11 @@ function initializeFavorites(
     favoritesProducts: ProductType[] | undefined
 ) {
     const favoritesArr =
-        favorites ?? JSON.parse(localStorage.getItem("favoritesToys") ?? "[]");
+        favorites ??
+        (typeof window !== "undefined"
+            ? JSON.parse(localStorage.getItem("favoritesToys") ?? "[]")
+            : []);
+
     store.dispatch(
         setFavorites({
             favoriteItems: favoritesArr,
@@ -75,7 +79,10 @@ function initializeCart(
     cartProducts: ProductType[] | undefined
 ) {
     const cartArr =
-        cart ?? JSON.parse(localStorage.getItem("cartItems") ?? "[]");
+        cart ??
+        (typeof window !== "undefined"
+            ? JSON.parse(localStorage.getItem("cartItems") ?? "[]")
+            : []);
     store.dispatch(setCart({ CartItems: cartArr, CartProducts: cartProducts }));
 }
 

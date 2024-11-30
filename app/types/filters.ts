@@ -19,13 +19,13 @@ interface BaseFilter {
 }
 
 // Определяем типы для разных видов фильтров
-interface SelectFilter extends BaseFilter {
+export interface SelectFilter extends BaseFilter {
     type: "select";
     options: { value: string; label: string }[];
     prismaQuery: (value: string) => Prisma.productsWhereInput;
 }
 
-interface RangeFilter extends BaseFilter {
+export interface RangeFilter extends BaseFilter {
     type: "range";
     min: number;
     max: number;
@@ -35,13 +35,13 @@ interface RangeFilter extends BaseFilter {
     }) => Prisma.productsWhereInput;
 }
 
-interface MultiSelectFilter extends BaseFilter {
+export interface MultiSelectFilter extends BaseFilter {
     type: "multi-select";
     options: { value: string; label: string }[];
     prismaQuery: (values: string[]) => Prisma.productsWhereInput;
 }
 
-interface ToggleFilter extends BaseFilter {
+export interface ToggleFilter extends BaseFilter {
     type: "toggle";
     prismaQuery: (value: boolean) => Prisma.productsWhereInput;
 }

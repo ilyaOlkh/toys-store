@@ -78,8 +78,13 @@ export default function SelectFilter({
                 </FormLabel>
             </AccordionSummary>
             <AccordionDetails
-                className="flex flex-col gap-1 pt-0"
-                sx={{ paddingLeft: 0, paddingRight: 0 }}
+                className="flex flex-col gap-1 pt-0 px-4"
+                sx={{
+                    paddingLeft: 0,
+                    paddingRight: 0,
+                    paddingBottom: 0,
+                    paddingTop: 0,
+                }}
             >
                 <RadioGroup
                     value={selectedValue === null ? "" : selectedValue}

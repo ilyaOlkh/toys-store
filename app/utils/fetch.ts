@@ -66,7 +66,13 @@ export async function fetchProduct(
 export async function fetchProducts(): Promise<ProductType[]> {
     try {
         const response = await fetch(
-            process.env.NEXT_PUBLIC_API_URL + "/api/products"
+            process.env.NEXT_PUBLIC_API_URL + "/api/products",
+            {
+                next: {
+                    revalidate:
+                        Number(process.env.NEXT_PUBLIC_REVALIDATE) || 60,
+                },
+            }
         );
         if (!response.ok) {
             throw new Error(`Error: ${response.status} ${response.statusText}`);
@@ -95,7 +101,13 @@ export async function fetchProductsByIds(
 
     try {
         const response = await fetch(
-            `${process.env.NEXT_PUBLIC_API_URL}/api/products/ids?ids=${idsString}`
+            `${process.env.NEXT_PUBLIC_API_URL}/api/products/ids?ids=${idsString}`,
+            {
+                next: {
+                    revalidate:
+                        Number(process.env.NEXT_PUBLIC_REVALIDATE) || 60,
+                },
+            }
         );
 
         if (!response.ok) {
@@ -124,6 +136,10 @@ export async function fetchUserRoles(userId: string): Promise<any> {
                 method: "GET",
                 headers: {
                     Accept: "application/json",
+                },
+                next: {
+                    revalidate:
+                        Number(process.env.NEXT_PUBLIC_REVALIDATE) || 60,
                 },
             }
         );

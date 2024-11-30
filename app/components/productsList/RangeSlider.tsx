@@ -6,9 +6,10 @@ import {
     Slider,
     FormLabel,
     InputBase,
+    debounce,
 } from "@mui/material";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 
 const CURRENCY = "₴";
 
@@ -30,12 +31,17 @@ export default function RangeSlider({
         to: value?.to ?? config.max,
     };
 
+    const debouncedOnChange = useCallback(
+        debounce((from: number, to: number) => {
+            onChange({ from, to });
+        }, 1000),
+        [onChange]
+    );
+
     const [range, setRange] = useState<[number, number]>([
         initialValue.from,
         initialValue.to,
     ]);
-
-    console.log(range);
 
     useEffect(() => {
         if (value) {
@@ -47,7 +53,7 @@ export default function RangeSlider({
     const handleChange = (_event: Event, newValue: number | number[]) => {
         const [from, to] = newValue as number[];
         setRange([from, to]);
-        onChange({ from, to });
+        debouncedOnChange(from, to);
     };
 
     const handleInputChange =
@@ -138,7 +144,7 @@ export default function RangeSlider({
                     <span className="text-gray1">-</span>
                     <div className="flex items-center gap-2">
                         <InputBase
-                            value={range[1]}
+                            value={range[1].toString()}
                             onChange={handleInputChange(1)}
                             type="number"
                             inputProps={{

@@ -43,23 +43,33 @@ export async function GET(request: NextRequest) {
             include: {
                 images: true,
                 comments: true,
+                discounts: true,
             },
         });
 
         // Преобразуем продукты в нужный формат
-        const formattedProducts = products.map((product) => ({
-            ...product,
-            imageUrl: product.images[0]?.image_blob ?? "/noPhoto.png",
-            average_rating:
-                product.comments.length > 0
-                    ? product.comments.reduce(
-                          (acc, comment) => acc + comment.rating,
-                          0
-                      ) / product.comments.length
-                    : 0,
-            price: Number(product.price),
-            discount: Number(product.discount),
-        }));
+        const formattedProducts = products.map((product) => {
+            const currentDate = new Date();
+            const activeDiscount = product.discounts.findLast(
+                (discount) =>
+                    discount.start_date <= currentDate &&
+                    discount.end_date >= currentDate
+            );
+
+            return {
+                ...product,
+                imageUrl: product.images[0]?.image_blob ?? "/noPhoto.png",
+                average_rating:
+                    product.comments.length > 0
+                        ? product.comments.reduce(
+                              (acc, comment) => acc + comment.rating,
+                              0
+                          ) / product.comments.length
+                        : 0,
+                price: Number(product.price),
+                discount: activeDiscount ? activeDiscount.new_price : undefined,
+            };
+        });
 
         return NextResponse.json({
             products: formattedProducts,

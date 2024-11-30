@@ -3,6 +3,11 @@ import { createSlice, createAsyncThunk, PayloadAction } from "@reduxjs/toolkit";
 import { ProductType } from "@/app/types/types";
 import { ClientFilter, FilterValue } from "../types/filters";
 
+interface FilterChange {
+    name: string;
+    value: FilterValue;
+}
+
 export interface ProductsState {
     products: ProductType[];
     filterValues: {
@@ -16,6 +21,8 @@ export interface ProductsState {
     loading: boolean;
     error: string | null;
     isInitialized: boolean;
+    nowPending: FilterChange | null;
+    queue: FilterChange | null;
 }
 
 const initialState: ProductsState = {
@@ -29,6 +36,8 @@ const initialState: ProductsState = {
     loading: false,
     error: null,
     isInitialized: false,
+    nowPending: null,
+    queue: null,
 };
 
 export const fetchFilteredProducts = createAsyncThunk<
@@ -68,12 +77,32 @@ export const fetchFilteredProducts = createAsyncThunk<
 
 export const setFilter = createAsyncThunk<
     void,
-    { name: string; value: FilterValue },
+    FilterChange,
     { state: { products: ProductsState } }
 >("products/setFilter", async ({ name, value }, { dispatch, getState }) => {
-    // Сначала устанавливаем фильтр
+    let state = getState().products;
+    console.log(1);
+    // Если есть активный запрос
+    if (state.nowPending) {
+        dispatch(setQueue({ name, value }));
+        return;
+    }
+
+    dispatch(setPending({ name, value }));
     dispatch(setFilterState({ name, value }));
-    dispatch(fetchFilteredProducts());
+
+    try {
+        await dispatch(fetchFilteredProducts());
+    } finally {
+        dispatch(clearPending());
+
+        state = getState().products;
+        const nextInQueue = state.queue;
+        if (nextInQueue) {
+            dispatch(setFilter(nextInQueue));
+            dispatch(clearQueue());
+        }
+    }
 });
 
 const productsSlice = createSlice({
@@ -99,13 +128,9 @@ const productsSlice = createSlice({
                 }),
                 {}
             );
-
             state.isInitialized = true;
         },
-        setFilterState: (
-            state,
-            action: PayloadAction<{ name: string; value: FilterValue }>
-        ) => {
+        setFilterState: (state, action: PayloadAction<FilterChange>) => {
             const { name, value } = action.payload;
             const filterConfig = state.filterConfigs.find(
                 (f) => f.name === name
@@ -120,8 +145,18 @@ const productsSlice = createSlice({
                 // Просто устанавливаем новое значение
                 state.filterValues[name] = value;
             }
-
-            fetchFilteredProducts();
+        },
+        setPending: (state, action: PayloadAction<FilterChange>) => {
+            state.nowPending = action.payload;
+        },
+        clearPending: (state) => {
+            state.nowPending = null;
+        },
+        setQueue: (state, action: PayloadAction<FilterChange>) => {
+            state.queue = action.payload;
+        },
+        clearQueue: (state) => {
+            state.queue = null;
         },
         setSort: (state, action: PayloadAction<ProductsState["sort"]>) => {
             state.sort = action.payload;
@@ -135,6 +170,8 @@ const productsSlice = createSlice({
                 }),
                 {}
             );
+            state.queue = null;
+            state.nowPending = null;
         },
     },
     extraReducers: (builder) => {
@@ -155,7 +192,15 @@ const productsSlice = createSlice({
     },
 });
 
-export const { initializeProducts, setFilterState, setSort, resetFilters } =
-    productsSlice.actions;
+export const {
+    initializeProducts,
+    setFilterState,
+    setSort,
+    resetFilters,
+    setPending,
+    clearPending,
+    setQueue,
+    clearQueue,
+} = productsSlice.actions;
 
 export default productsSlice.reducer;

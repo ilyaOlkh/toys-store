@@ -1,9 +1,24 @@
 import { NextRequest, NextResponse } from "next/server";
-import { PrismaClient } from "@prisma/client";
+import { PrismaClient, Prisma } from "@prisma/client";
 import { FilterValue } from "@/app/types/filters";
 import { serverFilters } from "@/app/constants/filtersSettings";
 
 const prisma = new PrismaClient();
+
+type ProductWithRelations = Prisma.productsGetPayload<{
+    include: {
+        images: true;
+        comments: true;
+        discounts: true;
+    };
+}>;
+
+type FormattedProduct = Omit<ProductWithRelations, "price" | "discount"> & {
+    imageUrl: string;
+    average_rating: number;
+    price: number;
+    discount?: number;
+};
 
 export async function GET(request: NextRequest) {
     try {
@@ -15,27 +30,49 @@ export async function GET(request: NextRequest) {
             ? JSON.parse(filtersParam)
             : {};
 
-        // Формируем WHERE условие для Prisma
-        const whereConditions = Object.entries(filters).reduce(
-            (acc, [name, value]) => {
-                // Находим конфигурацию фильтра
-                const filterConfig = serverFilters.find((f) => f.name === name);
+        // Получаем все активные фильтры и их условия
+        const activeFiltersPromises = Object.entries(filters).map(
+            async ([name, value]) => {
+                const config = serverFilters.find((f) => f.name === name);
+                if (!config || value === config.defaultValue) return null;
 
-                if (!filterConfig || value === filterConfig.defaultValue) {
-                    return acc;
+                let condition = await config.prismaQuery(value);
+
+                // Если условие включает raw query
+                if (
+                    condition &&
+                    typeof condition === "object" &&
+                    "id" in condition
+                ) {
+                    const idCondition = condition.id;
+                    if (
+                        idCondition &&
+                        typeof idCondition === "object" &&
+                        "in" in idCondition
+                    ) {
+                        const rawResults = await prisma.$queryRaw<
+                            { id: number }[]
+                        >`${idCondition.in}`;
+                        return {
+                            id: {
+                                in: rawResults.map((r) => r.id),
+                            },
+                        } satisfies Prisma.productsWhereInput;
+                    }
                 }
 
-                if (filterConfig.prismaQuery) {
-                    return {
-                        ...acc,
-                        ...filterConfig.prismaQuery(value as never),
-                    };
-                }
-
-                return acc;
-            },
-            {}
+                return condition;
+            }
         );
+
+        // Ждем выполнения всех запросов и фильтруем null значения
+        const activeFilters = (await Promise.all(activeFiltersPromises)).filter(
+            (filter): filter is Prisma.productsWhereInput => filter !== null
+        );
+
+        // Формируем WHERE условие
+        const whereConditions: Prisma.productsWhereInput =
+            activeFilters.length > 0 ? { AND: activeFilters } : {};
 
         // Получаем продукты с примененными фильтрами
         const products = await prisma.products.findMany({
@@ -47,29 +84,33 @@ export async function GET(request: NextRequest) {
             },
         });
 
-        // Преобразуем продукты в нужный формат
-        const formattedProducts = products.map((product) => {
-            const currentDate = new Date();
-            const activeDiscount = product.discounts.findLast(
-                (discount) =>
-                    discount.start_date <= currentDate &&
-                    discount.end_date >= currentDate
-            );
+        // Форматируем продукты
+        const formattedProducts: FormattedProduct[] = products.map(
+            (product) => {
+                const currentDate = new Date();
+                const activeDiscount = product.discounts.findLast(
+                    (discount) =>
+                        discount.start_date <= currentDate &&
+                        discount.end_date >= currentDate
+                );
 
-            return {
-                ...product,
-                imageUrl: product.images[0]?.image_blob ?? "/noPhoto.png",
-                average_rating:
-                    product.comments.length > 0
-                        ? product.comments.reduce(
-                              (acc, comment) => acc + comment.rating,
-                              0
-                          ) / product.comments.length
-                        : 0,
-                price: Number(product.price),
-                discount: activeDiscount ? activeDiscount.new_price : undefined,
-            };
-        });
+                return {
+                    ...product,
+                    imageUrl: product.images[0]?.image_blob ?? "/noPhoto.png",
+                    average_rating:
+                        product.comments.length > 0
+                            ? product.comments.reduce(
+                                  (acc, comment) => acc + comment.rating,
+                                  0
+                              ) / product.comments.length
+                            : 0,
+                    price: Number(product.price),
+                    discount: activeDiscount
+                        ? Number(activeDiscount.new_price)
+                        : undefined,
+                };
+            }
+        );
 
         return NextResponse.json({
             products: formattedProducts,

@@ -1,7 +1,8 @@
 import { ClientFilter, FilterValue } from "@/app/types/filters";
 import SelectFilter from "./SelectFilter";
-import { Radio } from "@mui/material";
+import { Checkbox, Radio } from "@mui/material";
 import RangeSlider from "./RangeSlider";
+import MultiSelectFilter from "./MultiSelectFilter";
 
 interface FilterProps {
     config: ClientFilter;
@@ -33,53 +34,23 @@ export function Filter({ config, value, onChange }: FilterProps) {
 
         case "multi-select":
             return (
-                <div className="flex flex-col gap-2">
-                    <label className="font-medium">{config.title}</label>
-                    <div className="flex flex-col gap-1">
-                        {config.options.map((option) => (
-                            <label
-                                key={option.value}
-                                className="flex items-center gap-2"
-                            >
-                                <input
-                                    type="checkbox"
-                                    checked={(value as string[])?.includes(
-                                        option.value
-                                    )}
-                                    onChange={(e) => {
-                                        const currentValues = (value ||
-                                            []) as string[];
-                                        if (e.target.checked) {
-                                            onChange([
-                                                ...currentValues,
-                                                option.value,
-                                            ]);
-                                        } else {
-                                            onChange(
-                                                currentValues.filter(
-                                                    (v) => v !== option.value
-                                                )
-                                            );
-                                        }
-                                    }}
-                                    className="rounded border-lightGray1"
-                                />
-                                {option.label}
-                            </label>
-                        ))}
-                    </div>
-                </div>
+                <MultiSelectFilter
+                    config={config}
+                    value={value}
+                    onChange={onChange}
+                    defaultExpanded={config.defaultExpanded}
+                />
             );
 
         case "toggle":
             return (
-                <label className="flex items-center gap-2 p-4">
-                    <input
-                        type="checkbox"
+                <label className="flex items-center">
+                    <Checkbox
                         checked={value as boolean}
                         onChange={(e) => onChange(e.target.checked)}
                         className="rounded border-lightGray1"
                     />
+
                     {config.title}
                 </label>
             );

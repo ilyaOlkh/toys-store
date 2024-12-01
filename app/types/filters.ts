@@ -2,7 +2,10 @@ import { Prisma } from "@prisma/client";
 
 export type FilterType = "select" | "range" | "multi-select" | "toggle";
 
-// Возможные значения фильтров
+export type PrismaWhereInput = Prisma.productsWhereInput;
+export type RawQueryFilter = { id: { in: Prisma.Sql } };
+export type FilterQueryResult = PrismaWhereInput | RawQueryFilter;
+
 export type FilterValue =
     | string
     | number
@@ -11,40 +14,44 @@ export type FilterValue =
     | { from: number; to: number }
     | null;
 
+export interface ComputedField {
+    name: string;
+    compute: () => Promise<Prisma.Sql>;
+}
+
 interface BaseFilter {
     name: string;
     type: FilterType;
     defaultValue: any;
-    title: string; // Человекочитаемое название для UI
+    title: string;
     defaultExpanded?: boolean;
+    generateValues?: () => Promise<Partial<Filter>>;
+    computedFields?: ComputedField[];
+    prismaQuery: (value: any) => Prisma.productsWhereInput | FilterQueryResult;
 }
 
-// Определяем типы для разных видов фильтров
 export interface SelectFilter extends BaseFilter {
     type: "select";
     options: { value: string; label: string }[];
-    prismaQuery: (value: string) => Prisma.productsWhereInput;
 }
 
 export interface RangeFilter extends BaseFilter {
     type: "range";
     min: number;
     max: number;
-    prismaQuery: (value: {
-        from: number;
-        to: number;
-    }) => Prisma.productsWhereInput;
+    unit?: {
+        symbol: string;
+        position?: "prefix" | "suffix";
+    };
 }
 
 export interface MultiSelectFilter extends BaseFilter {
     type: "multi-select";
     options: { value: string; label: string }[];
-    prismaQuery: (values: string[]) => Prisma.productsWhereInput;
 }
 
 export interface ToggleFilter extends BaseFilter {
     type: "toggle";
-    prismaQuery: (value: boolean) => Prisma.productsWhereInput;
 }
 
 export type Filter =
@@ -54,10 +61,10 @@ export type Filter =
     | ToggleFilter;
 
 export type ClientFilter =
-    | Omit<SelectFilter, "prismaQuery">
-    | Omit<RangeFilter, "prismaQuery">
-    | Omit<MultiSelectFilter, "prismaQuery">
-    | Omit<ToggleFilter, "prismaQuery">;
+    | Omit<SelectFilter, "prismaQuery" | "generateValues">
+    | Omit<RangeFilter, "prismaQuery" | "generateValues">
+    | Omit<MultiSelectFilter, "prismaQuery" | "generateValues">
+    | Omit<ToggleFilter, "prismaQuery" | "generateValues">;
 
 export interface ActiveFilter {
     name: string;

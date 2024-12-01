@@ -7,10 +7,23 @@ import { Prisma } from "@prisma/client";
 /**
  * Получает фильтры без серверной логики для использования на клиенте
  */
-export async function getClientFilters() {
-    return serverFilters.map(
-        ({ prismaQuery, ...clientFilter }) => clientFilter
-    );
+
+export async function getClientFilters(): Promise<ClientFilter[]> {
+    const clientFilters = [];
+
+    for (const filter of serverFilters) {
+        const { prismaQuery, generateValues, computedFields, ...clientFilter } =
+            filter;
+
+        if (generateValues) {
+            const generatedValues = await generateValues();
+            Object.assign(clientFilter, generatedValues);
+        }
+
+        clientFilters.push(clientFilter);
+    }
+
+    return clientFilters;
 }
 
 /**

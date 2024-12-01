@@ -84,15 +84,15 @@ export const setFilter = createAsyncThunk<
     { state: { products: ProductsState } }
 >("products/setFilter", async ({ name, value }, { dispatch, getState }) => {
     let state = getState().products;
-    console.log(1);
-    // Если есть активный запрос
+
+    dispatch(setFilterState({ name, value }));
+
     if (state.nowPending) {
         dispatch(setQueue({ name, value }));
         return;
     }
 
     dispatch(setPending({ name, value }));
-    dispatch(setFilterState({ name, value }));
 
     try {
         await dispatch(fetchFilteredProducts());

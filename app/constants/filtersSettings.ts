@@ -6,7 +6,7 @@ const prisma = new PrismaClient();
 export const serverFilters: Filter[] = [
     {
         name: "типи",
-        type: "select",
+        type: "multi-select",
         defaultValue: null,
         title: "Типи",
         options: [],
@@ -34,12 +34,74 @@ export const serverFilters: Filter[] = [
         defaultExpanded: true,
     },
     {
+        name: "tags",
+        type: "multi-select",
+        defaultValue: [],
+        title: "Теги",
+        options: [],
+        generateValues: async () => {
+            const tags = await prisma.tags.findMany({
+                select: { name: true },
+                orderBy: { name: "asc" },
+            });
+            return {
+                options: tags.map((tag) => ({
+                    value: tag.name,
+                    label: tag.name,
+                })),
+            };
+        },
+        prismaQuery: (values: string[]) => ({
+            tags: {
+                some: {
+                    tag: {
+                        name: {
+                            in: values,
+                        },
+                    },
+                },
+            },
+        }),
+        defaultExpanded: true,
+    },
+    {
+        name: "stock",
+        type: "toggle",
+        defaultValue: false,
+        title: "Тільки в наявності",
+        prismaQuery: (value: boolean) =>
+            value ? { stock_quantity: { gt: 0 } } : {},
+    },
+    {
+        name: "discounted",
+        type: "toggle",
+        defaultValue: false,
+        title: "Зі знижкою",
+        prismaQuery: (value: boolean) =>
+            value
+                ? {
+                      discounts: {
+                          some: {
+                              AND: [
+                                  { start_date: { lte: new Date() } },
+                                  { end_date: { gte: new Date() } },
+                              ],
+                          },
+                      },
+                  }
+                : {},
+    },
+    {
         name: "ціна",
         type: "range",
         defaultValue: { from: 0, to: 10000 },
         title: "Ціна",
         min: 0,
         max: 10000,
+        unit: {
+            symbol: "₴",
+            position: "suffix",
+        },
         generateValues: async () => {
             const maxPrice = await prisma.products.aggregate({
                 _max: { price: true },
@@ -71,7 +133,6 @@ export const serverFilters: Filter[] = [
             {
                 name: "averageRating",
                 compute: async () => {
-                    // Создаем временную таблицу/представление с вычисленными средними рейтингами
                     await prisma.$executeRaw`
                         CREATE TEMPORARY TABLE IF NOT EXISTS product_ratings AS
                         SELECT 

@@ -11,8 +11,6 @@ import {
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import { useState, useEffect, useCallback } from "react";
 
-const CURRENCY = "₴";
-
 interface RangeSliderProps {
     config: Omit<RangeFilter, "prismaQuery">;
     value: { from: number; to: number };
@@ -75,6 +73,50 @@ export default function RangeSlider({
             onChange({ from: newRange[0], to: newRange[1] });
         };
 
+    const renderValue = (value: number) => {
+        const unit = config.unit?.symbol || "₴";
+        if (config.unit?.position === "prefix") {
+            return (
+                <div className="flex items-center gap-2">
+                    <span className="text-gray1 text-sm">{unit}</span>
+                    <InputBase
+                        value={value.toString()}
+                        onChange={handleInputChange(value === range[0] ? 0 : 1)}
+                        type="number"
+                        inputProps={{
+                            min: config.min,
+                            max: config.max,
+                            style: { padding: 0 },
+                        }}
+                        sx={{
+                            fontSize: "0.875rem",
+                            width: "4rem",
+                        }}
+                    />
+                </div>
+            );
+        }
+        return (
+            <div className="flex items-center gap-2">
+                <InputBase
+                    value={value.toString()}
+                    onChange={handleInputChange(value === range[0] ? 0 : 1)}
+                    type="number"
+                    inputProps={{
+                        min: config.min,
+                        max: config.max,
+                        style: { padding: 0 },
+                    }}
+                    sx={{
+                        fontSize: "0.875rem",
+                        width: "4rem",
+                    }}
+                />
+                <span className="text-gray1 text-sm">{unit}</span>
+            </div>
+        );
+    };
+
     if (config.type !== "range") return null;
 
     return (
@@ -124,41 +166,9 @@ export default function RangeSlider({
                     }}
                 />
                 <div className="flex justify-between items-center gap-2 px-1">
-                    <div className="flex items-center gap-2">
-                        <InputBase
-                            value={range[0].toString()}
-                            onChange={handleInputChange(0)}
-                            type="number"
-                            inputProps={{
-                                min: config.min,
-                                max: config.max,
-                                style: { padding: 0 },
-                            }}
-                            sx={{
-                                fontSize: "0.875rem",
-                                width: "4rem",
-                            }}
-                        />
-                        <span className="text-gray1 text-sm">{CURRENCY}</span>
-                    </div>
+                    {renderValue(range[0])}
                     <span className="text-gray1">-</span>
-                    <div className="flex items-center gap-2">
-                        <InputBase
-                            value={range[1].toString()}
-                            onChange={handleInputChange(1)}
-                            type="number"
-                            inputProps={{
-                                min: config.min,
-                                max: config.max,
-                                style: { padding: 0 },
-                            }}
-                            sx={{
-                                fontSize: "0.875rem",
-                                width: "4rem",
-                            }}
-                        />
-                        <span className="text-gray1 text-sm">{CURRENCY}</span>
-                    </div>
+                    {renderValue(range[1])}
                 </div>
             </AccordionDetails>
         </Accordion>

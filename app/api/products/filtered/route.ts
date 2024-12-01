@@ -36,6 +36,8 @@ export async function GET(request: NextRequest) {
                 const config = serverFilters.find((f) => f.name === name);
                 if (!config || value === config.defaultValue) return null;
 
+                if (Array.isArray(value) && value.length === 0) return null;
+
                 let condition = await config.prismaQuery(value);
 
                 // Если условие включает raw query
@@ -59,6 +61,19 @@ export async function GET(request: NextRequest) {
                             },
                         } satisfies Prisma.productsWhereInput;
                     }
+                }
+
+                if (condition && typeof condition === "object") {
+                    const isEmpty = Object.entries(condition).every(
+                        ([_, value]) => {
+                            if (Array.isArray(value)) return value.length === 0;
+                            if (typeof value === "object" && value !== null) {
+                                return Object.keys(value).length === 0;
+                            }
+                            return false;
+                        }
+                    );
+                    if (isEmpty) return null;
                 }
 
                 return condition;

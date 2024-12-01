@@ -114,13 +114,13 @@ export function ProductCard({
                     </div>
                 )}
 
-                <div className="border-lightGray1 border size-full rounded-3xl p-2">
+                <div className="border-lightGray1 border size-full rounded-3xl p-2 aspect-square">
                     <Image
                         src={img}
                         width={600}
                         height={600}
                         alt="product img"
-                        className="rounded-3xl"
+                        className="rounded-3xl aspect-square object-scale-down"
                     />
                 </div>
                 <div>

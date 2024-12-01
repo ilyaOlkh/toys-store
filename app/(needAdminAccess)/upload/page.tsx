@@ -42,7 +42,7 @@ export default function UploadPage() {
             const uploadedImageUrl = uploadData.uploadedImageUrl;
             // Отправляем путь к файлу и SKU на сервер для сохранения в базе данных
             const savePathResponse = await fetch(
-                process.env.NEXT_PUBLIC_API_URL + "/api/products/upload-img",
+                process.env.NEXT_PUBLIC_URL + "/api/products/upload-img",
                 {
                     method: "POST",
                     headers: {

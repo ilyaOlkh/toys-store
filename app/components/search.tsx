@@ -43,7 +43,7 @@ const SearchBar: React.FC = () => {
             try {
                 // Выполнение запроса к вашему API
                 const response = await fetch(
-                    process.env.NEXT_PUBLIC_API_URL +
+                    process.env.NEXT_PUBLIC_URL +
                         `/api/products/search/${encodeURIComponent(query)}`
                 );
                 if (!response.ok) {

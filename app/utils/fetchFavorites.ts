@@ -6,7 +6,7 @@ export async function getFavorites(
 ): Promise<favorites[]> {
     try {
         const response = await fetch(
-            `${process.env.NEXT_PUBLIC_API_URL}/api/favorites?user_identifier=${userIdentifier}`,
+            `${process.env.NEXT_PUBLIC_URL}/api/favorites?user_identifier=${userIdentifier}`,
             { method: "GET" }
         );
         if (!response.ok) {
@@ -24,7 +24,7 @@ export async function addFavorite(
 ): Promise<favorites & { product: ProductType }> {
     try {
         const response = await fetch(
-            `${process.env.NEXT_PUBLIC_API_URL}/api/favorites`,
+            `${process.env.NEXT_PUBLIC_URL}/api/favorites`,
             {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
@@ -53,7 +53,7 @@ export async function removeFavorite(
 ): Promise<DeleteResponse> {
     try {
         const response = await fetch(
-            `${process.env.NEXT_PUBLIC_API_URL}/api/favorites`,
+            `${process.env.NEXT_PUBLIC_URL}/api/favorites`,
             {
                 method: "DELETE",
                 headers: { "Content-Type": "application/json" },

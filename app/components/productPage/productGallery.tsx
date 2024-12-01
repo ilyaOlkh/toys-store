@@ -82,7 +82,7 @@ export default function ProductGallery({
                 setDeletingImageIds((prev) => [...prev, imageId]);
 
                 const response = await fetch(
-                    process.env.NEXT_PUBLIC_API_URL +
+                    process.env.NEXT_PUBLIC_URL +
                         `/api/products/upload-img?imageId=${imageId}`,
                     {
                         method: "DELETE",

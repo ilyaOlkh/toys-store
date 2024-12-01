@@ -5,7 +5,7 @@ export const dynamic = "force-dynamic";
 export async function fetchTypes(): Promise<types[]> {
     try {
         const response = await fetch(
-            process.env.NEXT_PUBLIC_API_URL + "/api/types"
+            process.env.NEXT_PUBLIC_URL + "/api/types"
         );
         if (!response.ok) {
             throw new Error(`Error: ${response.status} ${response.statusText}`);
@@ -23,7 +23,7 @@ export async function fetchProduct(
 ): Promise<(ProductType & ProductDetailType) | null> {
     try {
         const response = await fetch(
-            `${process.env.NEXT_PUBLIC_API_URL}/api/products/${id}`,
+            `${process.env.NEXT_PUBLIC_URL}/api/products/${id}`,
             {
                 next: {
                     revalidate:
@@ -72,7 +72,7 @@ export async function fetchProduct(
 export async function fetchProducts(): Promise<ProductType[]> {
     try {
         const response = await fetch(
-            process.env.NEXT_PUBLIC_API_URL + "/api/products",
+            process.env.NEXT_PUBLIC_URL + "/api/products",
             {
                 next: {
                     revalidate:
@@ -107,7 +107,7 @@ export async function fetchProductsByIds(
 
     try {
         const response = await fetch(
-            `${process.env.NEXT_PUBLIC_API_URL}/api/products/ids?ids=${idsString}`,
+            `${process.env.NEXT_PUBLIC_URL}/api/products/ids?ids=${idsString}`,
             {
                 next: {
                     revalidate:

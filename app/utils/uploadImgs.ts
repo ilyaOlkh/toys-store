@@ -27,7 +27,7 @@ export async function uploadProductImage(
 
     // Save the image URL in the database
     const saveResponse = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/products/upload-img`,
+        `${process.env.NEXT_PUBLIC_URL}/api/products/upload-img`,
         {
             method: "POST",
             headers: {

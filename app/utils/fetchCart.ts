@@ -12,7 +12,7 @@ export async function getCartItems(
 ): Promise<CartItemWithProduct[]> {
     try {
         const response = await fetch(
-            `${process.env.NEXT_PUBLIC_API_URL}/api/cart?user_identifier=${userIdentifier}`,
+            `${process.env.NEXT_PUBLIC_URL}/api/cart?user_identifier=${userIdentifier}`,
             { method: "GET" }
         );
         if (!response.ok) {
@@ -33,7 +33,7 @@ export async function addToCart(
 ): Promise<CartItemWithProduct> {
     try {
         const response = await fetch(
-            `${process.env.NEXT_PUBLIC_API_URL}/api/cart`,
+            `${process.env.NEXT_PUBLIC_URL}/api/cart`,
             {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
@@ -61,7 +61,7 @@ export async function updateCartItemQuantity(
 ): Promise<CartItemWithProduct> {
     try {
         const response = await fetch(
-            `${process.env.NEXT_PUBLIC_API_URL}/api/cart`,
+            `${process.env.NEXT_PUBLIC_URL}/api/cart`,
             {
                 method: "PATCH",
                 headers: { "Content-Type": "application/json" },
@@ -87,7 +87,7 @@ export async function removeFromCart(
 ): Promise<{ message: string }> {
     try {
         const response = await fetch(
-            `${process.env.NEXT_PUBLIC_API_URL}/api/cart`,
+            `${process.env.NEXT_PUBLIC_URL}/api/cart`,
             {
                 method: "DELETE",
                 headers: { "Content-Type": "application/json" },
@@ -110,7 +110,7 @@ export async function clearCart(
 ): Promise<{ message: string }> {
     try {
         const response = await fetch(
-            `${process.env.NEXT_PUBLIC_API_URL}/api/cart`,
+            `${process.env.NEXT_PUBLIC_URL}/api/cart`,
             {
                 method: "DELETE",
                 headers: { "Content-Type": "application/json" },

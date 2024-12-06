@@ -72,7 +72,29 @@ export interface ActiveFilter {
 }
 
 // Тип для сортировки
-export interface SortConfig {
+
+export type SortDirection = "asc" | "desc";
+
+export interface ComputedSortField {
+    name: string;
+    compute: () => Promise<Prisma.Sql>;
+}
+
+export interface SortOption {
     field: string;
-    direction: "asc" | "desc";
+    label: string;
+    prismaSort?: (
+        direction: SortDirection
+    ) => Prisma.productsOrderByWithRelationInput;
+    computedFields?: ComputedSortField[];
+    computed?: boolean;
+}
+
+export interface SortConfig {
+    name: string;
+    title: string;
+    options: SortOption[];
+    defaultOption: string;
+    defaultDirection: SortDirection;
+    allowDirectionChange?: boolean;
 }

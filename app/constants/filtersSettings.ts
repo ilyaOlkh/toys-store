@@ -1,4 +1,4 @@
-import { Filter } from "../types/filters";
+import { Filter, SortConfig } from "../types/filters";
 import { Prisma, PrismaClient } from "@prisma/client";
 
 const prisma = new PrismaClient();
@@ -22,11 +22,13 @@ export const serverFilters: Filter[] = [
                 })),
             };
         },
-        prismaQuery: (value) => ({
+        prismaQuery: (values: string[]) => ({
             types: {
                 some: {
                     type: {
-                        name: value,
+                        name: {
+                            in: values,
+                        },
                     },
                 },
             },
@@ -179,5 +181,103 @@ export const serverFilters: Filter[] = [
                 `,
             },
         }),
+    },
+];
+
+export const serverSorts: SortConfig[] = [
+    {
+        name: "mainSort",
+        title: "Сортувати за",
+        options: [
+            {
+                field: "default",
+                label: "За замовчуванням",
+                prismaSort: () => ({ id: "asc" }),
+            },
+            {
+                field: "price",
+                label: "Ціною",
+                prismaSort: (direction) => ({ price: direction }),
+            },
+            {
+                field: "created_at",
+                label: "Датою додавання",
+                prismaSort: (direction) => ({ created_at: direction }),
+            },
+            {
+                field: "name",
+                label: "Назвою",
+                prismaSort: (direction) => ({ name: direction }),
+            },
+            {
+                field: "average_rating",
+                label: "Рейтингом",
+                computed: true,
+                computedFields: [
+                    {
+                        name: "averageRating",
+                        compute: async () => {
+                            await prisma.$executeRaw`
+                                CREATE TEMPORARY TABLE IF NOT EXISTS product_ratings AS
+                                SELECT 
+                                    product_id,
+                                    COALESCE(AVG(rating), 0) as avg_rating
+                                FROM comments 
+                                GROUP BY product_id
+                            `;
+                            return Prisma.sql`avg_rating`;
+                        },
+                    },
+                ],
+                prismaSort: (direction) => ({
+                    id: direction,
+                }),
+            },
+        ],
+        defaultOption: "default",
+        defaultDirection: "asc",
+        allowDirectionChange: true,
+    },
+    {
+        name: "secondarySort",
+        title: "Додаткове сортування",
+        options: [
+            {
+                field: "none",
+                label: "Не використовувати",
+            },
+            {
+                field: "stock_quantity",
+                label: "Наявністю",
+                prismaSort: (direction) => ({ stock_quantity: direction }),
+            },
+            {
+                field: "sales_count",
+                label: "Популярністю",
+                computed: true,
+                computedFields: [
+                    {
+                        name: "salesCount",
+                        compute: async () => {
+                            await prisma.$executeRaw`
+                                CREATE TEMPORARY TABLE IF NOT EXISTS product_sales AS
+                                SELECT 
+                                    product_id,
+                                    COUNT(*) as sales_count
+                                FROM orders_products 
+                                GROUP BY product_id
+                            `;
+                            return Prisma.sql`sales_count`;
+                        },
+                    },
+                ],
+                prismaSort: (direction) => ({
+                    id: direction,
+                }),
+            },
+        ],
+        defaultOption: "none",
+        defaultDirection: "desc",
+        allowDirectionChange: false,
     },
 ];

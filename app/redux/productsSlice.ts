@@ -1,34 +1,46 @@
 // app/redux/productsSlice.ts
 import { createSlice, createAsyncThunk, PayloadAction } from "@reduxjs/toolkit";
 import { ProductType } from "@/app/types/types";
-import { ClientFilter, FilterValue } from "../types/filters";
+import {
+    ClientFilter,
+    FilterValue,
+    SortConfig,
+    SortDirection,
+} from "../types/filters";
+import { ProductsDispatch } from "../components/ProductsContext";
 
 interface FilterChange {
     name: string;
     value: FilterValue;
 }
 
-export interface ProductsState {
+interface SortState {
+    field: string;
+    direction: SortDirection;
+}
+
+export interface ProductsStateType {
     products: ProductType[];
     filterValues: {
         [key: string]: FilterValue;
     };
     filterConfigs: ClientFilter[];
-    sort: {
-        field: string;
-        direction: "asc" | "desc";
-    };
+    sortConfig: SortConfig | null;
+    sortingRuleSet: string;
+    sort: SortState;
     loading: boolean;
     error: string | null;
     isInitialized: boolean;
-    nowPending: FilterChange | null;
-    queue: FilterChange | null;
+    nowPending: boolean;
+    queue: boolean;
 }
 
-const initialState: ProductsState = {
+const initialState: ProductsStateType = {
     products: [],
     filterValues: {},
     filterConfigs: [],
+    sortConfig: null,
+    sortingRuleSet: "",
     sort: {
         field: "default",
         direction: "asc",
@@ -36,22 +48,33 @@ const initialState: ProductsState = {
     loading: false,
     error: null,
     isInitialized: false,
-    nowPending: null,
-    queue: null,
+    nowPending: false,
+    queue: false,
 };
 
 export const fetchFilteredProducts = createAsyncThunk<
     ProductType[],
     void,
-    { state: { products: ProductsState } }
->("products/fetchFiltered", async (_, { getState }) => {
-    const state = getState();
-    const { filterValues } = state.products;
+    { state: { products: ProductsStateType } }
+>("products/fetchFiltered", async (_, { dispatch, getState }) => {
+    let state = getState().products;
+    const { filterValues, sort, sortingRuleSet } = state;
 
-    // Преобразуем фильтры в query параметры
+    if (state.nowPending) {
+        dispatch(setQueue(true));
+        return state.products;
+    }
+
+    dispatch(setPending(true));
+
     const params = new URLSearchParams();
     if (Object.keys(filterValues).length > 0) {
         params.append("filters", JSON.stringify(filterValues));
+    }
+
+    if (Object.keys(sort).length > 0) {
+        params.append("sort", JSON.stringify(sort));
+        params.append("sortingRuleSet", JSON.stringify(sortingRuleSet));
     }
 
     // Выполняем запрос
@@ -75,37 +98,16 @@ export const fetchFilteredProducts = createAsyncThunk<
     }
 
     const data = await response.json();
+
+    dispatch(clearPending());
+
+    state = getState().products;
+    if (state.queue) {
+        dispatch(clearQueue());
+        dispatch(fetchFilteredProducts());
+    }
+
     return data.products;
-});
-
-export const setFilter = createAsyncThunk<
-    void,
-    FilterChange,
-    { state: { products: ProductsState } }
->("products/setFilter", async ({ name, value }, { dispatch, getState }) => {
-    let state = getState().products;
-
-    dispatch(setFilterState({ name, value }));
-
-    if (state.nowPending) {
-        dispatch(setQueue({ name, value }));
-        return;
-    }
-
-    dispatch(setPending({ name, value }));
-
-    try {
-        await dispatch(fetchFilteredProducts());
-    } finally {
-        dispatch(clearPending());
-
-        state = getState().products;
-        const nextInQueue = state.queue;
-        if (nextInQueue) {
-            dispatch(setFilter(nextInQueue));
-            dispatch(clearQueue());
-        }
-    }
 });
 
 const productsSlice = createSlice({
@@ -117,13 +119,12 @@ const productsSlice = createSlice({
             action: PayloadAction<{
                 products: ProductType[];
                 filters: ClientFilter[];
+                sortConfig: SortConfig;
+                sortingRuleSet: string;
             }>
         ) => {
-            // Инициализируем продукты и создаем начальное состояние фильтров
             state.products = action.payload.products;
             state.filterConfigs = action.payload.filters;
-
-            // Создаем состояние фильтров из полученной конфигурации
             state.filterValues = action.payload.filters.reduce(
                 (acc, filter) => ({
                     ...acc,
@@ -131,9 +132,11 @@ const productsSlice = createSlice({
                 }),
                 {}
             );
+            state.sortConfig = action.payload.sortConfig;
+            state.sortingRuleSet = action.payload.sortingRuleSet;
             state.isInitialized = true;
         },
-        setFilterState: (state, action: PayloadAction<FilterChange>) => {
+        setFilter: (state, action: PayloadAction<FilterChange>) => {
             const { name, value } = action.payload;
             const filterConfig = state.filterConfigs.find(
                 (f) => f.name === name
@@ -142,27 +145,56 @@ const productsSlice = createSlice({
             if (!filterConfig) return;
 
             if (value === null || value === undefined) {
-                // Если значение null/undefined - возвращаем к дефолтному значению
                 state.filterValues[name] = filterConfig.defaultValue;
             } else {
-                // Просто устанавливаем новое значение
                 state.filterValues[name] = value;
             }
+
+            fetchFilteredProducts();
         },
-        setPending: (state, action: PayloadAction<FilterChange>) => {
+        setPending: (state, action: PayloadAction<boolean>) => {
             state.nowPending = action.payload;
         },
         clearPending: (state) => {
-            state.nowPending = null;
+            state.nowPending = false;
         },
-        setQueue: (state, action: PayloadAction<FilterChange>) => {
+        setQueue: (state, action: PayloadAction<boolean>) => {
             state.queue = action.payload;
         },
         clearQueue: (state) => {
-            state.queue = null;
+            state.queue = false;
         },
-        setSort: (state, action: PayloadAction<ProductsState["sort"]>) => {
-            state.sort = action.payload;
+        setSort: (
+            state,
+            action: PayloadAction<{
+                field: string;
+                direction?: SortDirection;
+            }>
+        ) => {
+            const { field, direction } = action.payload;
+            state.sort = {
+                field,
+                direction: direction ?? state.sort.direction,
+            };
+
+            fetchFilteredProducts();
+        },
+
+        toggleSortDirection: (state) => {
+            state.sort.direction =
+                state.sort.direction === "asc" ? "desc" : "asc";
+
+            fetchFilteredProducts();
+        },
+
+        resetSort: (state) => {
+            const defaultConfig = state.sortConfig;
+            state.sort = {
+                field: defaultConfig ? defaultConfig.defaultOption : "default",
+                direction: defaultConfig
+                    ? defaultConfig.defaultDirection
+                    : "asc",
+            };
         },
         resetFilters: (state) => {
             // Сбрасываем к начальным значениям из конфигурации
@@ -173,8 +205,8 @@ const productsSlice = createSlice({
                 }),
                 {}
             );
-            state.queue = null;
-            state.nowPending = null;
+            state.queue = false;
+            state.nowPending = false;
         },
     },
     extraReducers: (builder) => {
@@ -195,10 +227,30 @@ const productsSlice = createSlice({
     },
 });
 
+export const filterProducts =
+    (filterChange: FilterChange) => async (dispatch: ProductsDispatch) => {
+        dispatch(setFilter(filterChange));
+        dispatch(fetchFilteredProducts());
+    };
+
+export const sortProducts =
+    (sortConfig: { field: string; direction?: SortDirection }) =>
+    async (dispatch: ProductsDispatch) => {
+        dispatch(setSort(sortConfig));
+        dispatch(fetchFilteredProducts());
+    };
+
+export const toggleSort = () => async (dispatch: ProductsDispatch) => {
+    dispatch(toggleSortDirection());
+    dispatch(fetchFilteredProducts());
+};
+
 export const {
     initializeProducts,
-    setFilterState,
+    setFilter,
     setSort,
+    toggleSortDirection,
+    resetSort,
     resetFilters,
     setPending,
     clearPending,

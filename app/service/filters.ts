@@ -1,6 +1,6 @@
 "use server";
 
-import { serverFilters } from "../constants/filtersSettings";
+import { serverFilters, serverSorts } from "../constants/filtersSettings";
 import { ActiveFilter, ClientFilter } from "../types/filters";
 import { Prisma } from "@prisma/client";
 
@@ -60,3 +60,47 @@ export async function buildPrismaQuery(activeFilters: ActiveFilter[]) {
 
     return whereConditions.length ? { AND: whereConditions } : {};
 }
+
+/**
+ * Получает конфигурации сортировки без серверной логики для использования на клиенте
+ */
+export async function getClientSorts(): Promise<ClientSortConfig[]> {
+    const clientSorts = [];
+
+    for (const sort of serverSorts) {
+        const clientOptions = sort.options.map(
+            ({ prismaSort, computed, computedFields, ...clientOption }) =>
+                clientOption
+        );
+
+        const clientSort: ClientSortConfig = {
+            name: sort.name,
+            title: sort.title,
+            options: clientOptions,
+            defaultOption: sort.defaultOption,
+            defaultDirection: sort.defaultDirection,
+            allowDirectionChange: sort.allowDirectionChange ?? false,
+        };
+
+        clientSorts.push(clientSort);
+    }
+
+    return clientSorts;
+}
+
+/**
+ * Дополнительный тип для клиентской конфигурации сортировки
+ */
+export type ClientSortOption = {
+    field: string;
+    label: string;
+};
+
+export type ClientSortConfig = {
+    name: string;
+    title: string;
+    options: ClientSortOption[];
+    defaultOption: string;
+    defaultDirection: "asc" | "desc";
+    allowDirectionChange?: boolean;
+};

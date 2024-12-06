@@ -4,33 +4,30 @@ import React from "react";
 import { ProductType } from "@/app/types/types";
 import { ProductCard } from "@/app/components/productCard";
 import { ProductsStoreProvider, useProducts } from "../ProductsContext";
-import { ClientFilter } from "@/app/types/filters";
+import { ClientFilter, SortConfig } from "@/app/types/filters";
 import { FiltersList } from "./FiltersList";
-import { setFilter } from "@/app/redux/productsSlice";
+import { filterProducts, sortProducts } from "@/app/redux/productsSlice";
+import SortControl from "./SortSelect";
 
-const categories = [
-    { id: "playsets", name: "Playsets" },
-    { id: "control-toys", name: "Control Toys" },
-    { id: "educational-toys", name: "Educational Toys" },
-    { id: "eco-friendly", name: "Eco-Friendly Toys" },
-    { id: "stuffed-toys", name: "Stuffed Toys" },
-    { id: "type-1", name: "Type 1" },
-    { id: "type-2", name: "Type 2" },
-];
-
-interface ProductsStoreProviderProps {
+interface ProductsListScreenProps {
     initialProducts: ProductType[];
     initialFilters: ClientFilter[];
+    initialSortConfig: SortConfig;
+    initialSortingRuleSet: string;
 }
 
 export default function ProductsListScreen({
     initialProducts,
     initialFilters,
-}: ProductsStoreProviderProps) {
+    initialSortConfig,
+    initialSortingRuleSet,
+}: ProductsListScreenProps) {
     return (
         <ProductsStoreProvider
             initialProducts={initialProducts}
             filters={initialFilters}
+            sortConfig={initialSortConfig}
+            sortingRuleSet={initialSortingRuleSet}
         >
             <ProductsContent />
         </ProductsStoreProvider>
@@ -43,6 +40,7 @@ function ProductsContent() {
         filterValues,
         filterConfigs,
         sort,
+        sortConfig,
         loading,
         error,
         isInitialized,
@@ -61,7 +59,7 @@ function ProductsContent() {
                                 filterConfigs={filterConfigs}
                                 filterValues={filterValues}
                                 onFilterChange={(name, value) => {
-                                    dispatch(setFilter({ name, value }));
+                                    dispatch(filterProducts({ name, value }));
                                 }}
                             />
                         </div>
@@ -72,9 +70,7 @@ function ProductsContent() {
                         <div className="flex flex-col gap-6">
                             {/* Header */}
                             <div className="flex justify-between items-center">
-                                <h1 className="text-2xl font-bold">
-                                    Educational Toys
-                                </h1>
+                                <h1 className="text-2xl font-bold">Іграшки</h1>
                                 <div className="flex items-center gap-4">
                                     <div className="flex gap-2">
                                         <button className="p-2 hover:text-blue1">
@@ -100,17 +96,23 @@ function ProductsContent() {
                                             </svg>
                                         </button>
                                     </div>
-                                    <select className="border border-lightGray1 rounded-lg px-4 py-2">
-                                        <option>Default sorting</option>
-                                        <option>
-                                            Sort by price: low to high
-                                        </option>
-                                        <option>
-                                            Sort by price: high to low
-                                        </option>
-                                        <option>Sort by popularity</option>
-                                        <option>Sort by rating</option>
-                                    </select>
+                                    {sortConfig && (
+                                        <SortControl
+                                            config={sortConfig}
+                                            onChange={(field, direction) => {
+                                                dispatch(
+                                                    sortProducts({
+                                                        field,
+                                                        direction,
+                                                    })
+                                                );
+                                                console.log("Sort changed:", {
+                                                    field,
+                                                    direction,
+                                                });
+                                            }}
+                                        />
+                                    )}
                                 </div>
                             </div>
 

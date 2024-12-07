@@ -9,6 +9,8 @@ import {
 import { styled } from "@mui/material/styles";
 import { ArrowDownAZ, ArrowUpAZ } from "lucide-react";
 import { ClientSortConfig } from "@/app/service/filters";
+import { SortState } from "@/app/redux/productsSlice";
+import { Padding } from "@mui/icons-material";
 
 const StyledInput = styled(InputBase)(() => ({
     "label + &": {
@@ -40,30 +42,28 @@ const StyledSelect = styled(Select)(() => ({
 }));
 
 interface SortControlProps {
+    currentSort: SortState;
     config: ClientSortConfig;
     onChange: (field: string, direction: "asc" | "desc") => void;
 }
 
-export default function SortControl({ config, onChange }: SortControlProps) {
-    const [sort, setSort] = useState({
-        field: config.defaultOption,
-        direction: config.defaultDirection,
-    });
-
+export default function SortControl({
+    currentSort,
+    config,
+    onChange,
+}: SortControlProps) {
     const handleSortChange = (field: string) => {
-        const newSort = { field, direction: sort.direction };
-        setSort(newSort);
+        const newSort = { field, direction: currentSort.direction };
         onChange(newSort.field, newSort.direction);
     };
 
     const handleDirectionChange = () => {
         if (!config.allowDirectionChange) return;
-        const newDirection = sort.direction === "asc" ? "desc" : "asc";
+        const newDirection = currentSort.direction === "asc" ? "desc" : "asc";
         const newSort = {
-            ...sort,
+            ...currentSort,
             direction: newDirection,
-        } satisfies typeof sort;
-        setSort(newSort);
+        } satisfies SortState;
         onChange(newSort.field, newSort.direction);
     };
 
@@ -71,7 +71,7 @@ export default function SortControl({ config, onChange }: SortControlProps) {
         <div className="flex items-center gap-2">
             <FormControl size="small" className="min-w-48">
                 <StyledSelect
-                    value={sort.field}
+                    value={currentSort.field}
                     onChange={(e) => handleSortChange(String(e.target.value))}
                     input={<StyledInput />}
                     MenuProps={{
@@ -80,7 +80,15 @@ export default function SortControl({ config, onChange }: SortControlProps) {
                                 borderRadius: "0.5rem",
                                 marginTop: "4px",
                                 boxShadow:
-                                    "0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1)",
+                                    "0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px 1px rgb(0 0 0 / 0.1)",
+                            },
+                        },
+                        MenuListProps: {
+                            sx: {
+                                padding: "0.25rem",
+                                display: "flex",
+                                flexDirection: "column",
+                                gap: "0.25rem",
                             },
                         },
                     }}
@@ -91,10 +99,7 @@ export default function SortControl({ config, onChange }: SortControlProps) {
                             value={option.field}
                             sx={{
                                 fontSize: "14px",
-                                marginX: "4px",
                                 borderRadius: "0.25rem",
-                                "&:first-of-type": { marginTop: "4px" },
-                                "&:last-of-type": { marginBottom: "4px" },
                             }}
                         >
                             {option.label}
@@ -104,13 +109,13 @@ export default function SortControl({ config, onChange }: SortControlProps) {
             </FormControl>
 
             {config.allowDirectionChange &&
-                sort.field !== config.defaultOption && (
+                currentSort.field !== config.defaultOption && (
                     <IconButton
                         size="small"
                         onClick={handleDirectionChange}
                         className="text-gray1 hover:text-blue1"
                     >
-                        {sort.direction === "asc" ? (
+                        {currentSort.direction === "asc" ? (
                             <ArrowUpAZ className="w-5 h-5" />
                         ) : (
                             <ArrowDownAZ className="w-5 h-5" />

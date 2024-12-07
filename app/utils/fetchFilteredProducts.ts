@@ -1,16 +1,21 @@
-import { FilterValue } from "../types/filters";
+import { FilterValue, SortDirection } from "../types/filters";
 import { ProductType } from "../types/types";
 
 export async function fetchFilteredProducts(
-    filters: Record<string, FilterValue>
-): Promise<{
-    products: ProductType[];
-    total: number;
-}> {
+    filters: Record<string, FilterValue>,
+    sort: { field: string; direction: SortDirection },
+    sortingRuleSet: string
+): Promise<ProductType[]> {
     try {
         const params = new URLSearchParams();
+
         if (Object.keys(filters).length > 0) {
             params.append("filters", JSON.stringify(filters));
+        }
+
+        if (Object.keys(sort).length > 0) {
+            params.append("sort", JSON.stringify(sort));
+            params.append("sortingRuleSet", JSON.stringify(sortingRuleSet));
         }
 
         const response = await fetch(
@@ -22,6 +27,10 @@ export async function fetchFilteredProducts(
                 headers: {
                     "Content-Type": "application/json",
                 },
+                next: {
+                    revalidate:
+                        Number(process.env.NEXT_PUBLIC_REVALIDATE) || 60,
+                },
             }
         );
 
@@ -30,15 +39,9 @@ export async function fetchFilteredProducts(
         }
 
         const data = await response.json();
-        return {
-            products: data.products,
-            total: data.total,
-        };
+        return data.products;
     } catch (error) {
         console.error("Error fetching filtered products:", error);
-        return {
-            products: [],
-            total: 0,
-        };
+        return [];
     }
 }

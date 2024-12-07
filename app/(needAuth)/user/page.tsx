@@ -11,20 +11,16 @@ export default async function Header() {
     return (
         <div className="flex justify-center">
             <div className="customContainer">
-                {user ? (
+                {
                     <div>
                         <div className="text-[38px] font-bold mb-10">
                             Налаштування
                         </div>
                         <div className="flex justify-start">
-                            <ProfilePictureForm imgUrl={user.picture} />
+                            <ProfilePictureForm imgUrl={user!.picture} />
                         </div>
-                        42 братуха 42 БРАТУХАНЧИК😎🤟🤟🤟🤙🤙🤙 КЕМЕРОВО
-                        ЭУУУ🤙🤙😎😎
                     </div>
-                ) : (
-                    <div>{"авторизируйся, 41 амиго("}</div>
-                )}
+                }
             </div>
         </div>
     );

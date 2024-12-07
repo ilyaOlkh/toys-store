@@ -1,22 +1,65 @@
 import { fetchProducts } from "@/app/utils/fetch";
 import { IParams } from "../types/types";
 import ProductsListScreen from "../components/productsList/ProductsListScreen";
-import { ProductsStoreProvider } from "../components/ProductsContext";
 import { getClientFilters, getClientSorts } from "../service/filters";
+import { fetchFilteredProducts } from "../utils/fetchFilteredProducts";
+import { FilterValue, SortDirection } from "../types/filters";
 
 export const dynamic = "force-dynamic";
 
-export default async function products(params: IParams) {
-    const initialProducts = await fetchProducts();
-    const initialFilters = await getClientFilters();
-    const initialSorts = await getClientSorts();
+export default async function Products({ searchParams }: IParams) {
+    // Получаем параметры из URL
+    const urlFilters: Record<string, FilterValue> = searchParams?.filters
+        ? JSON.parse(searchParams.filters as string)
+        : {};
+    const urlSort = searchParams?.sort
+        ? JSON.parse(searchParams.sort as string)
+        : null;
+    const urlSortingRuleSet = searchParams?.sortingRuleSet || "mainSort";
+
+    // Получаем конфигурации фильтров и сортировки
+    const [initialFilters, initialSorts] = await Promise.all([
+        getClientFilters(),
+        getClientSorts(),
+    ]);
+
+    // Подготавливаем начальные значения фильтров
+    const defaultFilters = initialFilters.reduce<Record<string, FilterValue>>(
+        (acc, filter) => ({
+            ...acc,
+            [filter.name]: filter.defaultValue,
+        }),
+        {}
+    );
+
+    // Подготавливаем начальные значения сортировки
+    const defaultSort = {
+        field: initialSorts[0]?.defaultOption || "default",
+        direction: (initialSorts[0]?.defaultDirection ||
+            "asc") as SortDirection,
+    };
+
+    // Используем значения из URL или дефолтные
+    const initialFilterValues =
+        Object.keys(urlFilters).length > 0 ? urlFilters : defaultFilters;
+    const initialSort = urlSort || defaultSort;
+    const initialSortingRuleSet = urlSortingRuleSet;
+
+    // Получаем продукты с учетом начальных фильтров и сортировки
+    const products = await fetchFilteredProducts(
+        initialFilterValues,
+        initialSort,
+        initialSortingRuleSet
+    );
 
     return (
         <ProductsListScreen
-            initialProducts={initialProducts}
+            initialProducts={products}
             initialFilters={initialFilters}
             initialSortConfig={initialSorts[0]}
-            initialSortingRuleSet="mainSort"
+            initialSortingRuleSet={initialSortingRuleSet}
+            initialFilterValues={initialFilterValues}
+            initialSort={initialSort}
         />
     );
 }

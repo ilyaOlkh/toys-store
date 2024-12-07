@@ -25,7 +25,9 @@ export default async function Header() {
                             width={28}
                             height={20}
                         />
-                        <span>Free free shipping with over $150</span>
+                        <span>
+                            Безкоштовна доставка при замовленні від 150$
+                        </span>
                     </div>
                     <div className="hidden items-center  gap-10 z-1 relative md:flex">
                         {user ? (
@@ -56,31 +58,25 @@ export default async function Header() {
                             className="w-[144px] max-w-[144px] cursor-pointer"
                         />
                     </a>
-                    <ul className="hidden gap-2 max-w-[532px] font-bold w-full justify-around flex-shrink basis-[532px] md:flex">
-                        <a href="/" className="block p-1">
-                            <li>Home</li>
-                        </a>
-                        <a href="/products" className="block  p-1">
-                            <li>Shop</li>
-                        </a>
-                        <a href="/pages" className="block p-1">
-                            <li>Pages</li>
-                        </a>
-                        <a href="/blog" className="block p-1">
-                            <li>Blog</li>
-                        </a>
-                        <a href="/contact" className="block p-1">
-                            <li>Contact</li>
-                        </a>
-                    </ul>
-                    <div className="flex flex-shrink basis-[332px] gap-2 items-center md:gap-6 md:flex-shrink-[0.5]">
+                    <div className="flex flex-shrink gap-2 items-center md:gap-4">
+                        <ul className="hidden gap-4 font-bold w-full justify-end flex-shrink md:flex">
+                            <a href="/" className="block p-1">
+                                <li>Головна</li>
+                            </a>
+                            <a href="/products" className="block  p-1">
+                                <li>Магазин</li>
+                            </a>
+                            <a href="/contact" className="block p-1">
+                                <li>Контакти</li>
+                            </a>
+                        </ul>
                         <div className="order-2 pr-0 md:order-1">
                             <CartIcon />
                         </div>
                         <div className="order-2 pr-0 md:order-1">
                             <FavoriteIcon />
                         </div>
-                        <div className="order-1 md:order-2">
+                        <div className="order-1 md:order-2 basis-96">
                             <SearchBar />
                         </div>
                     </div>

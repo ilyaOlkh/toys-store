@@ -7,13 +7,23 @@ import productsReducer, {
     ProductsStateType,
 } from "../redux/productsSlice";
 import { ProductType } from "../types/types";
-import { ClientFilter, SortConfig } from "../types/filters";
+import {
+    ClientFilter,
+    SortConfig,
+    FilterValue,
+    SortDirection,
+} from "../types/filters";
 
 const makeProductsStore = (
     initialProducts: ProductType[],
     filters: ClientFilter[],
     sortConfig: SortConfig,
-    sortingRuleSet: string
+    sortingRuleSet: string,
+    initialFilterValues: Record<string, FilterValue>,
+    initialSort: {
+        field: string;
+        direction: SortDirection;
+    }
 ) => {
     const store = configureStore({
         reducer: {
@@ -28,6 +38,8 @@ const makeProductsStore = (
             filters: filters,
             sortConfig: sortConfig,
             sortingRuleSet: sortingRuleSet,
+            filterValues: initialFilterValues,
+            sort: initialSort,
         })
     );
 
@@ -46,6 +58,11 @@ interface ProductsStoreProviderProps {
     filters: ClientFilter[];
     sortConfig: SortConfig;
     sortingRuleSet: string;
+    initialFilterValues: Record<string, FilterValue>;
+    initialSort: {
+        field: string;
+        direction: SortDirection;
+    };
 }
 
 export function ProductsStoreProvider({
@@ -54,6 +71,8 @@ export function ProductsStoreProvider({
     filters,
     sortConfig,
     sortingRuleSet,
+    initialFilterValues,
+    initialSort,
 }: ProductsStoreProviderProps) {
     const storeRef = useRef<ProductsStore | null>(null);
 
@@ -62,7 +81,9 @@ export function ProductsStoreProvider({
             initialProducts,
             filters,
             sortConfig,
-            sortingRuleSet
+            sortingRuleSet,
+            initialFilterValues,
+            initialSort
         );
     }
 

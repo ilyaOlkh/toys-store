@@ -1,4 +1,3 @@
-// app/redux/productsSlice.ts
 import { createSlice, createAsyncThunk, PayloadAction } from "@reduxjs/toolkit";
 import { ProductType } from "@/app/types/types";
 import {
@@ -9,12 +8,61 @@ import {
 } from "../types/filters";
 import { ProductsDispatch } from "../components/ProductsContext";
 
+// Helper function to update URL search params
+const updateSearchParams = (
+    filterValues: { [key: string]: FilterValue },
+    sort: SortState,
+    sortingRuleSet: string
+) => {
+    if (typeof window === "undefined") return;
+
+    const searchParams = new URLSearchParams(window.location.search);
+
+    // Update filters in URL
+    if (Object.keys(filterValues).length > 0) {
+        searchParams.set("filters", JSON.stringify(filterValues));
+    } else {
+        searchParams.delete("filters");
+    }
+
+    // Update sort in URL
+    if (Object.keys(sort).length > 0) {
+        searchParams.set("sort", JSON.stringify(sort));
+        searchParams.set("sortingRuleSet", sortingRuleSet);
+    } else {
+        searchParams.delete("sort");
+        searchParams.delete("sortingRuleSet");
+    }
+
+    // Update URL without reload
+    const newUrl = `${window.location.pathname}?${searchParams.toString()}`;
+    window.history.pushState({ path: newUrl }, "", newUrl);
+};
+
+// Helper function to get initial state from URL
+const getInitialStateFromUrl = () => {
+    if (typeof window === "undefined") return {};
+
+    const searchParams = new URLSearchParams(window.location.search);
+    const urlFilters = searchParams.get("filters");
+    const urlSort = searchParams.get("sort");
+    const urlSortingRuleSet = searchParams.get("sortingRuleSet");
+
+    return {
+        filterValues: urlFilters ? JSON.parse(urlFilters) : {},
+        sort: urlSort
+            ? JSON.parse(urlSort)
+            : { field: "default", direction: "asc" },
+        sortingRuleSet: urlSortingRuleSet || "",
+    };
+};
+
 interface FilterChange {
     name: string;
     value: FilterValue;
 }
 
-interface SortState {
+export interface SortState {
     field: string;
     direction: SortDirection;
 }
@@ -35,13 +83,15 @@ export interface ProductsStateType {
     queue: boolean;
 }
 
+// Merge URL state with default initial state
+const urlState = getInitialStateFromUrl();
 const initialState: ProductsStateType = {
     products: [],
-    filterValues: {},
+    filterValues: urlState.filterValues || {},
     filterConfigs: [],
     sortConfig: null,
-    sortingRuleSet: "",
-    sort: {
+    sortingRuleSet: urlState.sortingRuleSet || "",
+    sort: urlState.sort || {
         field: "default",
         direction: "asc",
     },
@@ -77,7 +127,6 @@ export const fetchFilteredProducts = createAsyncThunk<
         params.append("sortingRuleSet", JSON.stringify(sortingRuleSet));
     }
 
-    // Выполняем запрос
     const response = await fetch(
         `${
             process.env.NEXT_PUBLIC_URL
@@ -121,19 +170,17 @@ const productsSlice = createSlice({
                 filters: ClientFilter[];
                 sortConfig: SortConfig;
                 sortingRuleSet: string;
+                filterValues: Record<string, FilterValue>;
+                sort: SortState;
             }>
         ) => {
             state.products = action.payload.products;
             state.filterConfigs = action.payload.filters;
-            state.filterValues = action.payload.filters.reduce(
-                (acc, filter) => ({
-                    ...acc,
-                    [filter.name]: filter.defaultValue,
-                }),
-                {}
-            );
             state.sortConfig = action.payload.sortConfig;
             state.sortingRuleSet = action.payload.sortingRuleSet;
+            state.filterValues = action.payload.filterValues;
+            state.sort = action.payload.sort;
+            console.log(action.payload.sort);
             state.isInitialized = true;
         },
         setFilter: (state, action: PayloadAction<FilterChange>) => {
@@ -150,19 +197,12 @@ const productsSlice = createSlice({
                 state.filterValues[name] = value;
             }
 
-            fetchFilteredProducts();
-        },
-        setPending: (state, action: PayloadAction<boolean>) => {
-            state.nowPending = action.payload;
-        },
-        clearPending: (state) => {
-            state.nowPending = false;
-        },
-        setQueue: (state, action: PayloadAction<boolean>) => {
-            state.queue = action.payload;
-        },
-        clearQueue: (state) => {
-            state.queue = false;
+            // Update URL when filter changes
+            updateSearchParams(
+                state.filterValues,
+                state.sort,
+                state.sortingRuleSet
+            );
         },
         setSort: (
             state,
@@ -177,16 +217,22 @@ const productsSlice = createSlice({
                 direction: direction ?? state.sort.direction,
             };
 
-            fetchFilteredProducts();
+            updateSearchParams(
+                state.filterValues,
+                state.sort,
+                state.sortingRuleSet
+            );
         },
-
         toggleSortDirection: (state) => {
             state.sort.direction =
                 state.sort.direction === "asc" ? "desc" : "asc";
 
-            fetchFilteredProducts();
+            updateSearchParams(
+                state.filterValues,
+                state.sort,
+                state.sortingRuleSet
+            );
         },
-
         resetSort: (state) => {
             const defaultConfig = state.sortConfig;
             state.sort = {
@@ -195,9 +241,14 @@ const productsSlice = createSlice({
                     ? defaultConfig.defaultDirection
                     : "asc",
             };
+
+            updateSearchParams(
+                state.filterValues,
+                state.sort,
+                state.sortingRuleSet
+            );
         },
         resetFilters: (state) => {
-            // Сбрасываем к начальным значениям из конфигурации
             state.filterValues = state.filterConfigs.reduce(
                 (acc, filter) => ({
                     ...acc,
@@ -207,6 +258,24 @@ const productsSlice = createSlice({
             );
             state.queue = false;
             state.nowPending = false;
+
+            updateSearchParams(
+                state.filterValues,
+                state.sort,
+                state.sortingRuleSet
+            );
+        },
+        setPending: (state, action: PayloadAction<boolean>) => {
+            state.nowPending = action.payload;
+        },
+        clearPending: (state) => {
+            state.nowPending = false;
+        },
+        setQueue: (state, action: PayloadAction<boolean>) => {
+            state.queue = action.payload;
+        },
+        clearQueue: (state) => {
+            state.queue = false;
         },
     },
     extraReducers: (builder) => {

@@ -94,8 +94,6 @@ model favorites {
     user_identifier String
     product_id      Int
     product         products @relation(fields: [product_id], references: [id], onDelete: Cascade)
-
-    @@unique([product_id])
 }
 
 model cart {
@@ -104,8 +102,6 @@ model cart {
     product_id      Int
     quantity        Int
     product         products @relation(fields: [product_id], references: [id], onDelete: Cascade)
-
-    @@unique([product_id])
 }
 
 model comments {

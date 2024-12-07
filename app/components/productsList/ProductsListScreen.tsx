@@ -4,7 +4,12 @@ import React from "react";
 import { ProductType } from "@/app/types/types";
 import { ProductCard } from "@/app/components/productCard";
 import { ProductsStoreProvider, useProducts } from "../ProductsContext";
-import { ClientFilter, SortConfig } from "@/app/types/filters";
+import {
+    ClientFilter,
+    FilterValue,
+    SortConfig,
+    SortDirection,
+} from "@/app/types/filters";
 import { FiltersList } from "./FiltersList";
 import { filterProducts, sortProducts } from "@/app/redux/productsSlice";
 import SortControl from "./SortSelect";
@@ -14,6 +19,11 @@ interface ProductsListScreenProps {
     initialFilters: ClientFilter[];
     initialSortConfig: SortConfig;
     initialSortingRuleSet: string;
+    initialFilterValues: Record<string, FilterValue>;
+    initialSort: {
+        field: string;
+        direction: SortDirection;
+    };
 }
 
 export default function ProductsListScreen({
@@ -21,6 +31,8 @@ export default function ProductsListScreen({
     initialFilters,
     initialSortConfig,
     initialSortingRuleSet,
+    initialFilterValues,
+    initialSort,
 }: ProductsListScreenProps) {
     return (
         <ProductsStoreProvider
@@ -28,6 +40,8 @@ export default function ProductsListScreen({
             filters={initialFilters}
             sortConfig={initialSortConfig}
             sortingRuleSet={initialSortingRuleSet}
+            initialFilterValues={initialFilterValues}
+            initialSort={initialSort}
         >
             <ProductsContent />
         </ProductsStoreProvider>
@@ -98,6 +112,7 @@ function ProductsContent() {
                                     </div>
                                     {sortConfig && (
                                         <SortControl
+                                            currentSort={sort}
                                             config={sortConfig}
                                             onChange={(field, direction) => {
                                                 dispatch(

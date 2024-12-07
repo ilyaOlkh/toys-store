@@ -72,7 +72,7 @@ const SearchBar: React.FC = () => {
             <div className="flex items-center border-2 border-lightGray1 rounded-full w-full font-semibold ">
                 <input
                     type="text"
-                    placeholder="Search"
+                    placeholder="Пошук"
                     value={searchQuery}
                     onChange={handleSearchChange}
                     className="px-4 py-2 rounded-full text-gray1 focus:outline-none placeholder:text-gray1 w-full"

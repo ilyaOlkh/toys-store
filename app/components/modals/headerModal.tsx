@@ -80,7 +80,7 @@ export default function HeaderModal() {
                                     </div>
                                     <div
                                         className={
-                                            "text-base text-black pl-1 normal-case text-left self-start " +
+                                            "text-base text-black pl-1 normal-case text-left self-start flex items-center overflow-hidden h-full w-full " +
                                             comfortaa.className
                                         }
                                     >
@@ -134,19 +134,13 @@ export default function HeaderModal() {
                     <Divider />
                     <nav className="mb-4 font-bold text-lg p-4">
                         <a href="/" className="block mb-2">
-                            Home
+                            Головна
                         </a>
                         <a href="/products" className="block  mb-2">
-                            Shop
-                        </a>
-                        <a href="/pages" className="block mb-2">
-                            Pages
-                        </a>
-                        <a href="/blog" className="block mb-2">
-                            Blog
+                            Магазин
                         </a>
                         <a href="/contact" className="block mb-2">
-                            Contact
+                            Контакти
                         </a>
                     </nav>
                 </Box>

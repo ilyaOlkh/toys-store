@@ -2,7 +2,6 @@
 
 import { Comfortaa } from "next/font/google";
 import { createTheme, ThemeProvider } from "@mui/material";
-import { Opacity } from "@mui/icons-material";
 
 const comfortaa = Comfortaa({ subsets: ["latin"] });
 
@@ -33,7 +32,6 @@ const theme = createTheme({
                         backgroundColor: "rgba(0, 0, 0, 0.5)",
                     },
                 },
-
                 paper: {
                     width: "100%",
                     marginTop: "100px",
@@ -48,7 +46,6 @@ const theme = createTheme({
                         marginTop: "0px",
                         height: "100%",
                         borderRadius: "0px",
-
                         "&::before": {
                             display: "none",
                         },
@@ -60,27 +57,52 @@ const theme = createTheme({
                         left: "50%",
                         transform: "translateX(-50%)",
                         height: "6px",
-                        width: "100px", // Width of the indicator
-                        backgroundColor: "#fff", // Color of the indicator
-                        borderRadius: "3px", // Optional: rounded corners
-                        marginTop: "-3px", // Position it slightly above the drawer
-                        zIndex: 100, // Ensure it appears above other content
+                        width: "100px",
+                        backgroundColor: "#fff",
+                        borderRadius: "3px",
+                        marginTop: "-3px",
+                        zIndex: 100,
                         opacity: "0.5",
                     },
                 },
             },
         },
+        MuiSelect: {
+            styleOverrides: {
+                select: {
+                    padding: "4px 32px 4px 8px !important", // Consistent padding across all screen sizes
+                    "&.MuiInputBase-input": {
+                        minHeight: "unset",
+                    },
+                },
+            },
+        },
+        MuiMenuItem: {
+            styleOverrides: {
+                root: {
+                    minHeight: "32px",
+                    padding: "4px 16px",
+                    fontSize: "14px",
+                    "&.Mui-selected": {
+                        backgroundColor: "rgba(15, 131, 178, 0.08)",
+                    },
+                    "@media (max-width:640px)": {
+                        padding: "4px 16px", // Force same padding on mobile
+                        minHeight: "32px", // Force same height on mobile
+                    },
+                },
+            },
+        },
+        MuiList: {
+            styleOverrides: {
+                root: {
+                    padding: "4px",
+                },
+            },
+        },
     },
-    // components: {
-    //     MuiButton: {
-    //         styleOverrides: {
-    //             root: {
-    //                 borderRadius: "8px", // Изменение стиля кнопок
-    //             },
-    //         },
-    //     },
-    // },
 });
+
 export default function AppProvider({
     children,
 }: {

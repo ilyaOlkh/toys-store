@@ -3,6 +3,7 @@ import { PrismaClient } from "@prisma/client";
 import { buildWhereConditions } from "@/lib/products/filters";
 import { buildOrderByConditions } from "@/lib/products/sorts";
 import { formatProducts } from "@/lib/products/format";
+import { serverSorts } from "@/app/constants/filtersSettings";
 
 const prisma = new PrismaClient();
 
@@ -35,7 +36,23 @@ export async function GET(request: NextRequest) {
         });
 
         // Форматируем и возвращаем результат
-        const formattedProducts = formatProducts(products);
+        let formattedProducts = formatProducts(products);
+
+        if (sort && sortingRuleSet) {
+            const sortConfig = serverSorts.find(
+                (config) => config.name === sortingRuleSet
+            );
+            if (sortConfig) {
+                const selectedSort = sortConfig.options.find(
+                    (option) => option.field === sort.field
+                );
+                if (selectedSort?.sort) {
+                    formattedProducts = formattedProducts.sort((a, b) =>
+                        selectedSort.sort!(a, b, sort.direction)
+                    );
+                }
+            }
+        }
 
         return NextResponse.json({
             products: formattedProducts,

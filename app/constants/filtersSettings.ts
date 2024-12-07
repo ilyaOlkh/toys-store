@@ -195,48 +195,83 @@ export const serverSorts: SortConfig[] = [
                 prismaSort: () => ({ id: "asc" }),
             },
             {
-                field: "price",
-                label: "Ціною",
-                prismaSort: (direction) => ({ price: direction }),
+                field: "price_asc",
+                label: "Ціною: від дешевших до дорожчих",
+                prismaSort: () => ({ price: "asc" }),
             },
             {
-                field: "created_at",
-                label: "Датою додавання",
-                prismaSort: (direction) => ({ created_at: direction }),
+                field: "price_desc",
+                label: "Ціною: від дорожчих до дешевших",
+                prismaSort: () => ({ price: "desc" }),
             },
             {
-                field: "name",
-                label: "Назвою",
-                prismaSort: (direction) => ({ name: direction }),
+                field: "created_at_desc",
+                label: "Спочатку новіші",
+                prismaSort: () => ({ created_at: "desc" }),
             },
             {
-                field: "average_rating",
-                label: "Рейтингом",
-                computed: true,
-                computedFields: [
-                    {
-                        name: "averageRating",
-                        compute: async () => {
-                            await prisma.$executeRaw`
-                                CREATE TEMPORARY TABLE IF NOT EXISTS product_ratings AS
-                                SELECT 
-                                    product_id,
-                                    COALESCE(AVG(rating), 0) as avg_rating
-                                FROM comments 
-                                GROUP BY product_id
-                            `;
-                            return Prisma.sql`avg_rating`;
-                        },
-                    },
-                ],
-                prismaSort: (direction) => ({
-                    id: direction,
-                }),
+                field: "created_at_asc",
+                label: "Спочатку старіші",
+                prismaSort: () => ({ created_at: "asc" }),
+            },
+            {
+                field: "name_asc",
+                label: "За назвою: А-Я",
+                prismaSort: () => ({ name: "asc" }),
+            },
+            {
+                field: "name_desc",
+                label: "За назвою: Я-А",
+                prismaSort: () => ({ name: "desc" }),
+            },
+            {
+                field: "rating_desc",
+                label: "За рейтингом: спочатку високий",
+                prismaSort: () => ({ id: "desc" }),
+                sort: (a: any, b: any) => {
+                    const aRating = a.comments?.length
+                        ? a.comments.reduce(
+                              (sum: number, comment: any) =>
+                                  sum + comment.rating,
+                              0
+                          ) / a.comments.length
+                        : 0;
+                    const bRating = b.comments?.length
+                        ? b.comments.reduce(
+                              (sum: number, comment: any) =>
+                                  sum + comment.rating,
+                              0
+                          ) / b.comments.length
+                        : 0;
+                    return bRating - aRating;
+                },
+            },
+            {
+                field: "rating_asc",
+                label: "За рейтингом: спочатку низький",
+                prismaSort: () => ({ id: "asc" }),
+                sort: (a: any, b: any) => {
+                    const aRating = a.comments?.length
+                        ? a.comments.reduce(
+                              (sum: number, comment: any) =>
+                                  sum + comment.rating,
+                              0
+                          ) / a.comments.length
+                        : 0;
+                    const bRating = b.comments?.length
+                        ? b.comments.reduce(
+                              (sum: number, comment: any) =>
+                                  sum + comment.rating,
+                              0
+                          ) / b.comments.length
+                        : 0;
+                    return aRating - bRating;
+                },
             },
         ],
         defaultOption: "default",
         defaultDirection: "asc",
-        allowDirectionChange: true,
+        allowDirectionChange: false,
     },
     {
         name: "secondarySort",

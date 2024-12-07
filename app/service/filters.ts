@@ -69,7 +69,7 @@ export async function getClientSorts(): Promise<ClientSortConfig[]> {
 
     for (const sort of serverSorts) {
         const clientOptions = sort.options.map(
-            ({ prismaSort, computed, computedFields, ...clientOption }) =>
+            ({ prismaSort, computed, computedFields, sort, ...clientOption }) =>
                 clientOption
         );
 

@@ -88,6 +88,7 @@ export interface SortOption {
     ) => Prisma.productsOrderByWithRelationInput;
     computedFields?: ComputedSortField[];
     computed?: boolean;
+    sort?: (a: any, b: any, direction: SortDirection) => number;
 }
 
 export interface SortConfig {

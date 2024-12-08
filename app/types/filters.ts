@@ -1,11 +1,8 @@
 import { Prisma } from "@prisma/client";
 
+// Base types
 export type FilterType = "select" | "range" | "multi-select" | "toggle";
-
-export type PrismaWhereInput = Prisma.productsWhereInput;
-export type RawQueryFilter = { id: { in: Prisma.Sql } };
-export type FilterQueryResult = PrismaWhereInput | RawQueryFilter;
-
+export type SortDirection = "asc" | "desc";
 export type FilterValue =
     | string
     | number
@@ -14,9 +11,8 @@ export type FilterValue =
     | { from: number; to: number }
     | null;
 
-export interface ComputedField {
-    name: string;
-    compute: () => Promise<Prisma.Sql>;
+export interface RawQueryResult {
+    rawQuery: Prisma.Sql;
 }
 
 interface BaseFilter {
@@ -26,8 +22,7 @@ interface BaseFilter {
     title: string;
     defaultExpanded?: boolean;
     generateValues?: () => Promise<Partial<Filter>>;
-    computedFields?: ComputedField[];
-    prismaQuery: (value: any) => Prisma.productsWhereInput | FilterQueryResult;
+    buildQuery: (value: any) => RawQueryResult;
 }
 
 export interface SelectFilter extends BaseFilter {
@@ -60,35 +55,23 @@ export type Filter =
     | MultiSelectFilter
     | ToggleFilter;
 
+// Client-side filter types (omitting server-specific fields)
 export type ClientFilter =
-    | Omit<SelectFilter, "prismaQuery" | "generateValues">
-    | Omit<RangeFilter, "prismaQuery" | "generateValues">
-    | Omit<MultiSelectFilter, "prismaQuery" | "generateValues">
-    | Omit<ToggleFilter, "prismaQuery" | "generateValues">;
+    | Omit<SelectFilter, "buildQuery" | "generateValues">
+    | Omit<RangeFilter, "buildQuery" | "generateValues">
+    | Omit<MultiSelectFilter, "buildQuery" | "generateValues">
+    | Omit<ToggleFilter, "buildQuery" | "generateValues">;
 
 export interface ActiveFilter {
     name: string;
     value: FilterValue;
 }
 
-// Тип для сортировки
-
-export type SortDirection = "asc" | "desc";
-
-export interface ComputedSortField {
-    name: string;
-    compute: () => Promise<Prisma.Sql>;
-}
-
+// Sort Types
 export interface SortOption {
     field: string;
     label: string;
-    prismaSort?: (
-        direction: SortDirection
-    ) => Prisma.productsOrderByWithRelationInput;
-    computedFields?: ComputedSortField[];
-    computed?: boolean;
-    sort?: (a: any, b: any, direction: SortDirection) => number;
+    buildQuery: () => Prisma.Sql;
 }
 
 export interface SortConfig {

@@ -27,9 +27,9 @@ export const serverFilters: Filter[] = [
             rawQuery: Prisma.sql`
                 EXISTS (
                     SELECT 1 
-                    FROM product_types pt
-                    JOIN types t ON pt.type_id = t.id
-                    WHERE pt.product_id = p.id 
+                    FROM product_types_relation ptr
+                    JOIN types t ON ptr.type_id = t.id
+                    WHERE ptr.product_id = p.id 
                     AND t.name IN (${Prisma.join(values)})
                 )
             `,
@@ -91,8 +91,8 @@ export const serverFilters: Filter[] = [
                         SELECT 1 
                         FROM discounts d 
                         WHERE d.product_id = p.id 
-                        AND d.start_date <= CURRENT_TIMESTAMP 
-                        AND d.end_date >= CURRENT_TIMESTAMP
+                        AND d.start_date <= CURRENT_DATE
+                        AND d.end_date >= CURRENT_DATE
                     )`
                 : Prisma.sql`TRUE`,
         }),

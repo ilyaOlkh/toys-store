@@ -16,7 +16,6 @@ export async function getFilteredProducts({
     limit,
     offset,
 }: ProductQueryParams) {
-    // Base query for products with all necessary information
     const baseQuery = Prisma.sql`
         WITH product_ratings AS (
             SELECT 
@@ -59,9 +58,8 @@ export async function getFilteredProducts({
                         'start_date', start_date,
                         'end_date', end_date
                     )
-                ) as discounts
+                ) FILTER (WHERE start_date <= CURRENT_DATE AND end_date >= CURRENT_DATE) as discounts
             FROM discounts
-            WHERE start_date <= CURRENT_TIMESTAMP AND end_date >= CURRENT_TIMESTAMP
             GROUP BY product_id
         )
         SELECT 
@@ -87,7 +85,6 @@ export async function getFilteredProducts({
         ${offset ? Prisma.sql`OFFSET ${offset}` : Prisma.empty}
     `;
 
-    // Get total count
     const countQuery = Prisma.sql`
         SELECT COUNT(*) as total
         FROM products p

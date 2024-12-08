@@ -1,12 +1,29 @@
-import Image from "next/image";
-import { fetchProducts, fetchTypes } from "./utils/fetch";
+import { fetchTypes } from "./utils/fetch";
 import TypeCard from "./components/typeCard";
 import HeroSection from "./components/heroSection";
-import { ProductCard } from "./components/productCard";
+import { fetchFilteredProducts } from "./utils/fetchFilteredProducts";
+import { getClientSorts } from "./service/filters";
+import { SortDirection } from "./types/filters";
+import MainProductScreen from "./components/productsList/MainProductScreen";
 
 export default async function Home() {
-    const types = await fetchTypes();
-    const products = await fetchProducts();
+    const [types, initialSorts] = await Promise.all([
+        fetchTypes(),
+        getClientSorts(),
+    ]);
+
+    const defaultSort = {
+        field: initialSorts[0]?.defaultOption || "default",
+        direction: (initialSorts[0]?.defaultDirection ||
+            "asc") as SortDirection,
+    };
+
+    const products = await fetchFilteredProducts(
+        {},
+        defaultSort,
+        "secondarySort",
+        { limit: 8, offset: 0 }
+    );
 
     if (types.length === 0) return <div>Loading...</div>;
     return (
@@ -14,30 +31,40 @@ export default async function Home() {
             <HeroSection />
             <div className="flex justify-center">
                 <div className="customContainer">
-                    <h1>Product Types</h1>
-                    <ul className="flex gap-2 flex-wrap justify-around">
-                        {types ? (
-                            types.map((type) => (
-                                <li key={type.id}>
-                                    <TypeCard typeObj={type} />
-                                </li>
-                            ))
-                        ) : (
-                            <></>
-                        )}
-                        <div className="grid grid-cols-1 gap-3 gap-y-10 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 lg:gap-6">
-                            {products.map((product) => (
-                                <ProductCard
-                                    id={product.id}
-                                    img={product.imageUrl ?? "/noPhoto.png"}
-                                    title={product.name}
-                                    firstPrice={String(product.price)}
-                                    discountPrice={String(product.discount)}
-                                    rating={product.average_rating}
-                                />
-                            ))}
+                    <section className="flex flex-col gap-12 items-center pt-12 md:pt-24 pb-6 md:pb-12">
+                        <div className="flex flex-col items-center gap-2">
+                            <p className="text-4xl text-black font-bold text-center">
+                                Знайди ідеальну іграшку
+                            </p>
+                            <p className="text-2xl text-[#2D2D2D] text-center">
+                                Наші колекції
+                            </p>
                         </div>
-                    </ul>
+                        <ul className="flex gap-2 flex-wrap justify-around">
+                            {types ? (
+                                types.map((type) => (
+                                    <li key={type.id}>
+                                        <TypeCard typeObj={type} />
+                                    </li>
+                                ))
+                            ) : (
+                                <></>
+                            )}
+                        </ul>
+                    </section>
+                    <section className="py-12">
+                        <h2 className="text-3xl font-bold text-center mb-8">
+                            Популярні іграшки
+                        </h2>
+                        <MainProductScreen
+                            initialProducts={products}
+                            initialSortConfig={initialSorts[1]}
+                            initialSortingRuleSet="secondarySort"
+                            initialSort={defaultSort}
+                            limit={8}
+                            offset={0}
+                        />
+                    </section>
                 </div>
             </div>
         </div>

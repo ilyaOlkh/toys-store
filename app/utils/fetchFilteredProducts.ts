@@ -1,10 +1,16 @@
 import { FilterValue, SortDirection } from "../types/filters";
 import { ProductType } from "../types/types";
 
+interface PaginationParams {
+    limit?: number;
+    offset?: number;
+}
+
 export async function fetchFilteredProducts(
     filters: Record<string, FilterValue>,
     sort: { field: string; direction: SortDirection },
-    sortingRuleSet: string
+    sortingRuleSet: string,
+    pagination?: PaginationParams
 ): Promise<ProductType[]> {
     try {
         const params = new URLSearchParams();
@@ -16,6 +22,14 @@ export async function fetchFilteredProducts(
         if (Object.keys(sort).length > 0) {
             params.append("sort", JSON.stringify(sort));
             params.append("sortingRuleSet", JSON.stringify(sortingRuleSet));
+        }
+
+        // Add pagination parameters if provided
+        if (pagination?.limit !== undefined) {
+            params.append("limit", pagination.limit.toString());
+        }
+        if (pagination?.offset !== undefined) {
+            params.append("offset", pagination.offset.toString());
         }
 
         const response = await fetch(

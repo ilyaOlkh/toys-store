@@ -1,11 +1,8 @@
+// app/api/products/route.ts
 import { NextRequest, NextResponse } from "next/server";
-import { PrismaClient } from "@prisma/client";
 import { buildWhereConditions } from "@/lib/products/filters";
 import { buildOrderByConditions } from "@/lib/products/sorts";
-import { formatProducts } from "@/lib/products/format";
-import { serverSorts } from "@/app/constants/filtersSettings";
-
-const prisma = new PrismaClient();
+import { getFilteredProducts } from "@/lib/products/getFilteredProducts";
 
 export async function GET(request: NextRequest) {
     try {
@@ -24,82 +21,28 @@ export async function GET(request: NextRequest) {
             ? parseInt(searchParams.get("offset")!)
             : undefined;
 
+        // Build query conditions
         const [whereConditions, orderByConditions] = await Promise.all([
             buildWhereConditions(filters),
             buildOrderByConditions(sort, sortingRuleSet),
         ]);
 
-        const products = await prisma.products.findMany({
-            select: {
-                id: true,
-                name: true,
-                price: true,
-                discount: true,
-                description: true,
-                stock_quantity: true,
-                sku_code: true,
-                created_at: true,
-                images: {
-                    select: {
-                        id: true,
-                        product_id: true,
-                        image_blob: true,
-                    },
-                },
-                comments: {
-                    select: {
-                        id: true,
-                        user_identifier: true,
-                        comment: true,
-                        rating: true,
-                        created_at: true,
-                        edited_at: true,
-                        edited_by: true,
-                    },
-                },
-                discounts: {
-                    select: {
-                        id: true,
-                        new_price: true,
-                        start_date: true,
-                        end_date: true,
-                    },
-                },
-            },
-            where: whereConditions,
-            orderBy: orderByConditions,
-            ...(limit !== undefined && { take: limit }),
-            ...(offset !== undefined && { skip: offset }),
+        // Get filtered products
+        const { products, total } = await getFilteredProducts({
+            whereConditions,
+            orderByConditions,
+            limit,
+            offset,
         });
 
-        let formattedProducts = formatProducts(products);
-
-        if (sort && sortingRuleSet) {
-            const sortConfig = serverSorts.find(
-                (config) => config.name === sortingRuleSet
-            );
-            if (sortConfig) {
-                const selectedSort = sortConfig.options.find(
-                    (option) => option.field === sort.field
-                );
-                if (selectedSort?.sort) {
-                    formattedProducts = formattedProducts.sort((a, b) =>
-                        selectedSort.sort!(a, b, sort.direction)
-                    );
-                }
-            }
-        }
-
         return NextResponse.json({
-            products: formattedProducts,
-            total: formattedProducts.length,
+            products,
+            total,
             pagination: {
                 limit,
                 offset,
-                currentCount: formattedProducts.length,
+                currentCount: products.length,
             },
-            appliedFilters: whereConditions,
-            appliedSorts: orderByConditions,
         });
     } catch (error) {
         console.error("Error processing filtered products request:", error);

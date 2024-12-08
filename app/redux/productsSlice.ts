@@ -7,25 +7,24 @@ import {
     SortDirection,
 } from "../types/filters";
 import { ProductsDispatch } from "../components/ProductsContext";
+import { ClientSortConfig } from "../service/filters";
 
-// Helper function to update URL search params
 const updateSearchParams = (
     filterValues: { [key: string]: FilterValue },
     sort: SortState,
-    sortingRuleSet: string
+    sortingRuleSet: string,
+    pagination?: { limit?: number; offset?: number }
 ) => {
     if (typeof window === "undefined") return;
 
     const searchParams = new URLSearchParams(window.location.search);
 
-    // Update filters in URL
     if (Object.keys(filterValues).length > 0) {
         searchParams.set("filters", JSON.stringify(filterValues));
     } else {
         searchParams.delete("filters");
     }
 
-    // Update sort in URL
     if (Object.keys(sort).length > 0) {
         searchParams.set("sort", JSON.stringify(sort));
         searchParams.set("sortingRuleSet", sortingRuleSet);
@@ -34,27 +33,15 @@ const updateSearchParams = (
         searchParams.delete("sortingRuleSet");
     }
 
-    // Update URL without reload
+    if (pagination?.limit) {
+        searchParams.set("limit", pagination.limit.toString());
+    }
+    if (pagination?.offset !== undefined) {
+        searchParams.set("offset", pagination.offset.toString());
+    }
+
     const newUrl = `${window.location.pathname}?${searchParams.toString()}`;
     window.history.pushState({ path: newUrl }, "", newUrl);
-};
-
-// Helper function to get initial state from URL
-const getInitialStateFromUrl = () => {
-    if (typeof window === "undefined") return {};
-
-    const searchParams = new URLSearchParams(window.location.search);
-    const urlFilters = searchParams.get("filters");
-    const urlSort = searchParams.get("sort");
-    const urlSortingRuleSet = searchParams.get("sortingRuleSet");
-
-    return {
-        filterValues: urlFilters ? JSON.parse(urlFilters) : {},
-        sort: urlSort
-            ? JSON.parse(urlSort)
-            : { field: "default", direction: "asc" },
-        sortingRuleSet: urlSortingRuleSet || "",
-    };
 };
 
 interface FilterChange {
@@ -73,9 +60,13 @@ export interface ProductsStateType {
         [key: string]: FilterValue;
     };
     filterConfigs: ClientFilter[];
-    sortConfig: SortConfig | null;
+    sortConfig: ClientSortConfig | null;
     sortingRuleSet: string;
     sort: SortState;
+    pagination: {
+        limit?: number;
+        offset?: number;
+    };
     loading: boolean;
     error: string | null;
     isInitialized: boolean;
@@ -83,18 +74,17 @@ export interface ProductsStateType {
     queue: boolean;
 }
 
-// Merge URL state with default initial state
-const urlState = getInitialStateFromUrl();
 const initialState: ProductsStateType = {
     products: [],
-    filterValues: urlState.filterValues || {},
+    filterValues: {},
     filterConfigs: [],
     sortConfig: null,
-    sortingRuleSet: urlState.sortingRuleSet || "",
-    sort: urlState.sort || {
+    sortingRuleSet: "",
+    sort: {
         field: "default",
         direction: "asc",
     },
+    pagination: {},
     loading: false,
     error: null,
     isInitialized: false,
@@ -108,7 +98,7 @@ export const fetchFilteredProducts = createAsyncThunk<
     { state: { products: ProductsStateType } }
 >("products/fetchFiltered", async (_, { dispatch, getState }) => {
     let state = getState().products;
-    const { filterValues, sort, sortingRuleSet } = state;
+    const { filterValues, sort, sortingRuleSet, pagination } = state;
 
     if (state.nowPending) {
         dispatch(setQueue(true));
@@ -125,6 +115,13 @@ export const fetchFilteredProducts = createAsyncThunk<
     if (Object.keys(sort).length > 0) {
         params.append("sort", JSON.stringify(sort));
         params.append("sortingRuleSet", JSON.stringify(sortingRuleSet));
+    }
+
+    if (pagination.limit !== undefined) {
+        params.append("limit", pagination.limit.toString());
+    }
+    if (pagination.offset !== undefined) {
+        params.append("offset", pagination.offset.toString());
     }
 
     const response = await fetch(
@@ -168,10 +165,14 @@ const productsSlice = createSlice({
             action: PayloadAction<{
                 products: ProductType[];
                 filters: ClientFilter[];
-                sortConfig: SortConfig;
+                sortConfig: ClientSortConfig;
                 sortingRuleSet: string;
                 filterValues: Record<string, FilterValue>;
                 sort: SortState;
+                pagination?: {
+                    limit?: number;
+                    offset?: number;
+                };
             }>
         ) => {
             state.products = action.payload.products;
@@ -180,8 +181,28 @@ const productsSlice = createSlice({
             state.sortingRuleSet = action.payload.sortingRuleSet;
             state.filterValues = action.payload.filterValues;
             state.sort = action.payload.sort;
-            console.log(action.payload.sort);
+            if (action.payload.pagination) {
+                state.pagination = action.payload.pagination;
+            }
             state.isInitialized = true;
+        },
+        setPagination: (
+            state,
+            action: PayloadAction<{
+                limit?: number;
+                offset?: number;
+            }>
+        ) => {
+            state.pagination = {
+                ...state.pagination,
+                ...action.payload,
+            };
+            updateSearchParams(
+                state.filterValues,
+                state.sort,
+                state.sortingRuleSet,
+                state.pagination
+            );
         },
         setFilter: (state, action: PayloadAction<FilterChange>) => {
             const { name, value } = action.payload;
@@ -197,11 +218,11 @@ const productsSlice = createSlice({
                 state.filterValues[name] = value;
             }
 
-            // Update URL when filter changes
             updateSearchParams(
                 state.filterValues,
                 state.sort,
-                state.sortingRuleSet
+                state.sortingRuleSet,
+                state.pagination
             );
         },
         setSort: (
@@ -296,6 +317,13 @@ const productsSlice = createSlice({
     },
 });
 
+export const setPaginationAndFetch =
+    (pagination: { limit?: number; offset?: number }) =>
+    async (dispatch: ProductsDispatch) => {
+        dispatch(setPagination(pagination));
+        dispatch(fetchFilteredProducts());
+    };
+
 export const filterProducts =
     (filterChange: FilterChange) => async (dispatch: ProductsDispatch) => {
         dispatch(setFilter(filterChange));
@@ -325,6 +353,7 @@ export const {
     clearPending,
     setQueue,
     clearQueue,
+    setPagination,
 } = productsSlice.actions;
 
 export default productsSlice.reducer;

@@ -13,17 +13,20 @@ import {
     FilterValue,
     SortDirection,
 } from "../types/filters";
+import { ClientSortConfig } from "../service/filters";
 
 const makeProductsStore = (
     initialProducts: ProductType[],
     filters: ClientFilter[],
-    sortConfig: SortConfig,
+    sortConfig: ClientSortConfig,
     sortingRuleSet: string,
     initialFilterValues: Record<string, FilterValue>,
     initialSort: {
         field: string;
         direction: SortDirection;
-    }
+    },
+    limit?: number,
+    offset?: number
 ) => {
     const store = configureStore({
         reducer: {
@@ -31,7 +34,6 @@ const makeProductsStore = (
         },
     });
 
-    // Инициализируем store сразу после создания
     store.dispatch(
         initializeProducts({
             products: initialProducts,
@@ -40,6 +42,10 @@ const makeProductsStore = (
             sortingRuleSet: sortingRuleSet,
             filterValues: initialFilterValues,
             sort: initialSort,
+            pagination: {
+                limit,
+                offset,
+            },
         })
     );
 
@@ -56,13 +62,15 @@ interface ProductsStoreProviderProps {
     children: React.ReactNode;
     initialProducts: ProductType[];
     filters: ClientFilter[];
-    sortConfig: SortConfig;
+    sortConfig: ClientSortConfig;
     sortingRuleSet: string;
     initialFilterValues: Record<string, FilterValue>;
     initialSort: {
         field: string;
         direction: SortDirection;
     };
+    limit?: number;
+    offset?: number;
 }
 
 export function ProductsStoreProvider({
@@ -73,6 +81,8 @@ export function ProductsStoreProvider({
     sortingRuleSet,
     initialFilterValues,
     initialSort,
+    limit,
+    offset,
 }: ProductsStoreProviderProps) {
     const storeRef = useRef<ProductsStore | null>(null);
 
@@ -83,7 +93,9 @@ export function ProductsStoreProvider({
             sortConfig,
             sortingRuleSet,
             initialFilterValues,
-            initialSort
+            initialSort,
+            limit,
+            offset
         );
     }
 
@@ -94,7 +106,6 @@ export function ProductsStoreProvider({
     );
 }
 
-// Кастомные хуки для работы с состоянием
 export function useProductsSelector<Selected>(
     selector: (state: ProductsStateType) => Selected
 ) {

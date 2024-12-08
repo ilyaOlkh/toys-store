@@ -74,14 +74,10 @@ const UserMenu: React.FC<UserMenuProps> = ({ username }) => {
                 transformOrigin={{ horizontal: "right", vertical: "top" }}
                 anchorOrigin={{ horizontal: "right", vertical: "bottom" }}
             >
-                {/* <MenuItem onClick={handleClose} className="p-0"> */}
                 {Object.keys(MENU_ITEMS).map((key) => {
                     return (
-                        <MenuItem onClick={handleClose} className="p-0">
-                            <a
-                                href={MENU_ITEMS[key].link}
-                                className="size-full py-[6px] px-[16px]"
-                            >
+                        <MenuItem onClick={handleClose}>
+                            <a href={MENU_ITEMS[key].link}>
                                 {MENU_ITEMS[key].name}
                             </a>
                         </MenuItem>
@@ -89,17 +85,8 @@ const UserMenu: React.FC<UserMenuProps> = ({ username }) => {
                 })}
                 {/* </MenuItem> */}
                 <Divider />
-                <MenuItem
-                    onClick={handleClose}
-                    sx={{ color: "gray" }}
-                    className="p-0"
-                >
-                    <a
-                        className="size-full py-[6px] px-[16px]"
-                        href={MENU_ITEM_LOGOUT.link}
-                    >
-                        {MENU_ITEM_LOGOUT.name}
-                    </a>
+                <MenuItem onClick={handleClose} sx={{ color: "gray" }}>
+                    <a href={MENU_ITEM_LOGOUT.link}>{MENU_ITEM_LOGOUT.name}</a>
                 </MenuItem>
             </Menu>
         </>

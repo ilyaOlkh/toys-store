@@ -47,10 +47,10 @@ export default function HeaderModal() {
                 onOpen={() => {}}
                 anchor="right"
                 sx={{
-                    width: 240,
+                    width: 280,
                     flexShrink: 0,
                     "& .MuiDrawer-paper": {
-                        width: 240,
+                        width: 280,
                         boxSizing: "border-box",
                         height: "100%",
                         borderRadius: "0px",
@@ -118,14 +118,14 @@ export default function HeaderModal() {
                                     className=" h-full w-full"
                                 >
                                     <button className="px-4 py-2 bg-blue1 text-white rounded h-full w-full ">
-                                        Login
+                                        Увійти
                                     </button>
                                 </a>
                             </Box>
                             <Box className="flex-grow flex justify-end">
                                 <a href={routes.register}>
                                     <button className="px-4 py-2 border-2 border-blue1 text-blue1 rounded hover:bg-blue1/10">
-                                        Register
+                                        Реєстрація
                                     </button>
                                 </a>
                             </Box>

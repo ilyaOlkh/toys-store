@@ -11,7 +11,6 @@ import {
     Paper,
     Button,
 } from "@mui/material";
-import AccountCircleIcon from "@mui/icons-material/AccountCircle";
 import Image from "next/image";
 import { useAppSelector } from "../redux/hooks";
 import { Comfortaa } from "next/font/google";

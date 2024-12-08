@@ -48,17 +48,17 @@ export default async function Header() {
                 <div className="customContainer flex gap-2 items-center justify-between">
                     <a
                         href="/"
-                        className="w-12 overflow-hidden sm:w-[144px] flex-shrink-0"
+                        className="w-12 overflow-hidden sm:w-[195px] flex-shrink-0"
                     >
                         <Image
-                            src="/logo.svg"
+                            src="/logo.png"
                             alt="logo"
-                            width={144}
+                            width={195}
                             height={53}
-                            className="w-[144px] max-w-[144px] cursor-pointer"
+                            className="w-[195px] max-w-[195px] cursor-pointer"
                         />
                     </a>
-                    <div className="flex flex-shrink gap-2 items-center md:gap-4">
+                    <div className="flex flex-shrink gap-2 items-center">
                         <ul className="hidden gap-4 font-bold w-full justify-end flex-shrink md:flex">
                             <a href="/" className="block p-1">
                                 <li>Головна</li>

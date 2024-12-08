@@ -81,13 +81,11 @@ const theme = createTheme({
             styleOverrides: {
                 root: {
                     minHeight: "32px",
-                    padding: "4px 16px",
                     fontSize: "14px",
                     "&.Mui-selected": {
                         backgroundColor: "rgba(15, 131, 178, 0.08)",
                     },
                     "@media (max-width:640px)": {
-                        padding: "4px 16px", // Force same padding on mobile
                         minHeight: "32px", // Force same height on mobile
                     },
                 },

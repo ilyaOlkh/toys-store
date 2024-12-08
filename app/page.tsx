@@ -48,7 +48,7 @@ export default async function Home({ searchParams }: IParams) {
                                 Наші колекції
                             </p>
                         </div>
-                        <ul className="flex gap-2 flex-wrap justify-around">
+                        <ul className="flex gap-2 flex-wrap justify-around w-full">
                             {types ? (
                                 types.map((type) => (
                                     <li key={type.id}>
@@ -60,8 +60,8 @@ export default async function Home({ searchParams }: IParams) {
                             )}
                         </ul>
                     </section>
-                    <section className="py-12">
-                        <h2 className="text-3xl font-bold text-center mb-8">
+                    <section className="py-6 md:py-12">
+                        <h2 className="text-4xl font-bold text-center mb-8">
                             Популярні іграшки
                         </h2>
                         <MainProductScreen

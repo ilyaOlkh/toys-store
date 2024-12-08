@@ -13,11 +13,12 @@ import {
 import { FiltersList } from "./FiltersList";
 import { filterProducts, sortProducts } from "@/app/redux/productsSlice";
 import SortControl from "./SortSelect";
+import { ClientSortConfig } from "@/app/service/filters";
 
 interface ProductsListScreenProps {
     initialProducts: ProductType[];
     initialFilters: ClientFilter[];
-    initialSortConfig: SortConfig;
+    initialSortConfig: ClientSortConfig;
     initialSortingRuleSet: string;
     initialFilterValues: Record<string, FilterValue>;
     initialSort: {

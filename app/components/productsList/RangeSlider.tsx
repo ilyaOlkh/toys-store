@@ -12,7 +12,7 @@ import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import { useState, useEffect, useCallback } from "react";
 
 interface RangeSliderProps {
-    config: Omit<RangeFilter, "prismaQuery">;
+    config: Omit<RangeFilter, "buildQuery">;
     value: { from: number; to: number };
     onChange: (value: FilterValue) => void;
     defaultExpanded?: boolean;

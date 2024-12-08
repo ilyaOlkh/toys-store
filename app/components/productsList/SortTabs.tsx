@@ -7,27 +7,31 @@ import { useProducts } from "../ProductsContext";
 import { sortProducts } from "@/app/redux/productsSlice";
 import { styled } from "@mui/material/styles";
 
-const StyledTabs = styled(Tabs)({
+const StyledTabs = styled(Tabs)(({ theme }) => ({
     "& .MuiTabs-indicator": {
-        display: "none",
+        height: "100%",
+        borderRadius: "50px",
+        backgroundColor: "#FDF2F8",
+        zIndex: 0,
+    },
+    "& .MuiTabs-flexContainer": {
+        zIndex: 1,
+        position: "relative",
     },
     minHeight: "40px",
-});
+}));
 
 const StyledTab = styled(Tab)({
     textTransform: "none",
     minHeight: "40px",
     padding: "8px 16px",
-    backgroundColor: "#F8F8F8",
     borderRadius: "50px",
     marginRight: "8px",
+    color: "#000",
     "&.Mui-selected": {
-        backgroundColor: "#FDF2F8",
         color: "#000",
     },
-    "&:hover": {
-        backgroundColor: "#FDF2F8",
-    },
+    zIndex: 2,
 });
 
 export function SortTabs() {
@@ -41,25 +45,28 @@ export function SortTabs() {
         );
     };
 
-    console.log(sort.field);
-
     if (!sortConfig?.options) return null;
-
+    console.log(sort.field);
     return (
-        <div className="mb-6">
-            <StyledTabs
-                value={sort.field}
-                onChange={handleChange}
-                aria-label="product sorting tabs"
-            >
-                {sortConfig.options.map((option) => (
-                    <StyledTab
-                        key={option.field}
-                        label={option.label}
-                        value={option.field}
-                    />
-                ))}
-            </StyledTabs>
+        <div className="flex justify-center">
+            <div className="mb-6 ">
+                <StyledTabs
+                    value={sort.field}
+                    onChange={handleChange}
+                    aria-label="product sorting tabs"
+                >
+                    {sortConfig.options.map((option) => (
+                        <StyledTab
+                            key={option.field}
+                            label={option.label}
+                            value={option.field}
+                            sx={{
+                                fontSize: "1.25rem",
+                            }}
+                        />
+                    ))}
+                </StyledTabs>
+            </div>
         </div>
     );
 }

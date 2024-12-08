@@ -5,27 +5,35 @@ import { fetchFilteredProducts } from "./utils/fetchFilteredProducts";
 import { getClientSorts } from "./service/filters";
 import { SortDirection } from "./types/filters";
 import MainProductScreen from "./components/productsList/MainProductScreen";
+import { IParams } from "./types/types";
 
-export default async function Home() {
+export default async function Home({ searchParams }: IParams) {
     const [types, initialSorts] = await Promise.all([
         fetchTypes(),
         getClientSorts(),
     ]);
 
+    const urlSort = searchParams?.sort
+        ? JSON.parse(searchParams.sort as string)
+        : null;
+    const urlSortingRuleSet = searchParams?.sortingRuleSet || "secondarySort";
+
     const defaultSort = {
-        field: initialSorts[0]?.defaultOption || "default",
-        direction: (initialSorts[0]?.defaultDirection ||
+        field: initialSorts[1]?.defaultOption || "default",
+        direction: (initialSorts[1]?.defaultDirection ||
             "asc") as SortDirection,
     };
 
+    const initialSort = urlSort || defaultSort;
+    const initialSortingRuleSet = urlSortingRuleSet;
+
     const products = await fetchFilteredProducts(
         {},
-        defaultSort,
-        "secondarySort",
+        initialSort,
+        initialSortingRuleSet,
         { limit: 8, offset: 0 }
     );
 
-    if (types.length === 0) return <div>Loading...</div>;
     return (
         <div>
             <HeroSection />
@@ -59,8 +67,8 @@ export default async function Home() {
                         <MainProductScreen
                             initialProducts={products}
                             initialSortConfig={initialSorts[1]}
-                            initialSortingRuleSet="secondarySort"
-                            initialSort={defaultSort}
+                            initialSortingRuleSet={initialSortingRuleSet}
+                            initialSort={initialSort}
                             limit={8}
                             offset={0}
                         />

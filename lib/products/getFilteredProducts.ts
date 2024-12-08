@@ -58,7 +58,8 @@ export async function getFilteredProducts({
                         'start_date', start_date,
                         'end_date', end_date
                     )
-                ) FILTER (WHERE start_date <= CURRENT_DATE AND end_date >= CURRENT_DATE) as discounts
+                ) FILTER (WHERE start_date <= CURRENT_DATE AND end_date >= CURRENT_DATE) as discounts,
+                MIN(new_price) FILTER (WHERE start_date <= CURRENT_DATE AND end_date >= CURRENT_DATE) as discount
             FROM discounts
             GROUP BY product_id
         )
@@ -67,6 +68,7 @@ export async function getFilteredProducts({
             p.name,
             p.price,
             p.discount,
+            COALESCE(pd.discount, p.discount) as discount,
             p.description,
             p.stock_quantity,
             p.sku_code,

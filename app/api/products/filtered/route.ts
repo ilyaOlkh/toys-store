@@ -11,31 +11,67 @@ export async function GET(request: NextRequest) {
     try {
         const { searchParams } = new URL(request.url);
 
-        // Получаем и парсим параметры
         const filters = JSON.parse(searchParams.get("filters") || "{}");
         const sort = JSON.parse(searchParams.get("sort") || "{}");
         const sortingRuleSet = JSON.parse(
             searchParams.get("sortingRuleSet") || '""'
         );
 
-        // Получаем условия фильтрации и сортировки
+        const limit = searchParams.get("limit")
+            ? parseInt(searchParams.get("limit")!)
+            : undefined;
+        const offset = searchParams.get("offset")
+            ? parseInt(searchParams.get("offset")!)
+            : undefined;
+
         const [whereConditions, orderByConditions] = await Promise.all([
             buildWhereConditions(filters),
             buildOrderByConditions(sort, sortingRuleSet),
         ]);
 
-        // Получаем продукты
         const products = await prisma.products.findMany({
+            select: {
+                id: true,
+                name: true,
+                price: true,
+                discount: true,
+                description: true,
+                stock_quantity: true,
+                sku_code: true,
+                created_at: true,
+                images: {
+                    select: {
+                        id: true,
+                        product_id: true,
+                        image_blob: true,
+                    },
+                },
+                comments: {
+                    select: {
+                        id: true,
+                        user_identifier: true,
+                        comment: true,
+                        rating: true,
+                        created_at: true,
+                        edited_at: true,
+                        edited_by: true,
+                    },
+                },
+                discounts: {
+                    select: {
+                        id: true,
+                        new_price: true,
+                        start_date: true,
+                        end_date: true,
+                    },
+                },
+            },
             where: whereConditions,
             orderBy: orderByConditions,
-            include: {
-                images: true,
-                comments: true,
-                discounts: true,
-            },
+            ...(limit !== undefined && { take: limit }),
+            ...(offset !== undefined && { skip: offset }),
         });
 
-        // Форматируем и возвращаем результат
         let formattedProducts = formatProducts(products);
 
         if (sort && sortingRuleSet) {
@@ -57,6 +93,11 @@ export async function GET(request: NextRequest) {
         return NextResponse.json({
             products: formattedProducts,
             total: formattedProducts.length,
+            pagination: {
+                limit,
+                offset,
+                currentCount: formattedProducts.length,
+            },
             appliedFilters: whereConditions,
             appliedSorts: orderByConditions,
         });

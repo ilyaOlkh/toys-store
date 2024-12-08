@@ -11,10 +11,11 @@ export const serverFilters: Filter[] = [
         title: "Типи",
         options: [],
         generateValues: async () => {
-            const types = await prisma.types.findMany({
-                select: { name: true },
-                distinct: ["name"],
-            });
+            const types = await prisma.$queryRaw<{ name: string }[]>`
+                SELECT DISTINCT name 
+                FROM types 
+                ORDER BY name ASC
+            `;
             return {
                 options: types.map((type) => ({
                     value: type.name,
@@ -22,16 +23,16 @@ export const serverFilters: Filter[] = [
                 })),
             };
         },
-        prismaQuery: (values: string[]) => ({
-            types: {
-                some: {
-                    type: {
-                        name: {
-                            in: values,
-                        },
-                    },
-                },
-            },
+        buildQuery: (values: string[]) => ({
+            rawQuery: Prisma.sql`
+                EXISTS (
+                    SELECT 1 
+                    FROM product_types pt
+                    JOIN types t ON pt.type_id = t.id
+                    WHERE pt.product_id = p.id 
+                    AND t.name IN (${Prisma.join(values)})
+                )
+            `,
         }),
         defaultExpanded: true,
     },
@@ -42,10 +43,11 @@ export const serverFilters: Filter[] = [
         title: "Теги",
         options: [],
         generateValues: async () => {
-            const tags = await prisma.tags.findMany({
-                select: { name: true },
-                orderBy: { name: "asc" },
-            });
+            const tags = await prisma.$queryRaw<{ name: string }[]>`
+                SELECT name 
+                FROM tags 
+                ORDER BY name ASC
+            `;
             return {
                 options: tags.map((tag) => ({
                     value: tag.name,
@@ -53,16 +55,16 @@ export const serverFilters: Filter[] = [
                 })),
             };
         },
-        prismaQuery: (values: string[]) => ({
-            tags: {
-                some: {
-                    tag: {
-                        name: {
-                            in: values,
-                        },
-                    },
-                },
-            },
+        buildQuery: (values: string[]) => ({
+            rawQuery: Prisma.sql`
+                EXISTS (
+                    SELECT 1 
+                    FROM product_tags pt
+                    JOIN tags t ON pt.tag_id = t.id
+                    WHERE pt.product_id = p.id 
+                    AND t.name IN (${Prisma.join(values)})
+                )
+            `,
         }),
         defaultExpanded: true,
     },
@@ -71,27 +73,29 @@ export const serverFilters: Filter[] = [
         type: "toggle",
         defaultValue: false,
         title: "Тільки в наявності",
-        prismaQuery: (value: boolean) =>
-            value ? { stock_quantity: { gt: 0 } } : {},
+        buildQuery: (value: boolean) => ({
+            rawQuery: value
+                ? Prisma.sql`p.stock_quantity > 0`
+                : Prisma.sql`TRUE`,
+        }),
     },
     {
         name: "discounted",
         type: "toggle",
         defaultValue: false,
         title: "Зі знижкою",
-        prismaQuery: (value: boolean) =>
-            value
-                ? {
-                      discounts: {
-                          some: {
-                              AND: [
-                                  { start_date: { lte: new Date() } },
-                                  { end_date: { gte: new Date() } },
-                              ],
-                          },
-                      },
-                  }
-                : {},
+        buildQuery: (value: boolean) => ({
+            rawQuery: value
+                ? Prisma.sql`
+                    EXISTS (
+                        SELECT 1 
+                        FROM discounts d 
+                        WHERE d.product_id = p.id 
+                        AND d.start_date <= CURRENT_TIMESTAMP 
+                        AND d.end_date >= CURRENT_TIMESTAMP
+                    )`
+                : Prisma.sql`TRUE`,
+        }),
     },
     {
         name: "ціна",
@@ -105,19 +109,17 @@ export const serverFilters: Filter[] = [
             position: "suffix",
         },
         generateValues: async () => {
-            const maxPrice = await prisma.products.aggregate({
-                _max: { price: true },
-            });
+            const result = await prisma.$queryRaw<[{ max_price: number }]>`
+                SELECT MAX(price) as max_price FROM products
+            `;
+            const maxPrice = Number(result[0]?.max_price) ?? 10000;
             return {
-                defaultValue: {
-                    from: 0,
-                    to: maxPrice._max.price?.toNumber() ?? 10000,
-                },
-                max: maxPrice._max.price?.toNumber() ?? 10000,
+                defaultValue: { from: 0, to: maxPrice },
+                max: maxPrice,
             };
         },
-        prismaQuery: (value) => ({
-            AND: [{ price: { gte: value.from } }, { price: { lte: value.to } }],
+        buildQuery: (value: { from: number; to: number }) => ({
+            rawQuery: Prisma.sql`p.price >= ${value.from} AND p.price <= ${value.to}`,
         }),
     },
     {
@@ -131,55 +133,29 @@ export const serverFilters: Filter[] = [
             symbol: "★",
             position: "suffix",
         },
-        computedFields: [
-            {
-                name: "averageRating",
-                compute: async () => {
-                    await prisma.$executeRaw`
-                        CREATE TEMPORARY TABLE IF NOT EXISTS product_ratings AS
-                        SELECT 
-                            product_id,
-                            COALESCE(AVG(rating), 0) as avg_rating
-                        FROM comments 
-                        GROUP BY product_id
-                    `;
-                    return Prisma.sql`avg_rating`;
-                },
-            },
-        ],
         generateValues: async () => {
             const result = await prisma.$queryRaw<[{ max_avg: number }]>`
-                SELECT MAX(avg_rating) as max_avg FROM (
+                SELECT COALESCE(MAX(avg_rating), 5) as max_avg 
+                FROM (
                     SELECT AVG(rating) as avg_rating 
                     FROM comments 
                     GROUP BY product_id
                 ) as avg_ratings
             `;
-
-            const maxAverageRating = Number(result[0]?.max_avg) || 5;
-
+            const maxAverageRating = Number(result[0]?.max_avg) ?? 5;
             return {
-                defaultValue: {
-                    from: 0,
-                    to: maxAverageRating,
-                },
+                defaultValue: { from: 0, to: maxAverageRating },
                 max: maxAverageRating,
             };
         },
-        prismaQuery: (value: { from: number; to: number }) => ({
-            id: {
-                in: Prisma.sql`
-                    SELECT p.id 
-                    FROM products p
-                    LEFT JOIN (
-                        SELECT product_id, AVG(rating) as avg_rating
-                        FROM comments
-                        GROUP BY product_id
-                    ) ratings ON p.id = ratings.product_id
-                    WHERE COALESCE(ratings.avg_rating, 0) >= ${value.from}
-                    AND COALESCE(ratings.avg_rating, 0) <= ${value.to}
-                `,
-            },
+        buildQuery: (value: { from: number; to: number }) => ({
+            rawQuery: Prisma.sql`
+                (
+                    SELECT COALESCE(AVG(rating), 0)
+                    FROM comments c
+                    WHERE c.product_id = p.id
+                ) BETWEEN ${value.from} AND ${value.to}
+            `,
         }),
     },
 ];
@@ -192,81 +168,59 @@ export const serverSorts: SortConfig[] = [
             {
                 field: "default",
                 label: "За замовчуванням",
-                prismaSort: () => ({ id: "asc" }),
+                buildQuery: () => Prisma.sql`p.id ASC`,
             },
             {
                 field: "price_asc",
                 label: "Ціною: від дешевших до дорожчих",
-                prismaSort: () => ({ price: "asc" }),
+                buildQuery: () => Prisma.sql`p.price ASC`,
             },
             {
                 field: "price_desc",
                 label: "Ціною: від дорожчих до дешевших",
-                prismaSort: () => ({ price: "desc" }),
+                buildQuery: () => Prisma.sql`p.price DESC`,
             },
             {
                 field: "created_at_desc",
                 label: "Спочатку новіші",
-                prismaSort: () => ({ created_at: "desc" }),
+                buildQuery: () => Prisma.sql`p.created_at DESC`,
             },
             {
                 field: "created_at_asc",
                 label: "Спочатку старіші",
-                prismaSort: () => ({ created_at: "asc" }),
+                buildQuery: () => Prisma.sql`p.created_at ASC`,
             },
             {
                 field: "name_asc",
                 label: "За назвою: А-Я",
-                prismaSort: () => ({ name: "asc" }),
+                buildQuery: () => Prisma.sql`p.name ASC`,
             },
             {
                 field: "name_desc",
                 label: "За назвою: Я-А",
-                prismaSort: () => ({ name: "desc" }),
+                buildQuery: () => Prisma.sql`p.name DESC`,
             },
             {
                 field: "rating_desc",
                 label: "За рейтингом: спочатку високий",
-                prismaSort: () => ({ id: "desc" }),
-                sort: (a: any, b: any) => {
-                    const aRating = a.comments?.length
-                        ? a.comments.reduce(
-                              (sum: number, comment: any) =>
-                                  sum + comment.rating,
-                              0
-                          ) / a.comments.length
-                        : 0;
-                    const bRating = b.comments?.length
-                        ? b.comments.reduce(
-                              (sum: number, comment: any) =>
-                                  sum + comment.rating,
-                              0
-                          ) / b.comments.length
-                        : 0;
-                    return bRating - aRating;
-                },
+                buildQuery: () => Prisma.sql`
+                    (
+                        SELECT COALESCE(AVG(rating), 0)
+                        FROM comments c
+                        WHERE c.product_id = p.id
+                    ) DESC
+                `,
             },
             {
                 field: "rating_asc",
                 label: "За рейтингом: спочатку низький",
-                prismaSort: () => ({ id: "asc" }),
-                sort: (a: any, b: any) => {
-                    const aRating = a.comments?.length
-                        ? a.comments.reduce(
-                              (sum: number, comment: any) =>
-                                  sum + comment.rating,
-                              0
-                          ) / a.comments.length
-                        : 0;
-                    const bRating = b.comments?.length
-                        ? b.comments.reduce(
-                              (sum: number, comment: any) =>
-                                  sum + comment.rating,
-                              0
-                          ) / b.comments.length
-                        : 0;
-                    return aRating - bRating;
-                },
+                buildQuery: () => Prisma.sql`
+                    (
+                        SELECT COALESCE(AVG(rating), 0)
+                        FROM comments c
+                        WHERE c.product_id = p.id
+                    ) ASC
+                `,
             },
         ],
         defaultOption: "default",
@@ -278,40 +232,28 @@ export const serverSorts: SortConfig[] = [
         title: "Додаткове сортування",
         options: [
             {
-                field: "none",
-                label: "Не використовувати",
+                field: "rating",
+                label: "Рейтинг",
+                buildQuery: () => Prisma.sql`
+                    (
+                        SELECT COALESCE(AVG(rating), 0)
+                        FROM comments c
+                        WHERE c.product_id = p.id
+                    ) DESC
+                `,
             },
             {
-                field: "stock_quantity",
-                label: "Наявністю",
-                prismaSort: (direction) => ({ stock_quantity: direction }),
+                field: "best_seller",
+                label: "Хіт продажів",
+                buildQuery: () => Prisma.sql`p.id DESC`,
             },
             {
-                field: "sales_count",
-                label: "Популярністю",
-                computed: true,
-                computedFields: [
-                    {
-                        name: "salesCount",
-                        compute: async () => {
-                            await prisma.$executeRaw`
-                                CREATE TEMPORARY TABLE IF NOT EXISTS product_sales AS
-                                SELECT 
-                                    product_id,
-                                    COUNT(*) as sales_count
-                                FROM orders_products 
-                                GROUP BY product_id
-                            `;
-                            return Prisma.sql`sales_count`;
-                        },
-                    },
-                ],
-                prismaSort: (direction) => ({
-                    id: direction,
-                }),
+                field: "new_arrivals",
+                label: "Новинки",
+                buildQuery: () => Prisma.sql`p.created_at DESC`,
             },
         ],
-        defaultOption: "none",
+        defaultOption: "rating",
         defaultDirection: "desc",
         allowDirectionChange: false,
     },

@@ -16,7 +16,7 @@ export default async function Header() {
 
     return (
         <header>
-            <div className="bg-blue1 min-h-14 bg-repeat-x flex justify-center pt-3.5 items-start relative before:bg-[url(/header-decor.svg)] before:h-[30px] before:w-full before:absolute before:bottom-0 before:translate-y-1/2">
+            <div className="bg-blue1 min-h-10 bg-repeat-x flex justify-center pt-1.5 items-start relative before:bg-[url(/header-decor.svg)] before:h-[15px] before:w-full before:absolute before:bottom-0 before:translate-y-full before:scale-y-[-1]">
                 <div className="customContainer flex justify-between text-white1 font-bold gap-3 items-center">
                     <div className="flex items-center gap-3 z-1 relative">
                         <Image
@@ -44,7 +44,7 @@ export default async function Header() {
                     </div>
                 </div>
             </div>
-            <div className="py-10 flex justify-center">
+            <div className="pt-6 pb-3 flex justify-center">
                 <div className="customContainer flex gap-2 items-center justify-between">
                     <a
                         href="/"

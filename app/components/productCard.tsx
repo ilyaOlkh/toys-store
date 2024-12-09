@@ -105,7 +105,7 @@ export function ProductCard({
                 </div>
             </div>
             <a
-                className="flex flex-col h-full justify-between gap-3 relative"
+                className="flex flex-col h-full justify-start gap-3 relative"
                 href={`/products/${id}`}
             >
                 {+discountPrice > 0 && (
@@ -114,7 +114,7 @@ export function ProductCard({
                     </div>
                 )}
 
-                <div className="border-lightGray1 border size-full rounded-3xl p-2 aspect-square">
+                <div className="border-lightGray1 border w-full rounded-3xl p-2 aspect-square">
                     <Image
                         src={img}
                         width={600}

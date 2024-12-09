@@ -14,6 +14,13 @@ import { FiltersList } from "./FiltersList";
 import { filterProducts, sortProducts } from "@/app/redux/productsSlice";
 import SortControl from "./SortSelect";
 import { ClientSortConfig } from "@/app/service/filters";
+import { Button } from "@mui/material";
+import { SlidersHorizontal } from "lucide-react";
+import MobileFilters from "../modals/MobileFilters";
+import { useAppDispatch, useAppSelector } from "@/app/redux/hooks";
+import { RootState } from "@/app/redux/store";
+import { openModal } from "@/app/redux/modalSlice";
+import { modalTypes } from "@/app/constants/modal-constants";
 
 interface ProductsListScreenProps {
     initialProducts: ProductType[];
@@ -66,6 +73,8 @@ interface ProductsContentProps {
 export function ProductsContent({
     productsOnly = false,
 }: ProductsContentProps) {
+    const appDispatch = useAppDispatch();
+
     const {
         products,
         filterValues,
@@ -84,7 +93,7 @@ export function ProductsContent({
                 <div className="flex gap-8">
                     {/* Sidebar */}
                     {!productsOnly && (
-                        <div className="hidden md:block w-[240px] flex-shrink-0">
+                        <div className="hidden md:block w-[240px] flex-shrink-0 max-h-full overflow-auto">
                             <div className="flex flex-col gap-6">
                                 {/* Filters */}
                                 <FiltersList
@@ -101,44 +110,62 @@ export function ProductsContent({
                     )}
 
                     {/* Main Content */}
-                    <div className="flex-grow">
-                        <div className="flex flex-col gap-6">
+                    <div className="flex-grow max-w-full overflow-auto h-full max-h-full">
+                        <div className="flex flex-col gap-3">
                             {/* Header */}
                             {!productsOnly && (
                                 <>
-                                    <div className="flex justify-between items-center">
+                                    <div className="flex justify-between items-center flex-wrap gap-2">
                                         <h1 className="text-2xl font-bold">
                                             Іграшки
                                         </h1>
-                                        <div className="flex items-center gap-4">
-                                            <div className="flex gap-2">
-                                                <button className="p-2 hover:text-blue1">
-                                                    <svg
-                                                        xmlns="http://www.w3.org/2000/svg"
-                                                        width="24"
-                                                        height="24"
-                                                        viewBox="0 0 24 24"
-                                                        fill="currentColor"
-                                                    >
-                                                        <path d="M4 4h4v4H4V4zm6 0h4v4h-4V4zm6 0h4v4h-4V4zM4 10h4v4H4v-4zm6 0h4v4h-4v-4zm6 0h4v4h-4v-4zM4 16h4v4H4v-4zm6 0h4v4h-4v-4zm6 0h4v4h-4v-4z" />
-                                                    </svg>
-                                                </button>
-                                                <button className="p-2 hover:text-blue1">
-                                                    <svg
-                                                        xmlns="http://www.w3.org/2000/svg"
-                                                        width="24"
-                                                        height="24"
-                                                        viewBox="0 0 24 24"
-                                                        fill="currentColor"
-                                                    >
-                                                        <path d="M4 6h16v2H4zm0 5h16v2H4zm0 5h16v2H4z" />
-                                                    </svg>
-                                                </button>
-                                            </div>
+                                        <div className="flex items-center w-full xs:w-auto">
+                                            <Button
+                                                variant="outlined"
+                                                className="md:hidden text-blue1 border-blue1 normal-case w-full xs:w-auto"
+                                                onClick={() => {
+                                                    appDispatch(
+                                                        openModal(
+                                                            modalTypes.FILTERS
+                                                        )
+                                                    );
+                                                }}
+                                                startIcon={
+                                                    <SlidersHorizontal className="w-5 h-5" />
+                                                }
+                                                sx={{
+                                                    "&:hover": {
+                                                        borderColor: "#0F83B2",
+                                                        backgroundColor:
+                                                            "rgba(15, 131, 178, 0.04)",
+                                                    },
+                                                }}
+                                            >
+                                                <span>Фільтри</span>
+                                            </Button>
+                                            {sortConfig && (
+                                                <div className="hidden md:flex justify-end max-w-full overflow-hidden w-full xs:w-auto">
+                                                    <SortControl
+                                                        currentSort={sort}
+                                                        config={sortConfig}
+                                                        onChange={(
+                                                            field,
+                                                            direction
+                                                        ) => {
+                                                            dispatch(
+                                                                sortProducts({
+                                                                    field,
+                                                                    direction,
+                                                                })
+                                                            );
+                                                        }}
+                                                    />
+                                                </div>
+                                            )}
                                         </div>
                                     </div>
                                     {sortConfig && (
-                                        <div className="flex justify-end">
+                                        <div className="md:hidden flex justify-end max-w-full overflow-hidden w-full xs:w-auto">
                                             <SortControl
                                                 currentSort={sort}
                                                 config={sortConfig}
@@ -160,7 +187,7 @@ export function ProductsContent({
                             )}
 
                             {/* Product Grid */}
-                            <div className="grid grid-cols-1 gap-6 sm:grid-cols-[repeat(auto-fill,minmax(280px,1fr))]">
+                            <div className="grid grid-cols-1 gap-6 sm:grid-cols-[repeat(auto-fill,minmax(200px,1fr))]">
                                 {products.map((product) => (
                                     <ProductCard
                                         key={product.id}
@@ -176,6 +203,8 @@ export function ProductsContent({
                         </div>
                     </div>
                 </div>
+                {/* Mobile Filters */}
+                <MobileFilters />
             </div>
         </div>
     );

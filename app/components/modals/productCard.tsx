@@ -7,6 +7,7 @@ import { Button, IconButton } from "@mui/material";
 import { Plus, Minus } from "lucide-react";
 import { useAppSelector } from "@/app/redux/hooks";
 import { selectActualItemQuantity } from "@/app/redux/cartSelectors";
+import Link from "next/link";
 
 export type ProductCardVariant = "favorites" | "cart";
 export type ProductItemType = {
@@ -43,7 +44,7 @@ export const ProductCard = ({
     if (isRemoving(productsState, product.product_id)) return null;
     if (isAdding(productsState, product.product_id)) {
         return (
-            <div className="flex gap-2 justify-center border border-gray-200 rounded-xl p-4 min-h-[118px]">
+            <div className="flex gap-2 justify-center border border-gray-200 rounded-xl p-4 min-h-[118px] aspect-square">
                 <Image
                     src="/loading.svg"
                     alt="loading"
@@ -69,27 +70,32 @@ export const ProductCard = ({
     return (
         <div className="flex gap-2 justify-between border border-gray-200 rounded-xl xs:p-4">
             <div className="flex gap-2 w-full items-center">
-                <div className="flex-shrink-0 flex-grow-0 basis-[90px] xs:border border-gray-300 p-1 rounded-xl">
-                    <Image
-                        src={productInfo.imageUrl}
-                        alt="product img"
-                        width={90}
-                        height={90}
-                        className="rounded-xl object-cover"
-                    />
-                </div>
+                <Link href={`products/${product.product_id}`}>
+                    <div className="flex-shrink-0 flex-grow-0 basis-[90px] xs:border border-gray-300 p-1 rounded-xl">
+                        <Image
+                            src={productInfo.imageUrl}
+                            alt="product img"
+                            width={90}
+                            height={90}
+                            className="rounded-xl object-cover aspect-square"
+                        />
+                    </div>
+                </Link>
                 <div className="overflow-hidden flex flex-col size-full justify-between p-2 pl-0 xs:p-0 ">
                     <div className="flex gap-2 justify-between items-start">
-                        <div className="text-ellipsis overflow-hidden">
-                            <h3 className="font-medium text-gray-900 text-sm xs:text-base">
-                                {productInfo.name}
-                            </h3>
-                        </div>
+                        <Link href={`products/${product.product_id}`}>
+                            <div className="text-ellipsis overflow-hidden">
+                                <h3 className="font-medium text-gray-900 text-sm xs:text-base">
+                                    {productInfo.name}
+                                </h3>
+                            </div>
+                        </Link>
 
                         <Button
-                            className="basis-4 flex justify-end items-start min-w-[24px] xs:min-w-[32px] p-1 xs:p-2"
+                            className="basis-4 grow-0 flex justify-end items-start p-1 xs:p-2 min-w-[24px] xs:min-w-[32px]"
                             sx={{
                                 borderRadius: "9999px",
+                                minWidth: "0px",
                             }}
                             onClick={onRemove}
                         >

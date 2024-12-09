@@ -10,14 +10,12 @@ import { styled } from "@mui/material/styles";
 import { ArrowDownAZ, ArrowUpAZ } from "lucide-react";
 import { ClientSortConfig } from "@/app/service/filters";
 import { SortState } from "@/app/redux/productsSlice";
-import { Padding } from "@mui/icons-material";
 
 const StyledInput = styled(InputBase)(() => ({
     "label + &": {
         marginTop: 3,
     },
     "& .MuiInputBase-input": {
-        position: "relative",
         fontSize: 14,
         padding: "8px 12px",
         transition: "border-color 0.2s ease",
@@ -38,6 +36,7 @@ const StyledSelect = styled(Select)(() => ({
     },
     "& .MuiSelect-select": {
         paddingRight: "32px !important",
+        whiteSpace: "normal !important",
     },
 }));
 
@@ -68,17 +67,21 @@ export default function SortControl({
     };
 
     return (
-        <div className="flex items-center gap-2">
-            <FormControl size="small" className="min-w-48">
+        <div className="flex items-center gap-2 w-full xs:w-auto">
+            <FormControl
+                size="small"
+                className="min-w-[160px] sm:min-w-[200px] flex-wrap max-w-full w-full xs:w-auto"
+            >
                 <StyledSelect
                     value={currentSort.field}
                     onChange={(e) => handleSortChange(String(e.target.value))}
-                    input={<StyledInput />}
+                    input={<StyledInput className="text-wrap" />}
                     MenuProps={{
                         PaperProps: {
                             sx: {
                                 borderRadius: "0.5rem",
-                                marginTop: "4px",
+                                marginTop: "8px",
+                                maxWidth: "calc(100vw - 50px)",
                                 boxShadow:
                                     "0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px 1px rgb(0 0 0 / 0.1)",
                             },
@@ -91,6 +94,14 @@ export default function SortControl({
                                 gap: "0.25rem",
                             },
                         },
+                        anchorOrigin: {
+                            vertical: "bottom",
+                            horizontal: "right",
+                        },
+                        transformOrigin: {
+                            vertical: "top",
+                            horizontal: "right",
+                        },
                     }}
                 >
                     {config.options.map((option) => (
@@ -100,6 +111,9 @@ export default function SortControl({
                             sx={{
                                 fontSize: "14px",
                                 borderRadius: "0.25rem",
+                                whiteSpace: "normal",
+                                wordWrap: "break-word",
+                                padding: "8px 12px",
                             }}
                         >
                             {option.label}

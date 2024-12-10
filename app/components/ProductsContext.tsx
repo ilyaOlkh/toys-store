@@ -25,6 +25,7 @@ const makeProductsStore = (
         field: string;
         direction: SortDirection;
     },
+    total: number,
     limit?: number,
     offset?: number
 ) => {
@@ -42,6 +43,7 @@ const makeProductsStore = (
             sortingRuleSet: sortingRuleSet,
             filterValues: initialFilterValues,
             sort: initialSort,
+            total,
             pagination: {
                 limit,
                 offset,
@@ -69,6 +71,7 @@ interface ProductsStoreProviderProps {
         field: string;
         direction: SortDirection;
     };
+    total?: number;
     limit?: number;
     offset?: number;
 }
@@ -81,6 +84,7 @@ export function ProductsStoreProvider({
     sortingRuleSet,
     initialFilterValues,
     initialSort,
+    total,
     limit,
     offset,
 }: ProductsStoreProviderProps) {
@@ -94,6 +98,7 @@ export function ProductsStoreProvider({
             sortingRuleSet,
             initialFilterValues,
             initialSort,
+            total ?? 0,
             limit,
             offset
         );

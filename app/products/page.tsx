@@ -17,6 +17,13 @@ export default async function Products({ searchParams }: IParams) {
         : null;
     const urlSortingRuleSet = searchParams?.sortingRuleSet || "mainSort";
 
+    const urlLimit = searchParams?.limit
+        ? parseInt(searchParams.limit as string)
+        : Number(process.env.NEXT_PUBLIC_ITEMS_PER_PAGE);
+    const urlOffset = searchParams?.offset
+        ? parseInt(searchParams.offset as string)
+        : 0;
+
     // Получаем конфигурации фильтров и сортировки
     const [initialFilters, initialSorts] = await Promise.all([
         getClientFilters(),
@@ -45,11 +52,12 @@ export default async function Products({ searchParams }: IParams) {
     const initialSort = urlSort || defaultSort;
     const initialSortingRuleSet = urlSortingRuleSet;
 
-    // Получаем продукты с учетом начальных фильтров и сортировки
-    const products = await fetchFilteredProducts(
+    // Получаем продукты с учетом начальных фильтров, сортировки, лимита и фасетов
+    const [products, total] = await fetchFilteredProducts(
         initialFilterValues,
         initialSort,
-        initialSortingRuleSet
+        initialSortingRuleSet,
+        { limit: urlLimit, offset: urlOffset }
     );
 
     return (
@@ -60,6 +68,9 @@ export default async function Products({ searchParams }: IParams) {
             initialSortingRuleSet={initialSortingRuleSet}
             initialFilterValues={initialFilterValues}
             initialSort={initialSort}
+            total={total}
+            limit={urlLimit}
+            offset={urlOffset}
         />
     );
 }

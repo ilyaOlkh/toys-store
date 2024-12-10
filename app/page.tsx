@@ -27,7 +27,7 @@ export default async function Home({ searchParams }: IParams) {
     const initialSort = urlSort || defaultSort;
     const initialSortingRuleSet = urlSortingRuleSet;
 
-    const products = await fetchFilteredProducts(
+    const [products] = await fetchFilteredProducts(
         {},
         initialSort,
         initialSortingRuleSet,

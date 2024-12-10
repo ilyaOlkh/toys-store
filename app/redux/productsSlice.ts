@@ -67,6 +67,7 @@ export interface ProductsStateType {
         limit?: number;
         offset?: number;
     };
+    total: number;
     loading: boolean;
     error: string | null;
     isInitialized: boolean;
@@ -85,6 +86,7 @@ const initialState: ProductsStateType = {
         direction: "asc",
     },
     pagination: {},
+    total: 0,
     loading: false,
     error: null,
     isInitialized: false,
@@ -93,7 +95,7 @@ const initialState: ProductsStateType = {
 };
 
 export const fetchFilteredProducts = createAsyncThunk<
-    ProductType[],
+    { products: ProductType[]; total: number },
     void,
     { state: { products: ProductsStateType } }
 >("products/fetchFiltered", async (_, { dispatch, getState }) => {
@@ -102,7 +104,10 @@ export const fetchFilteredProducts = createAsyncThunk<
 
     if (state.nowPending) {
         dispatch(setQueue(true));
-        return state.products;
+        return {
+            products: state.products,
+            total: state.total,
+        };
     }
 
     dispatch(setPending(true));
@@ -153,7 +158,10 @@ export const fetchFilteredProducts = createAsyncThunk<
         dispatch(fetchFilteredProducts());
     }
 
-    return data.products;
+    return {
+        products: data.products,
+        total: data.total,
+    };
 });
 
 const productsSlice = createSlice({
@@ -169,6 +177,7 @@ const productsSlice = createSlice({
                 sortingRuleSet: string;
                 filterValues: Record<string, FilterValue>;
                 sort: SortState;
+                total: number;
                 pagination?: {
                     limit?: number;
                     offset?: number;
@@ -181,6 +190,7 @@ const productsSlice = createSlice({
             state.sortingRuleSet = action.payload.sortingRuleSet;
             state.filterValues = action.payload.filterValues;
             state.sort = action.payload.sort;
+            state.total = action.payload.total;
             if (action.payload.pagination) {
                 state.pagination = action.payload.pagination;
             }
@@ -307,7 +317,8 @@ const productsSlice = createSlice({
             })
             .addCase(fetchFilteredProducts.fulfilled, (state, action) => {
                 state.loading = false;
-                state.products = action.payload;
+                state.products = action.payload.products;
+                state.total = action.payload.total;
             })
             .addCase(fetchFilteredProducts.rejected, (state, action) => {
                 state.loading = false;
@@ -328,6 +339,12 @@ export const filterProducts =
     (filterChange: FilterChange) => async (dispatch: ProductsDispatch) => {
         dispatch(setFilter(filterChange));
         dispatch(fetchFilteredProducts());
+        dispatch(
+            setPaginationAndFetch({
+                limit: Number(process.env.NEXT_PUBLIC_ITEMS_PER_PAGE),
+                offset: 0,
+            })
+        );
     };
 
 export const sortProducts =

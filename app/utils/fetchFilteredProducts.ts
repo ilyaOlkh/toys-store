@@ -11,7 +11,7 @@ export async function fetchFilteredProducts(
     sort: { field: string; direction: SortDirection },
     sortingRuleSet: string,
     pagination?: PaginationParams
-): Promise<ProductType[]> {
+): Promise<[ProductType[], number]> {
     try {
         const params = new URLSearchParams();
 
@@ -53,9 +53,9 @@ export async function fetchFilteredProducts(
         }
 
         const data = await response.json();
-        return data.products;
+        return [data.products, data.total];
     } catch (error) {
         console.error("Error fetching filtered products:", error);
-        return [];
+        return [[], 0];
     }
 }

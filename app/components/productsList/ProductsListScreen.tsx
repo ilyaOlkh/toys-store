@@ -4,21 +4,19 @@ import React from "react";
 import { ProductType } from "@/app/types/types";
 import { ProductCard } from "@/app/components/productCard";
 import { ProductsStoreProvider, useProducts } from "../ProductsContext";
-import {
-    ClientFilter,
-    FilterValue,
-    SortConfig,
-    SortDirection,
-} from "@/app/types/filters";
+import { ClientFilter, FilterValue, SortDirection } from "@/app/types/filters";
 import { FiltersList } from "./FiltersList";
-import { filterProducts, sortProducts } from "@/app/redux/productsSlice";
+import {
+    filterProducts,
+    setPaginationAndFetch,
+    sortProducts,
+} from "@/app/redux/productsSlice";
 import SortControl from "./SortSelect";
 import { ClientSortConfig } from "@/app/service/filters";
-import { Button } from "@mui/material";
+import { Button, Pagination } from "@mui/material";
 import { SlidersHorizontal } from "lucide-react";
 import MobileFilters from "../modals/MobileFilters";
-import { useAppDispatch, useAppSelector } from "@/app/redux/hooks";
-import { RootState } from "@/app/redux/store";
+import { useAppDispatch } from "@/app/redux/hooks";
 import { openModal } from "@/app/redux/modalSlice";
 import { modalTypes } from "@/app/constants/modal-constants";
 
@@ -32,11 +30,12 @@ interface ProductsListScreenProps {
         field: string;
         direction: SortDirection;
     };
-    disableFilters?: boolean;
-    disablePagination?: boolean;
     limit?: number;
     offset?: number;
+    total: number;
 }
+
+const ITEMS_PER_PAGE = Number(process.env.NEXT_PUBLIC_ITEMS_PER_PAGE) || 12;
 
 export default function ProductsListScreen({
     initialProducts,
@@ -45,10 +44,9 @@ export default function ProductsListScreen({
     initialSortingRuleSet,
     initialFilterValues,
     initialSort,
-    disableFilters = false,
-    disablePagination = false,
     limit,
     offset,
+    total,
 }: ProductsListScreenProps) {
     return (
         <ProductsStoreProvider
@@ -60,6 +58,7 @@ export default function ProductsListScreen({
             initialSort={initialSort}
             limit={limit}
             offset={offset}
+            total={total}
         >
             <ProductsContent />
         </ProductsStoreProvider>
@@ -84,8 +83,17 @@ export function ProductsContent({
         loading,
         error,
         isInitialized,
+        pagination,
+        total,
         dispatch,
     } = useProducts();
+
+    console.log(
+        Math.floor(pagination.offset ?? 0 / ITEMS_PER_PAGE) + 1,
+        ITEMS_PER_PAGE,
+        pagination.offset,
+        total
+    );
 
     return (
         <div className="flex justify-center">
@@ -187,19 +195,55 @@ export function ProductsContent({
                             )}
 
                             {/* Product Grid */}
-                            <div className="grid grid-cols-1 gap-6 sm:grid-cols-[repeat(auto-fill,minmax(200px,1fr))]">
-                                {products.map((product) => (
-                                    <ProductCard
-                                        key={product.id}
-                                        id={product.id}
-                                        img={product.imageUrl}
-                                        title={product.name}
-                                        firstPrice={String(product.price)}
-                                        discountPrice={String(product.discount)}
-                                        rating={product.average_rating}
+                            {products.length > 0 ? (
+                                <div className="grid grid-cols-1 gap-6 sm:grid-cols-[repeat(auto-fill,minmax(200px,1fr))]">
+                                    {products.map((product) => (
+                                        <ProductCard
+                                            key={product.id}
+                                            id={product.id}
+                                            img={product.imageUrl}
+                                            title={product.name}
+                                            firstPrice={String(product.price)}
+                                            discountPrice={String(
+                                                product.discount
+                                            )}
+                                            rating={product.average_rating}
+                                        />
+                                    ))}
+                                </div>
+                            ) : (
+                                <div className="h-20 text-4xl w-full text-blue1 font-bold flex items-center justify-center pt-8">
+                                    Немає Товарів
+                                </div>
+                            )}
+                            {!productsOnly && (
+                                <div className="flex justify-center pt-8">
+                                    <Pagination
+                                        page={
+                                            Math.floor(
+                                                (pagination.offset ?? 0) /
+                                                    ITEMS_PER_PAGE
+                                            ) + 1
+                                        }
+                                        count={Math.ceil(
+                                            (total ?? 0) / ITEMS_PER_PAGE
+                                        )}
+                                        onChange={(_, page) => {
+                                            dispatch(
+                                                setPaginationAndFetch({
+                                                    limit: ITEMS_PER_PAGE,
+                                                    offset:
+                                                        (page - 1) *
+                                                        ITEMS_PER_PAGE,
+                                                })
+                                            );
+                                        }}
+                                        color="primary"
+                                        shape="rounded"
+                                        size="large"
                                     />
-                                ))}
-                            </div>
+                                </div>
+                            )}
                         </div>
                     </div>
                 </div>

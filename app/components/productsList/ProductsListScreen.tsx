@@ -88,12 +88,7 @@ export function ProductsContent({
         dispatch,
     } = useProducts();
 
-    console.log(
-        Math.floor(pagination.offset ?? 0 / ITEMS_PER_PAGE) + 1,
-        ITEMS_PER_PAGE,
-        pagination.offset,
-        total
-    );
+    const numOfPages = Math.ceil((total ?? 0) / ITEMS_PER_PAGE);
 
     return (
         <div className="flex justify-center">
@@ -128,29 +123,32 @@ export function ProductsContent({
                                             Іграшки
                                         </h1>
                                         <div className="flex items-center w-full xs:w-auto">
-                                            <Button
-                                                variant="outlined"
-                                                className="md:hidden text-blue1 border-blue1 normal-case w-full xs:w-auto"
-                                                onClick={() => {
-                                                    appDispatch(
-                                                        openModal(
-                                                            modalTypes.FILTERS
-                                                        )
-                                                    );
-                                                }}
-                                                startIcon={
-                                                    <SlidersHorizontal className="w-5 h-5" />
-                                                }
-                                                sx={{
-                                                    "&:hover": {
-                                                        borderColor: "#0F83B2",
-                                                        backgroundColor:
-                                                            "rgba(15, 131, 178, 0.04)",
-                                                    },
-                                                }}
-                                            >
-                                                <span>Фільтри</span>
-                                            </Button>
+                                            <div className="md:hidden w-full xs:w-auto">
+                                                <Button
+                                                    variant="outlined"
+                                                    className=" text-blue1 border-blue1 normal-case w-full xs:w-auto"
+                                                    onClick={() => {
+                                                        appDispatch(
+                                                            openModal(
+                                                                modalTypes.FILTERS
+                                                            )
+                                                        );
+                                                    }}
+                                                    startIcon={
+                                                        <SlidersHorizontal className="w-5 h-5" />
+                                                    }
+                                                    sx={{
+                                                        "&:hover": {
+                                                            borderColor:
+                                                                "#0F83B2",
+                                                            backgroundColor:
+                                                                "rgba(15, 131, 178, 0.04)",
+                                                        },
+                                                    }}
+                                                >
+                                                    <span>Фільтри</span>
+                                                </Button>
+                                            </div>
                                             {sortConfig && (
                                                 <div className="hidden md:flex justify-end max-w-full overflow-hidden w-full xs:w-auto">
                                                     <SortControl
@@ -216,7 +214,7 @@ export function ProductsContent({
                                     Немає Товарів
                                 </div>
                             )}
-                            {!productsOnly && (
+                            {!productsOnly && numOfPages > 1 && (
                                 <div className="flex justify-center pt-8">
                                     <Pagination
                                         page={
@@ -225,9 +223,7 @@ export function ProductsContent({
                                                     ITEMS_PER_PAGE
                                             ) + 1
                                         }
-                                        count={Math.ceil(
-                                            (total ?? 0) / ITEMS_PER_PAGE
-                                        )}
+                                        count={numOfPages}
                                         onChange={(_, page) => {
                                             dispatch(
                                                 setPaginationAndFetch({

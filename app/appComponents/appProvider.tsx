@@ -70,7 +70,7 @@ const theme = createTheme({
         MuiSelect: {
             styleOverrides: {
                 select: {
-                    padding: "4px 32px 4px 8px !important", // Consistent padding across all screen sizes
+                    padding: "4px 32px 4px 8px !important",
                     "&.MuiInputBase-input": {
                         minHeight: "unset",
                     },
@@ -86,7 +86,7 @@ const theme = createTheme({
                         backgroundColor: "rgba(15, 131, 178, 0.08)",
                     },
                     "@media (max-width:640px)": {
-                        minHeight: "32px", // Force same height on mobile
+                        minHeight: "32px",
                     },
                 },
             },
@@ -95,6 +95,69 @@ const theme = createTheme({
             styleOverrides: {
                 root: {
                     padding: "4px",
+                },
+            },
+        },
+        // Добавляем стили для текстовых полей
+        MuiTextField: {
+            styleOverrides: {
+                root: {
+                    "& .MuiInputBase-root": {
+                        height: "40px",
+                    },
+                    "& .MuiInputBase-multiline": {
+                        height: "auto",
+                    },
+                    "& .MuiOutlinedInput-input": {
+                        padding: "8px 12px",
+                    },
+                    "& .MuiInputLabel-root": {
+                        transform: "translate(12px, 9px) scale(1)",
+                        "&.Mui-focused, &.MuiFormLabel-filled": {
+                            transform: "translate(12px, -9px) scale(0.75)",
+                        },
+                    },
+                    "& .MuiOutlinedInput-notchedOutline": {
+                        border: "2px solid #D4D4D4",
+                        outline: "none",
+                        transition: "border-color 0.1s ease-in-out",
+                    },
+                    "& .MuiOutlinedInput-root": {
+                        "&:hover .MuiOutlinedInput-notchedOutline": {
+                            borderColor: "#0F83B2",
+                        },
+                        "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
+                            borderColor: "#0F83B2",
+                            outline: "none",
+                        },
+                    },
+                    "& fieldset": {
+                        outline: "none",
+                    },
+                },
+            },
+        },
+        // Стили для Radio и Checkbox
+        MuiRadio: {
+            styleOverrides: {
+                root: {
+                    padding: "4px", // Уменьшаем отступы
+                },
+            },
+        },
+        MuiCheckbox: {
+            styleOverrides: {
+                root: {
+                    padding: "4px",
+                },
+            },
+        },
+        // Стили для FormControlLabel
+        MuiFormControlLabel: {
+            styleOverrides: {
+                root: {
+                    marginLeft: "-4px",
+                    marginRight: "0",
                 },
             },
         },

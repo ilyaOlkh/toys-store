@@ -96,7 +96,7 @@ export function ProductsContent({
                 <div className="flex gap-8">
                     {/* Sidebar */}
                     {!productsOnly && (
-                        <div className="hidden md:block w-[240px] flex-shrink-0 max-h-full overflow-auto">
+                        <div className="hidden md:block w-[240px] flex-shrink-0 max-h-full overflow-hidden">
                             <div className="flex flex-col gap-6">
                                 {/* Filters */}
                                 <FiltersList

@@ -44,3 +44,28 @@
 .swiper-slide-active {
     z-index: 1;
 }
+
+/* Стили для всех элементов */
+* {
+    scrollbar-width: auto;
+    scrollbar-color: #0f83b2 #fff;
+}
+
+/* Webkit scrollbar */
+*::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+*::-webkit-scrollbar-track {
+    background: #fff;
+}
+
+*::-webkit-scrollbar-thumb {
+    background-color: #0f83b2;
+    border-radius: 4px;
+}
+
+*::-webkit-scrollbar-thumb:hover {
+    background-color: #024763;
+}

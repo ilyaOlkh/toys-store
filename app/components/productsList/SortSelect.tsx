@@ -16,12 +16,8 @@ const StyledInput = styled(InputBase)(() => ({
         marginTop: 3,
     },
     "& .MuiInputBase-input": {
-        fontSize: 14,
+        fontSize: 16,
         padding: "8px 12px",
-        transition: "border-color 0.2s ease",
-        "&:focus": {
-            borderColor: "#0F83B2",
-        },
     },
 }));
 
@@ -29,7 +25,6 @@ const StyledSelect = styled(Select)(() => ({
     display: "flex",
     alignItems: "center",
     borderRadius: "0.5rem",
-    border: "1px solid #D4D4D4",
     transition: "all 0.2s ease",
     "&:hover": {
         borderColor: "#0F83B2",

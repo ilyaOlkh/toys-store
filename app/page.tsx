@@ -69,7 +69,7 @@ export default async function Home({ searchParams }: IParams) {
                             initialSortConfig={initialSorts[1]}
                             initialSortingRuleSet={initialSortingRuleSet}
                             initialSort={initialSort}
-                            limit={8}
+                            limit={10}
                             offset={0}
                         />
                     </section>

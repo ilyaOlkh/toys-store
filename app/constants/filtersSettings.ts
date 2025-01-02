@@ -172,12 +172,12 @@ export const serverSorts: SortConfig[] = [
             },
             {
                 field: "price_asc",
-                label: "Ціною: від дешевших до дорожчих",
+                label: "За ціною: від дешевших до дорожчих",
                 buildQuery: () => Prisma.sql`p.price ASC`,
             },
             {
                 field: "price_desc",
-                label: "Ціною: від дорожчих до дешевших",
+                label: "За ціною: від дорожчих до дешевших",
                 buildQuery: () => Prisma.sql`p.price DESC`,
             },
             {

@@ -61,16 +61,18 @@ export default async function Products({ searchParams }: IParams) {
     );
 
     return (
-        <ProductsListScreen
-            initialProducts={products}
-            initialFilters={initialFilters}
-            initialSortConfig={initialSorts[0]}
-            initialSortingRuleSet={initialSortingRuleSet}
-            initialFilterValues={initialFilterValues}
-            initialSort={initialSort}
-            total={total}
-            limit={urlLimit}
-            offset={urlOffset}
-        />
+        <div className="py-4">
+            <ProductsListScreen
+                initialProducts={products}
+                initialFilters={initialFilters}
+                initialSortConfig={initialSorts[0]}
+                initialSortingRuleSet={initialSortingRuleSet}
+                initialFilterValues={initialFilterValues}
+                initialSort={initialSort}
+                total={total}
+                limit={urlLimit}
+                offset={urlOffset}
+            />
+        </div>
     );
 }

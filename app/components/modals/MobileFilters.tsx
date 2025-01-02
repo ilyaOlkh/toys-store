@@ -21,17 +21,7 @@ export default function MobileFilters() {
     );
     const isSmallScreen = useMediaQuery("(max-width: 640px)");
 
-    const {
-        products,
-        filterValues,
-        filterConfigs,
-        sort,
-        sortConfig,
-        loading,
-        error,
-        isInitialized,
-        dispatch,
-    } = useProducts();
+    const { filterValues, filterConfigs, dispatch } = useProducts();
 
     return (
         <SwipeableDrawer
@@ -58,24 +48,6 @@ export default function MobileFilters() {
                             dispatch(filterProducts({ name, value }));
                         }}
                     />
-                </div>
-
-                <div className="border-t p-4 mt-auto">
-                    <Button
-                        variant="contained"
-                        fullWidth
-                        onClick={() => appDispatch(closeModal())}
-                        sx={{
-                            bgcolor: "#0F83B2",
-                            borderRadius: "9999px",
-                            padding: "0.75rem",
-                            "&:hover": {
-                                bgcolor: "#0C698E",
-                            },
-                        }}
-                    >
-                        Застосувати
-                    </Button>
                 </div>
             </div>
         </SwipeableDrawer>

@@ -45,7 +45,7 @@ const CustomStripeInput = ({
     const [elementsDOM, setElementsDOM] = useState();
     const elements = useElements();
     console.log(elements, stripeElement);
-    const elementDOM = elements?.getElement(
+    const elementDOM: any = elements?.getElement(
         (stripeElement as any).type.__elementType
     );
 

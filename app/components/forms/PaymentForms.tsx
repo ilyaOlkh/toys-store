@@ -1,120 +1,229 @@
-import React from "react";
-import { Control } from "react-hook-form";
+import React, { useState } from "react";
 import {
     TextField,
     FormControl,
     FormControlLabel,
     Radio,
     FormHelperText,
-    Checkbox,
     RadioGroup,
 } from "@mui/material";
-import Image from "next/image";
-import { CheckoutFormData } from "@/app/zodSchema/checkoutSchema";
 import {
-    CardNumberInput,
-    CardExpiryInput,
-    CardCvcInput,
-} from "../formComponents";
-import {
-    PaymentElement,
-    useStripe,
+    CardNumberElement,
+    CardExpiryElement,
+    CardCvcElement,
     useElements,
 } from "@stripe/react-stripe-js";
 import { motion, AnimatePresence } from "framer-motion";
+import { FieldErrors, UseFormRegister } from "react-hook-form";
 
 interface StripePaymentFormProps {
-    register: any;
+    register: UseFormRegister<any>;
     errors: any;
     paymentMethod: "credit_card" | "cash";
 }
-
-interface PaymentMethodProps {
-    control: Control<CheckoutFormData>;
-    register: any;
-    errors: any;
-    paymentMethod: "credit_card" | "cash";
+interface CardNumberInputProps {
+    error?: boolean;
+    helperText?: string;
+}
+interface CustomStripeInputProps {
+    label: string;
+    error?: boolean;
+    helperText?: string;
+    stripeElement: React.ReactNode;
+    leftCorrectionClass?: string;
 }
 
-export const CreditCardForm = ({
-    control,
-    register,
-    errors,
-}: PaymentMethodProps) => {
+const CustomStripeInput = ({
+    label,
+    error,
+    helperText,
+    stripeElement,
+    leftCorrectionClass,
+}: CustomStripeInputProps) => {
+    const [isFocused, setIsFocused] = useState(false);
+    const [hasContent, setHasContent] = useState(false);
+    const elements = useElements();
+
     return (
-        <div className="flex flex-col gap-4 pt-6">
-            <CardNumberInput
-                name="cardNumber"
-                control={control}
-                label="Номер картки"
-                error={errors.cardNumber}
-                fullWidth
-            />
-            <TextField
-                {...register("cardName")}
-                label="Ім'я на картці"
-                error={!!errors.cardName}
-                helperText={errors.cardName?.message}
-                fullWidth
-            />
-            <div className="flex gap-4">
-                <CardExpiryInput
-                    name="cardExpiry"
-                    control={control}
-                    label="MM/YY"
-                    error={errors.cardExpiry}
-                    className="flex-1"
-                />
-                <CardCvcInput
-                    name="cardCvc"
-                    control={control}
-                    label="CVC"
-                    error={errors.cardCvc}
-                    className="flex-1"
-                />
+        <FormControl
+            variant="outlined"
+            fullWidth
+            error={error}
+            className="group relative"
+        >
+            <div
+                className={`
+                    rounded-md transition-all duration-200 
+                    border-2 focus-within:border-blue1
+                    hover:border-blue1 px-[10px] py-2
+                    ${error ? "border-red-500" : "border-lightGray1"}
+                    ${isFocused ? "!border-blue1" : ""}
+                `}
+                onMouseDown={() => {
+                    // Для корректной работы с фокусом, когда кликаем на контейнер
+                    const element = document.querySelector(
+                        `[data-stripe="${label}"]`
+                    );
+                    if (element) {
+                        (element as HTMLElement).focus();
+                    }
+                }}
+                data-stripe={label}
+            >
+                <div className="absolute top-0 bottom-0 w-full">
+                    <div
+                        className={`absolute left-0 top-1/2 -translate-y-1/2 pointer-events-none
+                            text-gray-500 transition-all duration-200 origin-[4px_50%]
+                            ${
+                                leftCorrectionClass &&
+                                !(isFocused || hasContent)
+                                    ? leftCorrectionClass
+                                    : "left-0"
+                            }
+                            ${
+                                isFocused || hasContent
+                                    ? "transform left-0 -translate-y-7 -translate-x-1 scale-75 text-sm bg-white pl-[3px] pr-2 origin-[6px_50%]"
+                                    : ""
+                            }
+                            ${isFocused ? "!text-blue1" : ""}
+                            ${error ? "text-red-500" : ""}
+                        `}
+                    >
+                        {label}
+                    </div>
+                </div>
+                {React.cloneElement(stripeElement as React.ReactElement, {
+                    onFocus: () => setIsFocused(true),
+                    onBlur: (e: any) => {
+                        const cardNumberElement: any = elements?.getElement(
+                            e.elementType
+                        );
+
+                        const isEmpty =
+                            cardNumberElement._parent.classList.contains(
+                                "StripeElement--empty"
+                            );
+
+                        setIsFocused(false);
+                        setHasContent(e?.complete || !isEmpty);
+                    },
+                })}
             </div>
-        </div>
+            {helperText && (
+                <FormHelperText error={error}>{helperText}</FormHelperText>
+            )}
+        </FormControl>
     );
 };
 
-// Компонент формы оплаты наличными
-export const CashForm = () => {
-    return (
-        <div className="pt-6 text-gray1">
-            <p>Оплата готівкою при отриманні замовлення.</p>
-            <p className="mt-2">
-                Будь ласка, підготуйте точну суму для зручності оплати.
-            </p>
-        </div>
-    );
-};
+// Специализированные компоненты для каждого элемента карты
+export const CustomCardNumberInput = ({
+    error,
+    helperText,
+}: CardNumberInputProps) => (
+    <CustomStripeInput
+        leftCorrectionClass="left-8"
+        label="Номер картки"
+        error={error}
+        helperText={helperText}
+        stripeElement={
+            <CardNumberElement
+                options={{
+                    style: {
+                        base: {
+                            fontSize: "16px",
+                            color: "#1f2937",
+                            fontFamily:
+                                '"Roboto", "Helvetica", "Arial", sans-serif',
+                            "::placeholder": {
+                                color: "transparent",
+                            },
+                            padding: "16.5px 14px",
+                        },
+                        invalid: {
+                            color: "#ef4444",
+                        },
+                    },
+                    showIcon: true,
+                }}
+                // onChange={(e) => setHasContent(e.complete)}
+            />
+        }
+    />
+);
+
+export const CustomCardExpiryInput = ({
+    error,
+    helperText,
+}: CardNumberInputProps) => (
+    <CustomStripeInput
+        label="Термін дії"
+        error={error}
+        helperText={helperText}
+        stripeElement={
+            <CardExpiryElement
+                options={{
+                    style: {
+                        base: {
+                            fontSize: "16px",
+                            color: "#1f2937",
+                            fontFamily:
+                                '"Roboto", "Helvetica", "Arial", sans-serif',
+                            "::placeholder": {
+                                color: "transparent",
+                            },
+                            padding: "16.5px 14px",
+                        },
+                        invalid: {
+                            color: "#ef4444",
+                        },
+                    },
+                }}
+            />
+        }
+    />
+);
+
+export const CustomCardCvcInput = ({
+    error,
+    helperText,
+}: CardNumberInputProps) => (
+    <CustomStripeInput
+        label="CVV"
+        error={error}
+        helperText={helperText}
+        stripeElement={
+            <CardCvcElement
+                options={{
+                    style: {
+                        base: {
+                            fontSize: "16px",
+                            color: "#1f2937",
+                            fontFamily:
+                                '"Roboto", "Helvetica", "Arial", sans-serif',
+                            "::placeholder": {
+                                color: "transparent",
+                            },
+                            padding: "16.5px 14px",
+                        },
+                        invalid: {
+                            color: "#ef4444",
+                        },
+                    },
+                }}
+            />
+        }
+    />
+);
 
 export const StripePaymentForm = ({
     register,
     errors,
     paymentMethod,
 }: StripePaymentFormProps) => {
-    const stripe = useStripe();
-    const elements = useElements();
-
     return (
         <div className="flex flex-col rounded-xl border border-lightGray1 p-6">
             <h2 className="text-2xl font-bold pb-6">Оплата</h2>
-            <AnimatePresence>
-                {paymentMethod === "credit_card" && (
-                    <motion.div
-                        initial={{ height: 0, opacity: 0 }}
-                        animate={{ height: "auto", opacity: 1 }}
-                        exit={{ height: 0, opacity: 0 }}
-                        transition={{ duration: 0.3 }}
-                        style={{ overflow: "hidden" }}
-                    >
-                        <p className="text-gray1 pb-6">
-                            Всі транзакції захищені та зашифровані.
-                        </p>
-                    </motion.div>
-                )}
-            </AnimatePresence>
 
             <FormControl error={!!errors.paymentMethod}>
                 <RadioGroup
@@ -147,7 +256,7 @@ export const StripePaymentForm = ({
                         animate={{ height: "auto", opacity: 1 }}
                         exit={{ height: 0, opacity: 0 }}
                         transition={{ duration: 0.3 }}
-                        style={{ overflow: "hidden", padding: "3px" }}
+                        style={{ overflow: "hidden" }}
                     >
                         <div className="flex flex-col gap-4 pt-6">
                             <TextField
@@ -158,13 +267,25 @@ export const StripePaymentForm = ({
                                 fullWidth
                             />
 
-                            <div className="rounded-md border border-lightGray1 px-3 py-2">
-                                <CardElement options={cardElementOptions} />
-                            </div>
+                            <CustomCardNumberInput
+                                error={!!errors.cardNumber}
+                                helperText={errors.cardNumber?.message}
+                            />
 
-                            <p className="text-gray1 text-sm">
-                                Всі транзакції захищені та зашифровані.
-                            </p>
+                            <div className="flex gap-4">
+                                <div className="flex-1">
+                                    <CustomCardExpiryInput
+                                        error={!!errors.cardExpiry}
+                                        helperText={errors.cardExpiry?.message}
+                                    />
+                                </div>
+                                <div className="flex-1">
+                                    <CustomCardCvcInput
+                                        error={!!errors.cardCvc}
+                                        helperText={errors.cardCvc?.message}
+                                    />
+                                </div>
+                            </div>
                         </div>
                     </motion.div>
                 ) : (
@@ -174,7 +295,7 @@ export const StripePaymentForm = ({
                         animate={{ height: "auto", opacity: 1 }}
                         exit={{ height: 0, opacity: 0 }}
                         transition={{ duration: 0.3 }}
-                        style={{ overflow: "hidden", padding: "0 4px" }}
+                        style={{ overflow: "hidden" }}
                     >
                         <div className="pt-6 text-gray1">
                             <p>Оплата готівкою при отриманні замовлення.</p>

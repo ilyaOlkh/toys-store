@@ -112,14 +112,88 @@ export default function CheckoutPage() {
                         stripe={stripePromise}
                         options={{
                             clientSecret,
+                            locale: "auto",
                             appearance: {
-                                theme: "stripe",
-                                labels: "floating",
+                                theme: "flat",
                                 variables: {
                                     colorPrimary: "#0F83B2",
+                                    colorBackground: "#ffffff",
+                                    colorText: "#1f2937",
+                                    colorDanger: "#dc2626",
+                                    fontFamily:
+                                        '"Roboto", "Helvetica", "Arial", sans-serif',
+                                    borderRadius: "4px",
+                                    spacingUnit: "4px",
+                                },
+                                rules: {
+                                    ".Input": {
+                                        border: "2px solid #D4D4D4",
+                                        boxShadow: "none",
+                                        fontSize: "16px",
+                                        padding: "16.5px 14px",
+                                        transition:
+                                            "border-color 0.2s ease-in-out",
+                                    },
+                                    ".Input:hover": {
+                                        borderColor: "#0F83B2",
+                                    },
+                                    ".Input:focus": {
+                                        borderColor: "#0F83B2",
+                                        boxShadow: "0 0 0 1px #ffffff00",
+                                    },
+                                    ".Input--invalid": {
+                                        borderColor: "#dc2626",
+                                    },
+                                    ".Label": {
+                                        color: "rgba(0, 0, 0, 0.6)",
+                                        fontSize: "14px",
+                                    },
+                                    ".Tab": {
+                                        border: "2px solid #D4D4D4",
+                                        borderRadius: "4px",
+                                    },
+                                    ".Tab:hover": {
+                                        color: "#0F83B2",
+                                        borderColor: "#0F83B2",
+                                    },
+                                    ".Tab--selected": {
+                                        color: "#0F83B2",
+                                        borderColor: "#0F83B2",
+                                        backgroundColor:
+                                            "rgba(15, 131, 178, 0.1)",
+                                    },
+                                    ".Select": {
+                                        border: "2px solid #D4D4D4",
+                                        borderRadius: "4px",
+                                    },
+                                    ".SelectIcon": {
+                                        color: "#1f2937",
+                                    },
+                                    ".PaymentMethodItem": {
+                                        border: "2px solid #D4D4D4",
+                                        borderRadius: "4px",
+                                        transition: "all 0.2s ease",
+                                    },
+                                    ".PaymentMethodItem:hover": {
+                                        borderColor: "#0F83B2",
+                                        backgroundColor:
+                                            "rgba(15, 131, 178, 0.05)",
+                                    },
+                                    ".PaymentMethodItem--selected": {
+                                        borderColor: "#0F83B2",
+                                        backgroundColor:
+                                            "rgba(15, 131, 178, 0.1)",
+                                    },
+                                    // Google Pay стилизация
+                                    ".GooglePayButton": {
+                                        borderRadius: "4px",
+                                        transition: "opacity 0.2s ease",
+                                    },
+                                    ".GooglePayButton:hover": {
+                                        opacity: "0.9",
+                                    },
                                 },
                             },
-                            locale: "auto",
                         }}
                     >
                         <CheckoutForm />

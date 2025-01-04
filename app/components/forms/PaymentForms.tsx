@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
     TextField,
     FormControl,
@@ -42,18 +42,18 @@ const CustomStripeInput = ({
 }: CustomStripeInputProps) => {
     const [isFocused, setIsFocused] = useState(false);
     const [hasContent, setHasContent] = useState(false);
+    const [elementsDOM, setElementsDOM] = useState();
     const elements = useElements();
-    console.log(stripeElement);
-    const elementDOM: any = elements?.getElement(
+    console.log(elements, stripeElement);
+    const elementDOM = elements?.getElement(
         (stripeElement as any).type.__elementType
     );
-    const isEmpty = elementDOM?._parent.classList.contains(
-        "StripeElement--empty"
-    );
+
+    console.log(document.querySelector(".StripeElement"));
+
     const isError = elementDOM?._parent.classList.contains(
         "StripeElement--invalid"
     );
-    console.log(isEmpty);
 
     return (
         <FormControl
@@ -67,7 +67,7 @@ const CustomStripeInput = ({
                     rounded-md transition-all duration-200 
                     border-2 focus-within:border-blue1
                     hover:border-blue1 px-[10px] py-2
-                    ${error ? "border-red-500" : "border-lightGray1"}
+                    ${error || isError ? "border-red-500" : "border-lightGray1"}
                     ${isFocused ? "!border-blue1" : ""}
                 `}
                 onMouseDown={() => {
@@ -87,12 +87,12 @@ const CustomStripeInput = ({
                             text-gray-500 transition-all duration-200 origin-[4px_50%]
                             ${
                                 leftCorrectionClass &&
-                                !(isFocused || hasContent || !isEmpty)
+                                !(isFocused || hasContent)
                                     ? leftCorrectionClass
                                     : "left-0"
                             }
                             ${
-                                isFocused || hasContent || !isEmpty
+                                isFocused || hasContent
                                     ? "transform left-0 -translate-y-7 -translate-x-1 scale-75 text-sm bg-white pl-[3px] pr-2 origin-[6px_50%]"
                                     : ""
                             }
@@ -106,8 +106,13 @@ const CustomStripeInput = ({
                 {React.cloneElement(stripeElement as React.ReactElement, {
                     onFocus: () => setIsFocused(true),
                     onBlur: (e: any) => {
+                        console.log("Blur", e);
                         setIsFocused(false);
-                        setHasContent(e?.complete);
+                    },
+                    onChange: (e: any) => {
+                        // alert(1);
+                        console.log("change", e);
+                        setHasContent(!e.empty);
                     },
                 })}
             </div>

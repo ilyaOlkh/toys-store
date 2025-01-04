@@ -43,6 +43,17 @@ const CustomStripeInput = ({
     const [isFocused, setIsFocused] = useState(false);
     const [hasContent, setHasContent] = useState(false);
     const elements = useElements();
+    console.log(stripeElement);
+    const elementDOM: any = elements?.getElement(
+        (stripeElement as any).type.__elementType
+    );
+    const isEmpty = elementDOM?._parent.classList.contains(
+        "StripeElement--empty"
+    );
+    const isError = elementDOM?._parent.classList.contains(
+        "StripeElement--invalid"
+    );
+    console.log(isEmpty);
 
     return (
         <FormControl
@@ -76,17 +87,17 @@ const CustomStripeInput = ({
                             text-gray-500 transition-all duration-200 origin-[4px_50%]
                             ${
                                 leftCorrectionClass &&
-                                !(isFocused || hasContent)
+                                !(isFocused || hasContent || !isEmpty)
                                     ? leftCorrectionClass
                                     : "left-0"
                             }
                             ${
-                                isFocused || hasContent
+                                isFocused || hasContent || !isEmpty
                                     ? "transform left-0 -translate-y-7 -translate-x-1 scale-75 text-sm bg-white pl-[3px] pr-2 origin-[6px_50%]"
                                     : ""
                             }
-                            ${isFocused ? "!text-blue1" : ""}
-                            ${error ? "text-red-500" : ""}
+                            ${isFocused && !isError ? "!text-blue1" : ""}
+                            ${error || isError ? "text-red-500" : ""}
                         `}
                     >
                         {label}
@@ -95,17 +106,8 @@ const CustomStripeInput = ({
                 {React.cloneElement(stripeElement as React.ReactElement, {
                     onFocus: () => setIsFocused(true),
                     onBlur: (e: any) => {
-                        const cardNumberElement: any = elements?.getElement(
-                            e.elementType
-                        );
-
-                        const isEmpty =
-                            cardNumberElement._parent.classList.contains(
-                                "StripeElement--empty"
-                            );
-
                         setIsFocused(false);
-                        setHasContent(e?.complete || !isEmpty);
+                        setHasContent(e?.complete);
                     },
                 })}
             </div>

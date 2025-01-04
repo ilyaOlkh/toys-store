@@ -36,6 +36,7 @@ interface CartState {
         quantity?: number;
     }[];
     cartProducts: ProductType[];
+    isInit: boolean;
 }
 
 // Начальное состояние
@@ -46,6 +47,7 @@ const initialState: CartState = {
     queue: [],
     nowPending: [],
     cartProducts: [],
+    isInit: false,
 };
 
 // Вспомогательные функции
@@ -400,6 +402,7 @@ const cartSlice = createSlice({
             state.status = "succeeded";
         },
         setProductsState: (state, action: PayloadAction<ProductType[]>) => {
+            state.isInit = true;
             state.cartProducts = action.payload;
             state.status = "succeeded";
         },

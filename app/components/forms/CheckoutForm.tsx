@@ -1,11 +1,11 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "@mui/material";
 import {
-    PaymentElement,
     useStripe,
     useElements,
+    CardNumberElement,
 } from "@stripe/react-stripe-js";
 import {
     checkoutSchema,
@@ -15,7 +15,13 @@ import { DeliveryForm } from "./DeliveryForm";
 import { popularCities } from "@/app/constants/addressConstants";
 import { StripePaymentForm } from "./PaymentForms";
 
-export default function CheckoutForm() {
+export default function CheckoutForm({
+    clientSecret,
+}: {
+    clientSecret: string;
+}) {
+    const [isLoading, setLoading] = useState(false);
+
     const stripe = useStripe();
     const elements = useElements();
 
@@ -72,39 +78,41 @@ export default function CheckoutForm() {
         }
 
         // Показываем лоадер или блокируем кнопку
-        // setLoading(true);
+        setLoading(true);
 
         try {
-            // Подтверждаем платеж
-            const { error: submitError } = await elements.submit();
-            if (submitError) {
-                throw new Error(submitError.message);
-            }
-
-            // Подтверждаем платеж через Stripe
-            const { error } = await stripe.confirmPayment({
-                elements,
-                confirmParams: {
-                    return_url: `${window.location.origin}/payment/success`,
-                    payment_method_data: {
-                        billing_details: {
-                            name: `${data.firstName} ${data.lastName}`,
-                            email: data.email,
-                            phone: data.phone,
-                            address: {
-                                city: data.city,
-                                state: data.region,
-                                line1: data.address,
-                                postal_code: data.zipCode,
-                                country: "UA",
-                            },
+            // Получаем PaymentMethod из Card элементов
+            const { error: cardError, paymentMethod } =
+                await stripe.createPaymentMethod({
+                    type: "card",
+                    card: elements.getElement(CardNumberElement)!,
+                    billing_details: {
+                        name: `${data.firstName} ${data.lastName}`,
+                        email: data.email,
+                        phone: data.phone,
+                        address: {
+                            city: data.city,
+                            state: data.region,
+                            line1: data.address,
+                            postal_code: data.zipCode,
+                            country: "UA",
                         },
                     },
-                },
-            });
+                });
 
-            if (error) {
-                throw new Error(error.message);
+            if (cardError) {
+                throw new Error(cardError.message);
+            }
+
+            const { error: confirmError } = await stripe.confirmCardPayment(
+                clientSecret,
+                {
+                    payment_method: paymentMethod.id,
+                }
+            );
+
+            if (confirmError) {
+                throw new Error(confirmError.message);
             }
 
             // Очищаем форму и localStorage при успешной оплате
@@ -113,7 +121,7 @@ export default function CheckoutForm() {
             console.error("Payment error:", error);
             // Показать ошибку пользователю
         } finally {
-            // setLoading(false);
+            setLoading(false);
         }
     };
 
@@ -134,7 +142,7 @@ export default function CheckoutForm() {
             <Button
                 type="submit"
                 variant="contained"
-                disabled={!stripe || !elements}
+                disabled={!stripe || !elements || isLoading}
                 fullWidth
                 sx={{
                     mt: 0,
@@ -144,7 +152,14 @@ export default function CheckoutForm() {
                     },
                 }}
             >
-                Оформити замовлення
+                {isLoading ? (
+                    <span className="flex items-center">
+                        Оформлення...
+                        <span className="ml-2 w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
+                    </span>
+                ) : (
+                    "Оформити замовлення"
+                )}
             </Button>
         </form>
     );

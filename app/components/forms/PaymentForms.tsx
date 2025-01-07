@@ -42,14 +42,11 @@ const CustomStripeInput = ({
 }: CustomStripeInputProps) => {
     const [isFocused, setIsFocused] = useState(false);
     const [hasContent, setHasContent] = useState(false);
-    const [elementsDOM, setElementsDOM] = useState();
     const elements = useElements();
-    console.log(elements, stripeElement);
+
     const elementDOM: any = elements?.getElement(
         (stripeElement as any).type.__elementType
     );
-
-    console.log(document.querySelector(".StripeElement"));
 
     const isError = elementDOM?._parent.classList.contains(
         "StripeElement--invalid"
@@ -71,7 +68,6 @@ const CustomStripeInput = ({
                     ${isFocused ? "!border-blue1" : ""}
                 `}
                 onMouseDown={() => {
-                    // Для корректной работы с фокусом, когда кликаем на контейнер
                     const element = document.querySelector(
                         `[data-stripe="${label}"]`
                     );
@@ -233,18 +229,15 @@ export const StripePaymentForm = ({
             <h2 className="text-2xl font-bold pb-6">Оплата</h2>
 
             <FormControl error={!!errors.paymentMethod}>
-                <RadioGroup
-                    {...register("paymentMethod")}
-                    defaultValue="credit_card"
-                >
+                <RadioGroup defaultValue="credit_card">
                     <FormControlLabel
                         value="credit_card"
-                        control={<Radio />}
+                        control={<Radio {...register("paymentMethod")} />}
                         label="Кредитна картка"
                     />
                     <FormControlLabel
                         value="cash"
-                        control={<Radio />}
+                        control={<Radio {...register("paymentMethod")} />}
                         label="Готівка"
                     />
                 </RadioGroup>

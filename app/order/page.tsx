@@ -196,7 +196,7 @@ export default function CheckoutPage() {
                             },
                         }}
                     >
-                        <CheckoutForm />
+                        <CheckoutForm clientSecret={clientSecret} />
                     </Elements>
                 )}
             </div>

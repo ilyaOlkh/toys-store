@@ -1,7 +1,8 @@
 "use client";
 
 import { Comfortaa } from "next/font/google";
-import { createTheme, ThemeProvider } from "@mui/material";
+import { createTheme, Snackbar, ThemeProvider } from "@mui/material";
+import { NotificationsProvider } from "@toolpad/core/useNotifications";
 
 const comfortaa = Comfortaa({ subsets: ["latin"] });
 
@@ -169,5 +170,21 @@ export default function AppProvider({
 }: {
     children: React.ReactNode;
 }) {
-    return <ThemeProvider theme={theme}>{children}</ThemeProvider>;
+    return (
+        <NotificationsProvider
+            slots={{
+                snackbar: (props) => (
+                    <Snackbar
+                        {...props}
+                        anchorOrigin={{
+                            vertical: "bottom",
+                            horizontal: "right",
+                        }}
+                    />
+                ),
+            }}
+        >
+            <ThemeProvider theme={theme}>{children}</ThemeProvider>
+        </NotificationsProvider>
+    );
 }

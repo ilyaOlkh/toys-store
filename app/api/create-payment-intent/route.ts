@@ -50,7 +50,6 @@ export async function POST(request: Request) {
         // Создаём уникальный ID заказа
         const orderId = `${Date.now()}-${Math.random().toString(36).slice(2)}`;
 
-        // Собираем информацию о заказе для метаданных
         const orderMetadata = {
             order_id: orderId,
             items_count: String(items.length),
@@ -62,14 +61,12 @@ export async function POST(request: Request) {
                     amount: item.price_data.unit_amount,
                 }))
             ),
-            // Добавляем информацию о пользователе только если он авторизован
             ...(session?.user && {
                 user_id: session.user.sub,
                 user_email: session.user.email,
             }),
         };
 
-        // Создаём Payment Intent
         const paymentIntent = await stripe.paymentIntents.create({
             amount,
             currency: "uah",
@@ -77,7 +74,6 @@ export async function POST(request: Request) {
                 enabled: true,
             },
             metadata: orderMetadata,
-            // Добавляем email для чека только если пользователь авторизован
             ...(session?.user?.email && {
                 receipt_email: session.user.email,
             }),

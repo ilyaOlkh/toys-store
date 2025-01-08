@@ -7,10 +7,8 @@ import { Fragment } from "react";
 import { getSession } from "@auth0/nextjs-auth0";
 import { getFavorites } from "./utils/fetchFavorites";
 import { getCartItems } from "./utils/fetchCart";
-import { cart, favorites } from "@prisma/client";
 import AppProvider from "./appComponents/appProvider";
 import AppModals from "./appComponents/appModals";
-import { ModalType, modalTypes } from "./constants/modal-constants";
 import { fetchProductsByIds, fetchUserRoles } from "./utils/fetch";
 
 const comfortaa = Comfortaa({ subsets: ["latin"] });

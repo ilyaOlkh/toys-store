@@ -78,7 +78,7 @@ export const CityInput: React.FC<ControlledTextFieldProps> = ({
                     {...field}
                     freeSolo
                     options={popularCities.map((city) => city.name)}
-                    value={String(field.value) || null}
+                    value={field.value ? String(field.value) : null}
                     onChange={(_, newValue) => field.onChange(newValue)}
                     onInputChange={(_, newValue) => field.onChange(newValue)}
                     className="w-full"
@@ -112,7 +112,7 @@ export const RegionInput: React.FC<ControlledTextFieldProps> = ({
                     {...field}
                     freeSolo
                     options={regions}
-                    value={String(field.value) || null}
+                    value={field.value ? String(field.value) : null}
                     onChange={(_, newValue) => field.onChange(newValue)}
                     onInputChange={(_, newValue) => field.onChange(newValue)}
                     className="w-full"

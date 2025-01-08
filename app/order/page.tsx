@@ -8,6 +8,7 @@ import { ProductType } from "../types/types";
 import { useAppSelector } from "../redux/hooks";
 import { selectActiveCartItems } from "../redux/cartSelectors";
 import Image from "next/image";
+import { createPaymentIntent } from "../utils/fetch";
 
 const stripePromise = loadStripe(
     process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!
@@ -172,32 +173,3 @@ export default function CheckoutPage() {
         </div>
     );
 }
-
-export const createPaymentIntent = async (
-    cartItems: (ProductType & CartItem)[]
-) => {
-    const items = cartItems.map((item) => ({
-        price_data: {
-            currency: "uah",
-            product_data: {
-                name: item.name,
-                images: [item.imageUrl],
-                description: item.description,
-                metadata: {
-                    product_id: String(item.id),
-                    sku: item.sku_code,
-                },
-            },
-            unit_amount: Math.round(Number(item.discount || item.price) * 100),
-        },
-        quantity: item.quantity,
-    }));
-
-    const response = await fetch("/api/create-payment-intent", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ items }),
-    });
-
-    return await response.json();
-};

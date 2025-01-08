@@ -1,5 +1,6 @@
 import { products, types } from "@prisma/client";
 import { ProductDetailType, ProductType } from "../types/types";
+import { CartItem } from "../redux/cartSlice";
 export const dynamic = "force-dynamic";
 
 export async function fetchTypes(): Promise<types[]> {
@@ -162,3 +163,32 @@ export async function fetchUserRoles(userId: string): Promise<any> {
         throw error;
     }
 }
+
+export const createPaymentIntent = async (
+    cartItems: (ProductType & CartItem)[]
+) => {
+    const items = cartItems.map((item) => ({
+        price_data: {
+            currency: "uah",
+            product_data: {
+                name: item.name,
+                images: [item.imageUrl],
+                description: item.description,
+                metadata: {
+                    product_id: String(item.id),
+                    sku: item.sku_code,
+                },
+            },
+            unit_amount: Math.round(Number(item.discount || item.price) * 100),
+        },
+        quantity: item.quantity,
+    }));
+
+    const response = await fetch("/api/create-payment-intent", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ items }),
+    });
+
+    return await response.json();
+};

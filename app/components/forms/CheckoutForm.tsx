@@ -15,11 +15,11 @@ import { DeliveryForm } from "./DeliveryForm";
 import { popularCities } from "@/app/constants/addressConstants";
 import { StripePaymentForm } from "./PaymentForms";
 import { useNotifications } from "@toolpad/core/useNotifications";
-import { createPaymentIntent } from "@/app/order/page";
 import { useAppSelector } from "@/app/redux/hooks";
 import { selectActiveCartItems } from "@/app/redux/cartSelectors";
 import { ProductType } from "@/app/types/types";
 import { CartItem } from "@/app/redux/cartSlice";
+import { createPaymentIntent } from "@/app/utils/fetch";
 
 export default function CheckoutForm() {
     const [isLoading, setLoading] = useState(false);

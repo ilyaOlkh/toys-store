@@ -1,13 +1,13 @@
 "use client";
 import { createSlice, createAsyncThunk, PayloadAction } from "@reduxjs/toolkit";
 import {
-    getCartItems,
     addToCart as apiAddToCart,
     updateCartItemQuantity as apiUpdateCartItemQuantity,
     removeFromCart as apiRemoveFromCart,
+    clearCart,
 } from "../utils/fetchCart";
-import { RootState, AppDispatch } from "./store";
-import { cart, products } from "@prisma/client";
+import { RootState } from "./store";
+import { cart } from "@prisma/client";
 import { ProductType } from "../types/types";
 import { fetchProductsByIds } from "../utils/fetch";
 
@@ -392,6 +392,26 @@ export const removeCartItem = createAsyncThunk(
     }
 );
 
+export const clearCartThunk = createAsyncThunk(
+    "cart/clearCart",
+    async (_, { getState, dispatch }) => {
+        try {
+            const user = (getState() as RootState).user.user;
+
+            if (user) {
+                await clearCart(user.sub);
+            }
+
+            dispatch(clearCartState());
+
+            return true;
+        } catch (error) {
+            console.error("Error clearing cart:", error);
+            throw error;
+        }
+    }
+);
+
 // Слайс
 const cartSlice = createSlice({
     name: "cart",
@@ -503,6 +523,17 @@ const cartSlice = createSlice({
             state.cartProducts = [...state.cartProducts, action.payload];
             state.status = "succeeded";
         },
+        clearCartState: (state) => {
+            state.cart = [];
+            state.queue = [];
+            state.nowPending = [];
+            state.cartProducts = [];
+            state.status = "idle";
+            state.error = null;
+            if (typeof window !== "undefined") {
+                localStorage.removeItem("cartItems");
+            }
+        },
     },
 });
 
@@ -517,5 +548,6 @@ export const {
     clearPending,
     clearQueue,
     addProductsState,
+    clearCartState,
 } = cartSlice.actions;
 export default cartSlice.reducer;

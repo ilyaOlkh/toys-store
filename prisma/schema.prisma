@@ -28,13 +28,13 @@ model orders {
     zip_code        String
     phone           String
     email           String
-    payment_method  PaymentMethod
+    payment_method  paymentmethod
     paid            Boolean       @default(false)
     payment_date    DateTime?
     notes           String?       @db.Text
     subtotal        Decimal       @db.Decimal(10, 2)
     total           Decimal       @db.Decimal(10, 2)
-    status          OrderStatus   @default(pending)
+    status          orderstatus   @default(pending)
     created_at      DateTime      @default(now())
     products        order_products[]
 }
@@ -145,13 +145,13 @@ model discounts {
     product    products @relation(fields: [product_id], references: [id], onDelete: Cascade)
 }
 
-enum PaymentMethod {
+enum paymentmethod {
     credit_card
     credit_card_later
     cash
 }
 
-enum OrderStatus {
+enum orderstatus {
     pending
     processing
     shipped

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React from "react";
 import { Button, SwipeableDrawer, useMediaQuery } from "@mui/material";
 import { useDispatch } from "react-redux";
 import { RootState, AppDispatch } from "../../redux/store";
@@ -15,6 +15,7 @@ import {
     selectCartTotals,
     selectIsAddingItems,
 } from "@/app/redux/cartSelectors";
+import Link from "next/link";
 
 const poppins = Poppins({ weight: ["500", "600"], subsets: ["latin"] });
 
@@ -134,9 +135,11 @@ export default function CartModal() {
                                 )}
                             </div>
                             <Button
-                                variant="contained"
+                                component={Link}
+                                href="/checkout"
                                 fullWidth
                                 sx={{
+                                    color: "#fff",
                                     backgroundColor: "#000",
                                     borderRadius: "9999px",
                                     padding: "0.75rem",
@@ -145,7 +148,7 @@ export default function CartModal() {
                                     },
                                 }}
                                 onClick={() => {
-                                    console.log("Оформить заказ");
+                                    dispatch(closeModal());
                                 }}
                             >
                                 Оформити замовлення

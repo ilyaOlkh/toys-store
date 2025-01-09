@@ -16,10 +16,12 @@ export const DeliveryForm = ({
     errors,
 }: DeliveryFormProps) => {
     return (
-        <div className="flex flex-col rounded-xl border border-lightGray1 p-6">
-            <h2 className="text-2xl font-bold pb-6">Інформація про доставку</h2>
+        <div className="flex flex-col rounded-xl md:border md:border-lightGray1 md:p-6 p-2">
+            <h2 className="text-xl md:text-2xl font-bold pb-2 md:pb-6">
+                Інформація про доставку
+            </h2>
 
-            <div className="flex flex-col gap-6">
+            <div className="flex flex-col gap-4">
                 {/* Name Fields */}
                 <div className="flex flex-col sm:flex-row gap-4">
                     <TextField

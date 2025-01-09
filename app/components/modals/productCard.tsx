@@ -9,7 +9,7 @@ import { useAppSelector } from "@/app/redux/hooks";
 import { selectActualItemQuantity } from "@/app/redux/cartSelectors";
 import Link from "next/link";
 
-export type ProductCardVariant = "favorites" | "cart";
+export type ProductCardVariant = "favorites" | "cart" | "minimal";
 export type ProductItemType = {
     product_id: number;
     quantity?: number;
@@ -68,7 +68,9 @@ export const ProductCard = ({
     };
 
     return (
-        <div className="flex gap-2 justify-between border border-gray-200 rounded-xl xs:p-4">
+        <div
+            className={`flex gap-2 justify-between ${variant !== "minimal" ? "border border-gray-200 rounded-xl xs:p-4" : ""}`}
+        >
             <div className="flex gap-2 w-full items-center">
                 <Link href={`products/${product.product_id}`}>
                     <div className="flex-shrink-0 flex-grow-0 basis-[90px] xs:border border-gray-300 p-1 rounded-xl">
@@ -81,7 +83,9 @@ export const ProductCard = ({
                         />
                     </div>
                 </Link>
-                <div className="overflow-hidden flex flex-col size-full justify-between p-2 pl-0 xs:p-0 ">
+                <div
+                    className={`overflow-hidden flex flex-col size-full justify-between ${variant !== "minimal" ? "p-2 pl-0 xs:p-0" : ""}`}
+                >
                     <div className="flex gap-2 justify-between items-start">
                         <Link href={`products/${product.product_id}`}>
                             <div className="text-ellipsis overflow-hidden">
@@ -114,34 +118,37 @@ export const ProductCard = ({
                             <Price
                                 firstPrice={`${productInfo.price}`}
                                 discountPrice={`${productInfo.discount}`}
-                                hideOriginalPrice={variant === "cart"}
+                                hideOriginalPrice={
+                                    variant === "cart" || variant === "minimal"
+                                }
                             />
                         </div>
 
-                        {variant === "cart" && onQuantityChange && (
-                            <div className="flex items-center xs:gap-2 self-end">
-                                <IconButton
-                                    onClick={() => handleQuantityChange(-1)}
-                                    disabled={currentQuantity === 1}
-                                    size="small"
-                                    className="h-6 w-6"
-                                >
-                                    <Minus className="h-4 w-4" />
-                                </IconButton>
+                        {(variant === "cart" || variant === "minimal") &&
+                            onQuantityChange && (
+                                <div className="flex items-center xs:gap-2 self-end">
+                                    <IconButton
+                                        onClick={() => handleQuantityChange(-1)}
+                                        disabled={currentQuantity === 1}
+                                        size="small"
+                                        className="h-6 w-6"
+                                    >
+                                        <Minus className="h-4 w-4" />
+                                    </IconButton>
 
-                                <span className="min-w-[2rem] text-center text-sm xs:text-base">
-                                    {currentQuantity}
-                                </span>
+                                    <span className="min-w-[2rem] text-center text-sm xs:text-base">
+                                        {currentQuantity}
+                                    </span>
 
-                                <IconButton
-                                    onClick={() => handleQuantityChange(1)}
-                                    size="small"
-                                    className="h-6 w-6"
-                                >
-                                    <Plus className="h-4 w-4" />
-                                </IconButton>
-                            </div>
-                        )}
+                                    <IconButton
+                                        onClick={() => handleQuantityChange(1)}
+                                        size="small"
+                                        className="h-6 w-6"
+                                    >
+                                        <Plus className="h-4 w-4" />
+                                    </IconButton>
+                                </div>
+                            )}
                     </div>
                 </div>
             </div>

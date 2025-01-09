@@ -19,7 +19,7 @@ import { FieldErrors, UseFormRegister } from "react-hook-form";
 interface StripePaymentFormProps {
     register: UseFormRegister<any>;
     errors: any;
-    paymentMethod: "credit_card" | "cash";
+    paymentMethod: "credit_card" | "credit_card_later" | "cash";
 }
 interface CardNumberInputProps {
     error?: boolean;
@@ -235,7 +235,12 @@ export const StripePaymentForm = ({
                     <FormControlLabel
                         value="credit_card"
                         control={<Radio {...register("paymentMethod")} />}
-                        label="Кредитна картка"
+                        label="Кредитна картка зараз"
+                    />
+                    <FormControlLabel
+                        value="credit_card_later"
+                        control={<Radio {...register("paymentMethod")} />}
+                        label="Кредитна картка при отриманні"
                     />
                     <FormControlLabel
                         value="cash"
@@ -291,22 +296,29 @@ export const StripePaymentForm = ({
                         </div>
                     </motion.div>
                 ) : (
-                    <motion.div
-                        key="cash"
-                        initial={{ height: 0, opacity: 0 }}
-                        animate={{ height: "auto", opacity: 1 }}
-                        exit={{ height: 0, opacity: 0 }}
-                        transition={{ duration: 0.3 }}
-                        style={{ overflow: "hidden" }}
-                    >
-                        <div className="pt-6 text-gray1">
-                            <p>Оплата готівкою при отриманні замовлення.</p>
-                            <p className="mt-2">
-                                Будь ласка, підготуйте точну суму для зручності
-                                оплати.
-                            </p>
-                        </div>
-                    </motion.div>
+                    <>
+                        {paymentMethod === "cash" && (
+                            <motion.div
+                                key="cash"
+                                initial={{ height: 0, opacity: 0 }}
+                                animate={{ height: "auto", opacity: 1 }}
+                                exit={{ height: 0, opacity: 0 }}
+                                transition={{ duration: 0.3 }}
+                                style={{ overflow: "hidden" }}
+                            >
+                                <div className="pt-6 text-gray1">
+                                    <p>
+                                        Оплата готівкою при отриманні
+                                        замовлення.
+                                    </p>
+                                    <p className="mt-2">
+                                        Будь ласка, підготуйте точну суму для
+                                        зручності оплати.
+                                    </p>
+                                </div>
+                            </motion.div>
+                        )}
+                    </>
                 )}
             </AnimatePresence>
         </div>

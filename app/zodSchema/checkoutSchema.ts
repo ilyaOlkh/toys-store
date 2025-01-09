@@ -23,7 +23,7 @@ export const checkoutSchema = z.object({
         ),
     email: z.string().email("Введіть коректний email"),
     notes: z.string().optional(),
-    paymentMethod: z.enum(["credit_card", "cash"]),
+    paymentMethod: z.enum(["credit_card", "cash", "credit_card_later"]),
 
     cardName: z
         .string()

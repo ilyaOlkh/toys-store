@@ -18,19 +18,38 @@ model users {
 }
 
 model orders {
-    id              Int      @id @default(autoincrement())
+    id              Int           @id @default(autoincrement())
     user_identifier String
     first_name      String
     last_name       String
     street_address  String
-    city           String
-    state          String?
-    zip_code       String
-    phone          String
-    email          String
-    payment_method PaymentMethod
-    paid           Boolean   @default(false)
-    created_at     DateTime  @default(now())
+    city            String
+    state           String?
+    zip_code        String
+    phone           String
+    email           String
+    payment_method  PaymentMethod
+    paid            Boolean       @default(false)
+    payment_date    DateTime?
+    notes           String?       @db.Text
+    subtotal        Decimal       @db.Decimal(10, 2)
+    total           Decimal       @db.Decimal(10, 2)
+    status          OrderStatus   @default(pending)
+    created_at      DateTime      @default(now())
+    products        order_products[]
+}
+
+model order_products {
+    id              Int      @id @default(autoincrement())
+    order_id        Int
+    product_id      Int?
+    quantity        Int
+    original_price  Decimal  @db.Decimal(10, 2)
+    purchase_price  Decimal  @db.Decimal(10, 2)
+    product_name    String
+    product_sku     String
+    order           orders   @relation(fields: [order_id], references: [id], onDelete: Cascade)
+    product         products? @relation(fields: [product_id], references: [id], onDelete: SetNull)
 }
 
 model products {
@@ -49,6 +68,7 @@ model products {
     discounts      discounts[]
     Favorite       favorites[]
     Cart           cart[]
+    OrderProducts  order_products[]
 }
 
 model types {
@@ -105,15 +125,15 @@ model cart {
 }
 
 model comments {
-    id              Int      @id @default(autoincrement())
+    id              Int       @id @default(autoincrement())
     product_id      Int
     user_identifier String
-    comment         String   @db.Text
+    comment         String    @db.Text
     rating          Float
-    created_at      DateTime @default(now())
+    created_at      DateTime  @default(now())
     edited_at       DateTime?
     edited_by       String?
-    product         products @relation(fields: [product_id], references: [id], onDelete: Cascade)
+    product         products  @relation(fields: [product_id], references: [id], onDelete: Cascade)
 }
 
 model discounts {
@@ -127,5 +147,14 @@ model discounts {
 
 enum PaymentMethod {
     credit_card
+    credit_card_later
     cash
+}
+
+enum OrderStatus {
+    pending
+    processing
+    shipped
+    delivered
+    cancelled
 }

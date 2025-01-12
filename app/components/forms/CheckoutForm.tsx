@@ -21,10 +21,10 @@ import { ProductType } from "@/app/types/types";
 import { CartItem } from "@/app/redux/cartSlice";
 import { createPaymentIntent } from "@/app/utils/fetch";
 import { sendOrder } from "@/app/utils/sendOrder";
-import { OrderCreateInput } from "@/app/constants/orderConstants";
 
 export default function CheckoutForm() {
     const [isLoading, setLoading] = useState(false);
+    const [deliveryMethod, setDeliveryMethod] = useState("nova_poshta");
 
     const stripe = useStripe();
     const elements = useElements();
@@ -43,10 +43,7 @@ export default function CheckoutForm() {
                         (p) => p.id === item.product_id
                     );
                     if (!product) return null;
-                    return {
-                        ...product,
-                        quantity: item.quantity,
-                    };
+                    return { ...product, quantity: item.quantity };
                 })
                 .filter(
                     (item): item is ProductType & CartItem => item !== null
@@ -58,6 +55,7 @@ export default function CheckoutForm() {
         (sum, item) => sum + Number(item.price) * item.quantity,
         0
     );
+
     const cartTotalWithDiscount = cartItemsWithProducts.reduce(
         (sum, item) =>
             sum + (Number(item.discount) || Number(item.price)) * item.quantity,
@@ -72,198 +70,196 @@ export default function CheckoutForm() {
         handleSubmit,
         watch,
         setValue,
-        reset,
         formState: { errors },
     } = useForm<CheckoutFormData>({
         resolver: zodResolver(checkoutSchema),
-        defaultValues: savedForm,
+        defaultValues: {
+            ...savedForm,
+            delivery_method: deliveryMethod,
+        },
     });
 
-    const paymentMethod = watch("paymentMethod");
+    const paymentMethod = watch("payment_method");
     const city = watch("city");
 
     useEffect(() => {
         if (city) {
             const cityData = popularCities.find((c) => c.name === city);
             if (cityData) {
-                setValue("region", cityData.region);
+                setValue("state", cityData.region);
             }
         }
     }, [city, setValue]);
 
     const onSubmit = async (data: CheckoutFormData) => {
-        if (paymentMethod === "credit_card") {
-            if (!stripe || !elements) {
-                return;
-            }
+        // Уникальный ID заказа
+        const orderId = `${Date.now()}-${Math.random().toString(36).slice(2)}`;
 
+        if (paymentMethod === "credit_card") {
+            if (!stripe || !elements) return;
             setLoading(true);
 
             try {
-                const { error: cardError, paymentMethod } =
-                    await stripe.createPaymentMethod({
-                        type: "card",
-                        card: elements.getElement(CardNumberElement)!,
-                        billing_details: {
-                            name: `${data.firstName} ${data.lastName}`,
-                            email: data.email,
-                            phone: data.phone,
-                            address: {
-                                city: data.city,
-                                state: data.region,
-                                line1: data.address,
-                                postal_code: data.zipCode,
-                                country: "UA",
-                            },
+                const paymentMethodResult = await stripe.createPaymentMethod({
+                    type: "card",
+                    card: elements.getElement(CardNumberElement)!,
+                    billing_details: {
+                        name: `${data.first_name} ${data.last_name}`,
+                        email: data.email,
+                        phone: data.phone,
+                        address: {
+                            city: data.city,
+                            state: data.state,
+                            line1: data.delivery_address,
+                            country: "UA",
                         },
-                    });
+                    },
+                });
 
-                if (cardError) {
-                    notifications.show(`Помилка картки: ${cardError.message}`, {
-                        severity: "error",
-                        autoHideDuration: 5000,
-                    });
-                    throw new Error(cardError.message);
+                if (paymentMethodResult.error) {
+                    throw new Error(paymentMethodResult.error.message);
                 }
-                const clientSecret = (
-                    await createPaymentIntent(cartItemsWithProducts)
-                ).clientSecret;
-                const { error: confirmError } = await stripe.confirmCardPayment(
+
+                const { clientSecret } = await createPaymentIntent(
+                    cartItemsWithProducts
+                );
+
+                const confirmResult = await stripe.confirmCardPayment(
                     clientSecret,
                     {
-                        payment_method: paymentMethod.id,
+                        payment_method: paymentMethodResult.paymentMethod.id,
                     }
                 );
 
-                if (confirmError) {
-                    notifications.show(
-                        `Помилка оплати: ${confirmError.message}`,
-                        {
-                            severity: "error",
-                            autoHideDuration: 5000,
-                        }
-                    );
-                    throw new Error(confirmError.message);
+                if (confirmResult.error) {
+                    throw new Error(confirmResult.error.message);
                 }
 
-                sendOrderCallback(data);
-
-                notifications.show(
-                    "Оплата пройшла успішно! Дякуємо за замовлення.",
-                    {
-                        severity: "success",
-                        autoHideDuration: 5000,
-                    }
-                );
-
-                localStorage.removeItem("checkoutForm");
+                await sendOrderCallback(data, orderId, true);
             } catch (error) {
-                console.error("Payment error:", error);
-                if (error instanceof Error) {
-                    notifications.show(`Помилка оплати: ${error.message}`, {
-                        severity: "error",
-                        autoHideDuration: 5000,
-                    });
-                } else {
-                    notifications.show("Виникла невідома помилка при оплаті", {
-                        severity: "error",
-                        autoHideDuration: 5000,
-                    });
-                }
+                const message =
+                    error instanceof Error
+                        ? error.message
+                        : "Виникла помилка при оплаті";
+                notifications.show(message, { severity: "error" });
+                return;
             } finally {
                 setLoading(false);
             }
         } else {
-            sendOrderCallback(data);
+            await sendOrderCallback(data, orderId, false);
         }
     };
 
-    const sendOrderCallback = useCallback(async (data: CheckoutFormData) => {
-        const orderData: OrderCreateInput = {
-            user_identifier: user?.sub || "anonymous",
-            first_name: data.firstName,
-            last_name: data.lastName,
-            street_address: data.address,
-            city: data.city,
-            state: data.region,
-            zip_code: data.zipCode,
-            phone: data.phone,
-            email: data.email,
-            payment_method: data.paymentMethod,
-            notes: data.notes,
-            subtotal: cartTotal, // Нужно добавить расчет суммы из cartItemsWithProducts
-            total: cartTotalWithDiscount, // Нужно добавить расчет суммы со скидкой
-            products: cartItemsWithProducts.map((item) => ({
-                product_id: item.id,
-                quantity: item.quantity,
-                original_price: item.price,
-                purchase_price: item.discount || item.price,
-                product_name: item.name,
-                product_sku: item.sku_code,
-            })),
-        };
-
-        sendOrder(orderData, dispatch)
-            .then(() => {
-                notifications.show(
-                    "Замовлення створено успішно! Дякуємо за замовлення.",
+    const sendOrderCallback = useCallback(
+        async (data: CheckoutFormData, orderId: string, paid: boolean) => {
+            try {
+                await sendOrder(
                     {
-                        severity: "success",
-                        autoHideDuration: 5000,
-                    }
+                        order_id: orderId,
+                        user_identifier: user?.sub || "anonymous",
+                        first_name: data.first_name,
+                        last_name: data.last_name,
+                        city: data.city,
+                        state: data.state,
+                        delivery_address: data.delivery_address,
+                        delivery_method: data.delivery_method,
+                        delivery_cost: data.delivery_cost,
+                        phone: data.phone,
+                        email: data.email,
+                        payment_method: data.payment_method,
+                        paid,
+                        payment_date: paid ? new Date() : undefined,
+                        notes: data.notes,
+                        subtotal: cartTotal,
+                        total: cartTotalWithDiscount,
+                        products: cartItemsWithProducts.map((item) => ({
+                            product_id: item.id,
+                            quantity: item.quantity,
+                            original_price: item.price,
+                            purchase_price: item.discount || item.price,
+                            product_name: item.name,
+                            product_sku: item.sku_code,
+                            subtotal: Number(item.price) * item.quantity,
+                            total:
+                                (Number(item.discount) || Number(item.price)) *
+                                item.quantity,
+                        })),
+                    },
+                    dispatch
                 );
-            })
-            .catch((error) => {
-                notifications.show(`Помилка cтворення замовлення: ${error}`, {
-                    severity: "error",
-                    autoHideDuration: 5000,
+
+                notifications.show("Замовлення успішно створено!", {
+                    severity: "success",
                 });
-            });
-    }, []);
+                localStorage.removeItem("checkoutForm");
+            } catch (error) {
+                const message =
+                    error instanceof Error
+                        ? error.message
+                        : "Помилка створення замовлення";
+                notifications.show(message, { severity: "error" });
+            }
+        },
+        [
+            user,
+            cartTotal,
+            cartTotalWithDiscount,
+            cartItemsWithProducts,
+            dispatch,
+            notifications,
+        ]
+    );
 
     return (
-        <form
-            onSubmit={handleSubmit(onSubmit)}
-            className="flex flex-col gap-8"
-            onChange={() => {
-                const formData = watch();
-                localStorage.setItem("checkoutForm", JSON.stringify(formData));
-            }}
-        >
-            <DeliveryForm
-                control={control}
-                register={register}
-                errors={errors}
-            />
-
-            <StripePaymentForm
-                paymentMethod={paymentMethod}
-                register={register}
-                errors={errors}
-            />
-
-            <Button
-                type="submit"
-                variant="contained"
-                disabled={!stripe || !elements || isLoading}
-                fullWidth
-                sx={{
-                    mt: 0,
-                    bgcolor: "#0F83B2",
-                    "&:hover": {
-                        bgcolor: "#0C698E",
-                    },
+        <div className="flex flex-col gap-8">
+            <form
+                onSubmit={handleSubmit(onSubmit)}
+                className="flex flex-col gap-8"
+                onChange={() => {
+                    const formData = watch();
+                    localStorage.setItem(
+                        "checkoutForm",
+                        JSON.stringify(formData)
+                    );
                 }}
             >
-                {isLoading ? (
-                    <span className="flex items-center">
-                        Оформлення...
-                        <span className="ml-2 w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
-                    </span>
-                ) : (
-                    "Оформити замовлення"
-                )}
-            </Button>
-        </form>
+                <DeliveryForm
+                    control={control}
+                    register={register}
+                    errors={errors}
+                    deliveryMethod={deliveryMethod}
+                    onDeliveryMethodChange={setDeliveryMethod}
+                />
+
+                <StripePaymentForm
+                    paymentMethod={paymentMethod}
+                    register={register}
+                    errors={errors}
+                />
+
+                <Button
+                    type="submit"
+                    variant="contained"
+                    disabled={!stripe || !elements || isLoading}
+                    fullWidth
+                    sx={{
+                        bgcolor: "#0F83B2",
+                        "&:hover": {
+                            bgcolor: "#0C698E",
+                        },
+                    }}
+                >
+                    {isLoading ? (
+                        <div className="flex items-center">
+                            <span>Оформлення...</span>
+                            <span className="ml-2 w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                        </div>
+                    ) : (
+                        "Оформити замовлення"
+                    )}
+                </Button>
+            </form>
+        </div>
     );
 }

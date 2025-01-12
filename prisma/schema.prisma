@@ -18,24 +18,26 @@ model users {
 }
 
 model orders {
-    id              Int           @id @default(autoincrement())
+    id              Int               @id @default(autoincrement())
+    order_id        String            @unique
     user_identifier String
     first_name      String
     last_name       String
-    street_address  String
     city            String
     state           String?
-    zip_code        String
     phone           String
     email           String
-    payment_method  paymentmethod
-    paid            Boolean       @default(false)
+    payment_method  payment_method
+    delivery_method delivery_method
+    delivery_address String?
+    delivery_cost   delivery_cost_type?
+    paid            Boolean          @default(false)
+    notes           String?          @db.Text
+    created_at      DateTime         @default(now())
     payment_date    DateTime?
-    notes           String?       @db.Text
-    subtotal        Decimal       @db.Decimal(10, 2)
-    total           Decimal       @db.Decimal(10, 2)
-    status          orderstatus   @default(pending)
-    created_at      DateTime      @default(now())
+    subtotal        Decimal          @db.Decimal(10, 2)
+    total           Decimal          @db.Decimal(10, 2)
+    status          order_status     @default(pending)
     products        order_products[]
 }
 
@@ -48,6 +50,8 @@ model order_products {
     purchase_price  Decimal  @db.Decimal(10, 2)
     product_name    String
     product_sku     String
+    subtotal        Decimal  @db.Decimal(10, 2)
+    total           Decimal  @db.Decimal(10, 2)
     order           orders   @relation(fields: [order_id], references: [id], onDelete: Cascade)
     product         products? @relation(fields: [product_id], references: [id], onDelete: SetNull)
 }
@@ -66,9 +70,9 @@ model products {
     tags           product_tags[]
     comments       comments[]
     discounts      discounts[]
-    Favorite       favorites[]
-    Cart           cart[]
-    OrderProducts  order_products[]
+    favorites      favorites[]
+    cart           cart[]
+    order_products order_products[]
 }
 
 model types {
@@ -145,16 +149,27 @@ model discounts {
     product    products @relation(fields: [product_id], references: [id], onDelete: Cascade)
 }
 
-enum paymentmethod {
+enum payment_method {
     credit_card
     credit_card_later
     cash
 }
 
-enum orderstatus {
+enum order_status {
     pending
     processing
     shipped
     delivered
     cancelled
+}
+
+enum delivery_method {
+    nova_poshta
+    ukr_poshta
+    pickup
+}
+
+enum delivery_cost_type {
+    carrier_tariff
+    free
 }

@@ -15,10 +15,10 @@ import SortControl from "./SortSelect";
 import { ClientSortConfig } from "@/app/service/filters";
 import { Button, Pagination } from "@mui/material";
 import { SlidersHorizontal } from "lucide-react";
-import MobileFilters from "../modals/MobileFilters";
 import { useAppDispatch } from "@/app/redux/hooks";
 import { openModal } from "@/app/redux/modalSlice";
 import { modalTypes } from "@/app/constants/modal-constants";
+import { ProductMobileFilters } from "../modals/ProductMobileFilters";
 
 interface ProductsListScreenProps {
     initialProducts: ProductType[];
@@ -244,7 +244,7 @@ export function ProductsContent({
                     </div>
                 </div>
                 {/* Mobile Filters */}
-                <MobileFilters />
+                <ProductMobileFilters />
             </div>
         </div>
     );

@@ -1,27 +1,27 @@
-import {
-    SwipeableDrawer,
-    Button,
-    IconButton,
-    useMediaQuery,
-} from "@mui/material";
+import { SwipeableDrawer, IconButton, useMediaQuery } from "@mui/material";
 import { X } from "lucide-react";
 import { ClientFilter, FilterValue } from "@/app/types/filters";
-import { Dispatch } from "@reduxjs/toolkit";
 import { FiltersList } from "../productsList/FiltersList";
 import { useAppDispatch, useAppSelector } from "@/app/redux/hooks";
 import { RootState } from "@/app/redux/store";
 import { closeModal } from "@/app/redux/modalSlice";
-import { filterProducts } from "@/app/redux/productsSlice";
-import { useProducts } from "../ProductsContext";
 
-export default function MobileFilters() {
+interface MobileFiltersProps {
+    filterValues: Record<string, FilterValue>;
+    filterConfigs: ClientFilter[];
+    onFilterChange: (name: string, value: FilterValue) => void;
+}
+
+export default function MobileFilters({
+    filterValues,
+    filterConfigs,
+    onFilterChange,
+}: MobileFiltersProps) {
     const appDispatch = useAppDispatch();
     const isOpen = useAppSelector(
         (state: RootState) => state.modal.openModal === "filters"
     );
     const isSmallScreen = useMediaQuery("(max-width: 640px)");
-
-    const { filterValues, filterConfigs, dispatch } = useProducts();
 
     return (
         <SwipeableDrawer
@@ -41,12 +41,10 @@ export default function MobileFilters() {
 
                 <div className="flex-1 overflow-hidden overflow-y-auto">
                     <FiltersList
-                        variant={"modal"}
+                        variant="modal"
                         filterConfigs={filterConfigs}
                         filterValues={filterValues}
-                        onFilterChange={(name, value) => {
-                            dispatch(filterProducts({ name, value }));
-                        }}
+                        onFilterChange={onFilterChange}
                     />
                 </div>
             </div>

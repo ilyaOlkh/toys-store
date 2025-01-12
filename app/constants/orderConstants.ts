@@ -8,5 +8,7 @@ export type OrderCreateInput = Prisma.ordersCreateInput & {
         purchase_price: number | Prisma.Decimal;
         product_name: string;
         product_sku: string;
+        subtotal: number | Prisma.Decimal;
+        total: number | Prisma.Decimal;
     }[];
 };

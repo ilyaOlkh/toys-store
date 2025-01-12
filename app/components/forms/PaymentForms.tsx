@@ -234,17 +234,17 @@ export const StripePaymentForm = ({
                 <RadioGroup defaultValue="credit_card">
                     <FormControlLabel
                         value="credit_card"
-                        control={<Radio {...register("paymentMethod")} />}
+                        control={<Radio {...register("payment_method")} />}
                         label="Кредитна картка зараз"
                     />
                     <FormControlLabel
                         value="credit_card_later"
-                        control={<Radio {...register("paymentMethod")} />}
+                        control={<Radio {...register("payment_method")} />}
                         label="Кредитна картка при отриманні"
                     />
                     <FormControlLabel
                         value="cash"
-                        control={<Radio {...register("paymentMethod")} />}
+                        control={<Radio {...register("payment_method")} />}
                         label="Готівка"
                     />
                 </RadioGroup>

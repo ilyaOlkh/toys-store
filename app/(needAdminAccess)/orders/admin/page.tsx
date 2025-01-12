@@ -1,12 +1,12 @@
-import { IParams } from "../types/types";
-import ProductsListScreen from "../components/productsList/ProductsListScreen";
-import { getClientFilters, getClientSorts } from "../service/filters";
-import { fetchFilteredProducts } from "../utils/fetchFilteredProducts";
-import { FilterValue, SortDirection } from "../types/filters";
+import { IParams } from "@/app/types/types";
+import OrdersListScreen from "@/app/components/ordersList/OrdersListScreen";
+import { getClientFilters, getClientSorts } from "@/app/service/orderFilters";
+import { fetchFilteredOrders } from "@/app/utils/fetchFilteredOrders";
+import { FilterValue, SortDirection } from "@/app/types/filters";
 
 export const dynamic = "force-dynamic";
 
-export default async function Products({ searchParams }: IParams) {
+export default async function AdminOrders({ searchParams }: IParams) {
     // Получаем параметры из URL
     const urlFilters: Record<string, FilterValue> = searchParams?.filters
         ? JSON.parse(searchParams.filters as string)
@@ -51,8 +51,8 @@ export default async function Products({ searchParams }: IParams) {
     const initialSort = urlSort || defaultSort;
     const initialSortingRuleSet = urlSortingRuleSet;
 
-    // Получаем продукты с учетом начальных фильтров, сортировки, лимита и фасетов
-    const [products, total] = await fetchFilteredProducts(
+    // Получаем все заказы для админа
+    const [orders, total] = await fetchFilteredOrders(
         initialFilterValues,
         initialSort,
         initialSortingRuleSet,
@@ -61,8 +61,8 @@ export default async function Products({ searchParams }: IParams) {
 
     return (
         <div className="py-4">
-            <ProductsListScreen
-                initialProducts={products}
+            <OrdersListScreen
+                initialOrders={orders}
                 initialFilters={initialFilters}
                 initialSortConfig={initialSorts[0]}
                 initialSortingRuleSet={initialSortingRuleSet}

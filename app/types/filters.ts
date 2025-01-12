@@ -1,7 +1,12 @@
 import { Prisma } from "@prisma/client";
 
 // Base types
-export type FilterType = "select" | "range" | "multi-select" | "toggle";
+export type FilterType =
+    | "select"
+    | "range"
+    | "multi-select"
+    | "toggle"
+    | "input";
 export type SortDirection = "asc" | "desc";
 export type FilterValue =
     | string
@@ -30,6 +35,11 @@ export interface SelectFilter extends BaseFilter {
     options: { value: string; label: string }[];
 }
 
+export interface InputFilter extends BaseFilter {
+    type: "input";
+    placeholder?: string;
+}
+
 export interface RangeFilter extends BaseFilter {
     type: "range";
     min: number;
@@ -53,14 +63,16 @@ export type Filter =
     | SelectFilter
     | RangeFilter
     | MultiSelectFilter
-    | ToggleFilter;
+    | ToggleFilter
+    | InputFilter;
 
 // Client-side filter types (omitting server-specific fields)
 export type ClientFilter =
     | Omit<SelectFilter, "buildQuery" | "generateValues">
     | Omit<RangeFilter, "buildQuery" | "generateValues">
     | Omit<MultiSelectFilter, "buildQuery" | "generateValues">
-    | Omit<ToggleFilter, "buildQuery" | "generateValues">;
+    | Omit<ToggleFilter, "buildQuery" | "generateValues">
+    | Omit<InputFilter, "buildQuery" | "generateValues">;
 
 export interface ActiveFilter {
     name: string;

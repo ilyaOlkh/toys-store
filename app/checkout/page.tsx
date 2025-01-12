@@ -93,7 +93,7 @@ export default function CheckoutPage() {
                 <div className="flex flex-col md:flex-row-reverse gap-8">
                     {/* Секция корзины */}
                     <div className="md:w-5/12 lg:w-1/3">
-                        <div className="sticky md:top-[8.125rem]">
+                        <div className="sticky md:top-[9.25rem]">
                             <div className="rounded-xl border border-lightGray1">
                                 <h2 className="text-xl px-3 sm:px-6 py-4 sm:py-5 border-b">
                                     Ваше замовлення 🛒

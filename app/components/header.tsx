@@ -6,6 +6,7 @@ import { Claims, getSession } from "@auth0/nextjs-auth0";
 import UserMenu from "./userMenu";
 import { routes } from "../constants/routes-constants";
 import FavoriteIcon from "./favoriteIcon";
+import { FREE_DELIVERY_THRESHOLD } from "../utils/delivery";
 
 export default async function Header() {
     const userResponse = await getSession();
@@ -26,7 +27,7 @@ export default async function Header() {
                             height={20}
                         />
                         <span>
-                            Безкоштовна доставка при замовленні від 150$
+                            {`Безкоштовна доставка при замовленні від\u00A0${FREE_DELIVERY_THRESHOLD}\u00A0UAH`}
                         </span>
                     </div>
                     <div className="hidden items-center  gap-10 z-1 relative md:flex">

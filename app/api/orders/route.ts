@@ -35,8 +35,6 @@ export async function POST(request: NextRequest) {
                         purchase_price: product.purchase_price,
                         product_name: product.product_name,
                         product_sku: product.product_sku,
-                        subtotal: product.subtotal,
-                        total: product.total,
                     })),
                 },
                 status: "pending",

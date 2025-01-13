@@ -21,6 +21,7 @@ import { ProductType } from "@/app/types/types";
 import { CartItem } from "@/app/redux/cartSlice";
 import { createPaymentIntent } from "@/app/utils/fetch";
 import { sendOrder } from "@/app/utils/sendOrder";
+import { calculateDeliveryCost } from "@/app/utils/delivery";
 
 export default function CheckoutForm() {
     const [isLoading, setLoading] = useState(false);
@@ -92,7 +93,6 @@ export default function CheckoutForm() {
     }, [city, setValue]);
 
     const onSubmit = async (data: CheckoutFormData) => {
-        // Уникальный ID заказа
         const orderId = `${Date.now()}-${Math.random().toString(36).slice(2)}`;
 
         if (paymentMethod === "credit_card") {
@@ -154,6 +154,14 @@ export default function CheckoutForm() {
     const sendOrderCallback = useCallback(
         async (data: CheckoutFormData, orderId: string, paid: boolean) => {
             try {
+                const deliveryCostResult = calculateDeliveryCost({
+                    total: cartTotalWithDiscount,
+                    deliveryMethod: data.delivery_method as
+                        | "nova_poshta"
+                        | "ukr_poshta"
+                        | "pickup",
+                });
+
                 await sendOrder(
                     {
                         order_id: orderId,
@@ -164,7 +172,7 @@ export default function CheckoutForm() {
                         state: data.state,
                         delivery_address: data.delivery_address,
                         delivery_method: data.delivery_method,
-                        delivery_cost: data.delivery_cost,
+                        delivery_cost: deliveryCostResult.type,
                         phone: data.phone,
                         email: data.email,
                         payment_method: data.payment_method,
@@ -180,10 +188,6 @@ export default function CheckoutForm() {
                             purchase_price: item.discount || item.price,
                             product_name: item.name,
                             product_sku: item.sku_code,
-                            subtotal: Number(item.price) * item.quantity,
-                            total:
-                                (Number(item.discount) || Number(item.price)) *
-                                item.quantity,
                         })),
                     },
                     dispatch
@@ -230,6 +234,7 @@ export default function CheckoutForm() {
                     errors={errors}
                     deliveryMethod={deliveryMethod}
                     onDeliveryMethodChange={setDeliveryMethod}
+                    setValue={setValue}
                 />
 
                 <StripePaymentForm

@@ -15,6 +15,13 @@ const initialState: UserState = {
     user: null,
 };
 
+interface UpdateProfileData {
+    firstName?: string;
+    lastName?: string;
+    phone?: string;
+    orderEmail?: string;
+}
+
 const userSlice = createSlice({
     name: "user",
     initialState,
@@ -38,13 +45,43 @@ const userSlice = createSlice({
                 state.user.picture = action.payload;
             }
         },
+        updateUserProfile: (
+            state,
+            action: PayloadAction<UpdateProfileData>
+        ) => {
+            if (state.user) {
+                if (action.payload.firstName) {
+                    state.user.given_name = action.payload.firstName;
+                }
+                if (action.payload.lastName) {
+                    state.user.family_name = action.payload.lastName;
+                }
+                if (action.payload.firstName || action.payload.lastName) {
+                    state.user.name = `${action.payload.firstName || state.user.given_name} ${action.payload.lastName || state.user.family_name}`;
+                }
+                state.user.user_metadata = {
+                    ...state.user.user_metadata,
+                    ...(action.payload.phone && {
+                        phone: action.payload.phone,
+                    }),
+                    ...(action.payload.orderEmail && {
+                        orderEmail: action.payload.orderEmail,
+                    }),
+                };
+            }
+        },
     },
 });
 
 export const selectIsAdmin = (state: RootState) =>
     state.user.user?.roles?.some((role) => role.name === "admin") ?? false;
 
-export const { setUser, clearUser, setUserPicture, setUserRoles } =
-    userSlice.actions;
+export const {
+    setUser,
+    clearUser,
+    setUserPicture,
+    setUserRoles,
+    updateUserProfile,
+} = userSlice.actions;
 
 export default userSlice.reducer;

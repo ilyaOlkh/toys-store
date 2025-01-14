@@ -1,7 +1,7 @@
 // app/api/user/update-profile/route.ts
 import { NextRequest, NextResponse } from "next/server";
 import axios from "axios";
-import { getAccessToken, getSession, updateSession } from "@auth0/nextjs-auth0";
+import { getSession, updateSession } from "@auth0/nextjs-auth0";
 
 async function getMachineToMachineToken() {
     const response = await axios.post(
@@ -16,17 +16,20 @@ async function getMachineToMachineToken() {
 
     return response.data.access_token;
 }
-export async function PATCH(request: NextRequest, nextResponse: NextResponse) {
+
+export async function PATCH(request: NextRequest) {
     try {
-        // Получаем данные из запроса
-        const { newPictureUrl } = await request.json();
+        const session = await getSession();
+        if (!session?.user) {
+            return NextResponse.json(
+                { message: "User not authenticated" },
+                { status: 401 }
+            );
+        }
 
-        // Замените на ваш домен и токен
+        const userId = session.user.sub;
         const domain = process.env.AUTH0_ISSUER_BASE_URL;
-
         const accessToken = await getMachineToMachineToken();
-        const userResponse = await getSession();
-        const userId = userResponse?.user.sub;
 
         if (!domain || !accessToken) {
             return NextResponse.json(
@@ -35,35 +38,75 @@ export async function PATCH(request: NextRequest, nextResponse: NextResponse) {
             );
         }
 
-        // Параметры запроса
+        const updates = await request.json();
+
+        const updateData: any = {
+            given_name: session.user.given_name,
+            family_name: session.user.family_name,
+            nickname: session.user.nickname,
+            name: session.user.name,
+            picture: session.user.picture,
+            user_metadata: {
+                ...(session.user.user_metadata || {}),
+            },
+        };
+
+        if (updates.picture) {
+            updateData.picture = updates.picture;
+        }
+        if (updates.firstName) {
+            updateData.given_name = updates.firstName;
+        }
+        if (updates.lastName) {
+            updateData.family_name = updates.lastName;
+        }
+
+        if (updates.firstName || updates.lastName) {
+            const newFirstName = updates.firstName || session.user.given_name;
+            const newLastName = updates.lastName || session.user.family_name;
+            updateData.name = `${newFirstName} ${newLastName}`;
+        }
+
+        if (updates.phone || updates.orderEmail) {
+            updateData.user_metadata = {
+                ...(session.user.user_metadata || {}),
+                ...(updates.phone && { phone: updates.phone }),
+                ...(updates.orderEmail && { orderEmail: updates.orderEmail }),
+            };
+        }
+
         const options = {
             method: "PATCH",
             url: `${domain}/api/v2/users/${userId}`,
             headers: {
                 Accept: "application/json",
-                authorization: `Bearer ${accessToken}`,
-                "content-type": "application/json",
+                Authorization: `Bearer ${accessToken}`,
+                "Content-Type": "application/json",
             },
-            data: { picture: newPictureUrl },
+            data: updateData,
         };
 
-        // Выполняем запрос к Auth0 API
         const response = await axios.request(options);
-        const session = await getSession();
-        if (session) {
-            await updateSession({
-                ...session,
-                user: { ...session.user, picture: newPictureUrl },
-            });
-        }
+
+        const updatedSession = {
+            ...session,
+            user: {
+                ...session.user,
+                ...updateData,
+                user_metadata: updateData.user_metadata,
+            },
+        };
+
+        await updateSession(updatedSession);
+
         return NextResponse.json({
-            message: "User picture updated successfully",
+            message: "User profile updated successfully",
             data: response.data,
         });
     } catch (error) {
-        console.error("Error updating user picture:", error);
+        console.error("Error updating user profile:", error);
         return NextResponse.json(
-            { message: "Error updating user picture" },
+            { message: "Error updating user profile" },
             { status: 500 }
         );
     }

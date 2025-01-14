@@ -1,20 +1,18 @@
 "use client";
-
 import { SetStateAction, useState } from "react";
 import AddIcon from "@mui/icons-material/Add";
-import { useAppDispatch, useAppSelector } from "../redux/hooks";
+import { useAppDispatch } from "../redux/hooks";
 import { setUserPicture } from "../redux/userSlice";
-import { withPageAuthRequired } from "@auth0/nextjs-auth0";
+import { CircularProgress } from "@mui/material";
+import { useNotifications } from "@toolpad/core/useNotifications";
 
 export default function ProfilePictureForm({ imgUrl }: { imgUrl: string }) {
     const dispatch = useAppDispatch();
-    const user = useAppSelector((state) => state.user.user);
+    const notifications = useNotifications();
 
     const [file, setFile] = useState<File | null>(null);
     const [imageUrl, setImageUrl] = useState<string | null>(imgUrl);
     const [loading, setLoading] = useState(false);
-    const [error, setError] = useState<string | null>(null);
-    const [success, setSuccess] = useState<string | null>(null);
     const [isHovered, setIsHovered] = useState(false);
 
     const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) =>
@@ -25,63 +23,49 @@ export default function ProfilePictureForm({ imgUrl }: { imgUrl: string }) {
         if (!file) return;
 
         setLoading(true);
-        setError(null);
-        setSuccess(null);
 
         try {
             const uploadedImageUrl = await uploadImage(file);
             await updateProfilePicture(uploadedImageUrl);
             dispatch(setUserPicture(uploadedImageUrl));
-            setSuccess("Аватар успішно оновлено!");
+            notifications.show("Аватар успішно оновлено", {
+                severity: "success",
+                autoHideDuration: 5000,
+            });
         } catch (err) {
-            setError("Помилка при оновленні аватара");
             console.error(err);
+            notifications.show("Помилка при оновленні аватара", {
+                severity: "error",
+                autoHideDuration: 5000,
+            });
         } finally {
             setLoading(false);
         }
     };
-    withPageAuthRequired;
+
     return (
-        <div className="border border-lightGray1 p-5 rounded-2xl flex flex-col gap-2">
-            <div className=" text-[18px] font-bold">Змінити аватар:</div>
+        <div className="border border-lightGray1 p-5 rounded-2xl flex flex-col gap-2 justify-between shrink-0">
+            <div className="text-lg font-bold">Змінити аватар</div>
             <form
                 onSubmit={handleSubmit}
-                className="flex flex-col gap-2 items-center max-w-44"
+                className="flex flex-col gap-2 items-center"
             >
                 <label
-                    className="relative"
+                    className="relative cursor-pointer"
                     onMouseEnter={() => setIsHovered(true)}
                     onMouseLeave={() => setIsHovered(false)}
-                    style={{
-                        display: "inline-block",
-                        position: "relative",
-                        cursor: "pointer",
-                    }}
                 >
                     <img
                         src={imageUrl || "default-avatar.png"}
                         alt="Попередній перегляд профілю"
+                        className="w-[175px] h-[175px] rounded-full object-cover transition-all duration-300"
                         style={{
-                            width: "150px",
-                            height: "150px",
-                            borderRadius: "50%",
-                            objectFit: "cover",
                             filter: isHovered ? "brightness(50%)" : "none",
-                            transition: "filter 0.3s ease",
                         }}
                     />
 
                     {isHovered && (
-                        <div
-                            style={{
-                                position: "absolute",
-                                top: "50%",
-                                left: "50%",
-                                transform: "translate(-50%, -50%)",
-                                fontSize: "24px",
-                                color: "white",
-                            }}
-                        >
+                        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-2xl text-white">
                             <AddIcon fontSize="large" />
                         </div>
                     )}
@@ -90,7 +74,7 @@ export default function ProfilePictureForm({ imgUrl }: { imgUrl: string }) {
                         type="file"
                         accept="image/*"
                         onChange={handleFileChange}
-                        style={{ display: "none" }}
+                        className="hidden"
                         id="file-input"
                     />
                 </label>
@@ -98,42 +82,13 @@ export default function ProfilePictureForm({ imgUrl }: { imgUrl: string }) {
                 <button
                     type="submit"
                     disabled={loading}
-                    style={{
-                        marginTop: "10px",
-                        padding: "10px 20px",
-                        backgroundColor: loading ? "#ccc" : "#0F83B2",
-                        color: "#fff",
-                        border: "none",
-                        borderRadius: "5px",
-                        cursor: loading ? "not-allowed" : "pointer",
-                        transition: "background-color 0.3s ease",
-                    }}
-                    onMouseEnter={(e) => {
-                        if (!loading)
-                            e.currentTarget.style.backgroundColor = "#0C698E";
-                    }}
-                    onMouseLeave={(e) => {
-                        if (!loading)
-                            e.currentTarget.style.backgroundColor = "#0F83B2";
-                    }}
+                    className="bg-blue1 text-white py-2 px-4 rounded-lg hover:bg-opacity-90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
                 >
-                    {loading ? "Завантаження..." : "Завантажити зображення"}
+                    {loading && (
+                        <CircularProgress size={20} className="text-white" />
+                    )}
+                    {loading ? "Збереження..." : "Завантажити"}
                 </button>
-
-                {(error || success) && (
-                    <div>
-                        {error && (
-                            <p style={{ color: "red", marginTop: "10px" }}>
-                                {error}
-                            </p>
-                        )}
-                        {success && (
-                            <p style={{ color: "green", marginTop: "10px" }}>
-                                {success}
-                            </p>
-                        )}
-                    </div>
-                )}
             </form>
         </div>
     );
@@ -175,7 +130,7 @@ const uploadImage = async (file: File): Promise<string> => {
 const updateProfilePicture = async (uploadedImageUrl: string) => {
     const response = await fetch("/api/user/update-profile", {
         method: "PATCH",
-        body: JSON.stringify({ newPictureUrl: uploadedImageUrl }),
+        body: JSON.stringify({ picture: uploadedImageUrl }),
         headers: {
             "Content-Type": "application/json",
         },

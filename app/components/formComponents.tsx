@@ -10,8 +10,8 @@ import { CheckoutFormData } from "@/app/zodSchema/checkoutSchema";
 import { popularCities, regions } from "../constants/addressConstants";
 
 interface BaseControlledFieldProps {
-    name: keyof CheckoutFormData;
-    control: Control<CheckoutFormData>;
+    name: string;
+    control: Control<any>;
     error?: FieldError;
 }
 

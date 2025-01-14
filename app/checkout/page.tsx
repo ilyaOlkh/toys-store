@@ -15,6 +15,11 @@ import { createPaymentIntent } from "../utils/fetch";
 import ProductCard from "../components/modals/productCard";
 import { Poppins } from "next/font/google";
 import { Divider } from "@mui/material";
+import {
+    calculateDeliveryCost,
+    formatDeliveryCost,
+    FREE_DELIVERY_THRESHOLD,
+} from "../utils/delivery";
 
 const stripePromise = loadStripe(
     process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!
@@ -137,32 +142,63 @@ export default function CheckoutPage() {
                                         </>
                                     ))}
 
-                                    <div className="flex justify-between items-start p-2 pt-0 sm:p-4 sm:pt-2 gap-1">
-                                        <span className="text-lg font-medium text-nowrap">
-                                            Загальна сума:
-                                        </span>
-                                        <div className={poppins.className}>
-                                            {totalOriginal !==
-                                            totalWithDiscount ? (
-                                                <div className="flex items-end gap-2 flex-col xs:flex-row flex-wrap justify-end gap-y-0">
-                                                    <div className="font-semibold text-xl text-[#1BBF00]">
-                                                        {totalWithDiscount.toFixed(
-                                                            2
-                                                        )}{" "}
-                                                        ₴
+                                    <div className="flex flex-col p-2 pt-0 sm:p-4 sm:pt-2 gap-1">
+                                        <div className="flex justify-between items-start gap-1">
+                                            <span className="text-lg font-medium text-nowrap">
+                                                Загальна сума:
+                                            </span>
+                                            <div className={poppins.className}>
+                                                {totalOriginal !==
+                                                totalWithDiscount ? (
+                                                    <div className="flex items-end gap-2 flex-col xs:flex-row flex-wrap justify-end gap-y-0">
+                                                        <div className="font-semibold text-xl text-[#1BBF00]">
+                                                            {totalWithDiscount.toFixed(
+                                                                2
+                                                            )}{" "}
+                                                            ₴
+                                                        </div>
+                                                        <div className="font-medium text-sm text-[#898989] line-through xs:text-base">
+                                                            {totalOriginal.toFixed(
+                                                                2
+                                                            )}{" "}
+                                                            ₴
+                                                        </div>
                                                     </div>
-                                                    <div className="font-medium text-sm text-[#898989] line-through xs:text-base">
+                                                ) : (
+                                                    <span className="text-xl font-bold">
                                                         {totalOriginal.toFixed(
                                                             2
                                                         )}{" "}
                                                         ₴
+                                                    </span>
+                                                )}
+                                            </div>
+                                        </div>
+
+                                        {/* Информация о доставке */}
+                                        <div className="flex justify-between items-center gap-1 ">
+                                            <span className="text-lg font-medium text-nowrap">
+                                                Доставка:
+                                            </span>
+                                            <span className="text-right">
+                                                {formatDeliveryCost(
+                                                    calculateDeliveryCost({
+                                                        total: totalWithDiscount,
+                                                        deliveryMethod:
+                                                            "nova_poshta",
+                                                    })
+                                                )}
+                                                {totalWithDiscount <
+                                                    FREE_DELIVERY_THRESHOLD && (
+                                                    <div className="text-xs text-right">
+                                                        Безкоштовно від{" "}
+                                                        {
+                                                            FREE_DELIVERY_THRESHOLD
+                                                        }{" "}
+                                                        ₴
                                                     </div>
-                                                </div>
-                                            ) : (
-                                                <span className="text-xl font-bold">
-                                                    {totalOriginal.toFixed(2)} ₴
-                                                </span>
-                                            )}
+                                                )}
+                                            </span>
                                         </div>
                                     </div>
                                 </div>

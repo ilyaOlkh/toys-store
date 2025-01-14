@@ -24,8 +24,12 @@ import { sendOrder } from "@/app/utils/sendOrder";
 import { calculateDeliveryCost } from "@/app/utils/delivery";
 
 export default function CheckoutForm() {
+    const savedForm = JSON.parse(localStorage.getItem("checkoutForm") ?? "{}");
+
     const [isLoading, setLoading] = useState(false);
-    const [deliveryMethod, setDeliveryMethod] = useState("nova_poshta");
+    const [deliveryMethod, setDeliveryMethod] = useState(
+        savedForm.delivery_method ?? "nova_poshta"
+    );
 
     const stripe = useStripe();
     const elements = useElements();
@@ -63,7 +67,20 @@ export default function CheckoutForm() {
         0
     );
 
-    const savedForm = JSON.parse(localStorage.getItem("checkoutForm") ?? "{}");
+    // Объединяем данные из localStorage и Redux state
+    const defaultValues = useMemo(
+        () => ({
+            ...{
+                first_name: user?.given_name || "",
+                last_name: user?.family_name || "",
+                email: user?.user_metadata?.orderEmail || user?.email || "",
+                phone: user?.user_metadata?.phone || "",
+            },
+            ...savedForm,
+            delivery_method: deliveryMethod,
+        }),
+        [user, savedForm, deliveryMethod]
+    );
 
     const {
         control,
@@ -74,10 +91,7 @@ export default function CheckoutForm() {
         formState: { errors },
     } = useForm<CheckoutFormData>({
         resolver: zodResolver(checkoutSchema),
-        defaultValues: {
-            ...savedForm,
-            delivery_method: deliveryMethod,
-        },
+        defaultValues,
     });
 
     const paymentMethod = watch("payment_method");

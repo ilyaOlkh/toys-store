@@ -225,7 +225,7 @@ export const StripePaymentForm = ({
     paymentMethod,
 }: StripePaymentFormProps) => {
     return (
-        <div className="flex flex-col rounded-xl md:border md:border-lightGray1 md:p-6 p-2">
+        <div className="flex flex-col rounded-xl md:border md:border-lightGray1 md:p-6">
             <h2 className="text-xl md:text-2xl font-bold pb-2 md:pb-6">
                 Оплата
             </h2>

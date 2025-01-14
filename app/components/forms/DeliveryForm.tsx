@@ -117,7 +117,25 @@ export const DeliveryForm = ({
     };
 
     return (
-        <div className="flex flex-col gap-4">
+        <div className="flex flex-col gap-4 rounded-xl md:border md:border-lightGray1 md:p-6">
+            {/* Base Fields */}
+            <div className="flex flex-col sm:flex-row gap-4">
+                <TextField
+                    {...register("first_name")}
+                    label="Ім'я"
+                    error={!!errors.first_name}
+                    helperText={errors.first_name?.message}
+                    className="flex-1"
+                />
+                <TextField
+                    {...register("last_name")}
+                    label="Прізвище"
+                    error={!!errors.last_name}
+                    helperText={errors.last_name?.message}
+                    className="flex-1"
+                />
+            </div>
+
             {/* Delivery Method Selection */}
             <div>
                 <FormLabel className="font-medium">Спосіб доставки</FormLabel>
@@ -141,24 +159,6 @@ export const DeliveryForm = ({
                         label="Самовивіз"
                     />
                 </RadioGroup>
-            </div>
-
-            {/* Base Fields */}
-            <div className="flex flex-col sm:flex-row gap-4">
-                <TextField
-                    {...register("first_name")}
-                    label="Ім'я"
-                    error={!!errors.first_name}
-                    helperText={errors.first_name?.message}
-                    className="flex-1"
-                />
-                <TextField
-                    {...register("last_name")}
-                    label="Прізвище"
-                    error={!!errors.last_name}
-                    helperText={errors.last_name?.message}
-                    className="flex-1"
-                />
             </div>
 
             {/* Location Fields */}

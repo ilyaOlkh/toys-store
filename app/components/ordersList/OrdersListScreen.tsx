@@ -12,13 +12,13 @@ import {
 } from "@/app/redux/ordersSlice";
 import SortControl from "../productsList/SortSelect";
 import { ClientSortConfig } from "@/app/service/orderFilters";
-import { Button, Pagination, Paper } from "@mui/material";
+import { Button, Pagination } from "@mui/material";
 import { SlidersHorizontal } from "lucide-react";
 import { useAppDispatch } from "@/app/redux/hooks";
 import { openModal } from "@/app/redux/modalSlice";
 import { modalTypes } from "@/app/constants/modal-constants";
-import { order_status, payment_method } from "@prisma/client";
 import { OrderMobileFilters } from "../modals/OrderMobileFilters";
+import OrderCard from "./OrderCard";
 
 interface OrdersListScreenProps {
     initialOrders: OrderType[];
@@ -36,36 +36,6 @@ interface OrdersListScreenProps {
 }
 
 const ITEMS_PER_PAGE = Number(process.env.NEXT_PUBLIC_ITEMS_PER_PAGE) || 12;
-
-const getStatusColor = (status: order_status) => {
-    switch (status) {
-        case "pending":
-            return "bg-gray-100 text-gray-700";
-        case "processing":
-            return "bg-blue-100 text-blue-700";
-        case "shipped":
-            return "bg-indigo-100 text-indigo-700";
-        case "delivered":
-            return "bg-green-100 text-green-700";
-        case "cancelled":
-            return "bg-red-100 text-red-700";
-        default:
-            return "bg-gray-100 text-gray-700";
-    }
-};
-
-const getPaymentMethodLabel = (method: payment_method) => {
-    switch (method) {
-        case "credit_card":
-            return "Кредитная карта";
-        case "credit_card_later":
-            return "Карта при получении";
-        case "cash":
-            return "Наличные";
-        default:
-            return method;
-    }
-};
 
 export default function OrdersListScreen({
     initialOrders,
@@ -134,7 +104,7 @@ function OrdersContent() {
                         <div className="flex flex-col gap-3">
                             {/* Header */}
                             <div className="flex justify-between items-center flex-wrap gap-2">
-                                <h1 className="text-2xl font-bold">Заказы</h1>
+                                <h1 className="text-2xl font-bold">Закази</h1>
                                 <div className="flex items-center w-full xs:w-auto">
                                     <div className="md:hidden w-full xs:w-auto">
                                         <Button
@@ -200,74 +170,7 @@ function OrdersContent() {
                             {orders.length > 0 ? (
                                 <div className="flex flex-col gap-4">
                                     {orders.map((order) => (
-                                        <Paper key={order.id} className="p-4">
-                                            <div className="flex flex-col gap-2">
-                                                <div className="flex justify-between items-start flex-wrap gap-2">
-                                                    <div>
-                                                        <div className="font-semibold">
-                                                            Заказ #{order.id}
-                                                        </div>
-                                                        <div className="text-sm text-gray-500">
-                                                            {new Date(
-                                                                order.created_at
-                                                            ).toLocaleString()}
-                                                        </div>
-                                                    </div>
-                                                    <div
-                                                        className={`px-3 py-1 rounded-full text-sm font-semibold ${getStatusColor(order.status)}`}
-                                                    >
-                                                        {order.status}
-                                                    </div>
-                                                </div>
-                                                <div className="flex gap-8 flex-wrap">
-                                                    <div>
-                                                        <div className="text-gray-500 text-sm">
-                                                            Клиент
-                                                        </div>
-                                                        <div>
-                                                            {order.first_name}{" "}
-                                                            {order.last_name}
-                                                        </div>
-                                                        <div className="text-sm">
-                                                            {order.phone}
-                                                        </div>
-                                                    </div>
-                                                    <div>
-                                                        <div className="text-gray-500 text-sm">
-                                                            Оплата
-                                                        </div>
-                                                        <div>
-                                                            {getPaymentMethodLabel(
-                                                                order.payment_method
-                                                            )}
-                                                        </div>
-                                                        <div className="text-sm">
-                                                            {order.paid
-                                                                ? "Оплачено"
-                                                                : "Не оплачено"}
-                                                        </div>
-                                                    </div>
-                                                    <div>
-                                                        <div className="text-gray-500 text-sm">
-                                                            Сумма
-                                                        </div>
-                                                        <div className="font-semibold">
-                                                            {Number(
-                                                                order.total
-                                                            )}{" "}
-                                                            ₴
-                                                        </div>
-                                                        <div className="text-sm text-gray-500">
-                                                            {
-                                                                order.products
-                                                                    .length
-                                                            }{" "}
-                                                            товаров
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </Paper>
+                                        <OrderCard order={order} />
                                     ))}
                                 </div>
                             ) : (

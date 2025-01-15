@@ -11,27 +11,29 @@ export default function Price({
     discountPrice,
     hideOriginalPrice = false,
     textSize,
+    fontClass,
 }: {
     firstPrice: string;
     discountPrice?: string;
     hideOriginalPrice?: boolean;
-    textSize?: "28" | "17";
+    textSize?: "28" | "20" | "17";
+    fontClass?: string;
 }) {
-    if (discountPrice && +discountPrice > 0) {
+    if (discountPrice && +discountPrice > 0 && discountPrice !== firstPrice) {
         return (
-            <div className={poppins.className + " flex items-end gap-1"}>
-                <div
-                    className={`font-semibold text-[17px] text-[#1BBF00] ${
-                        textSize === "28" ? "text-[28px]" : ""
-                    }`}
-                >
+            <div
+                className={
+                    fontClass ??
+                    poppins.className +
+                        ` flex items-end gap-1 ${textSize ? `text-[${textSize}px]` : ""}`
+                }
+            >
+                <div className={`font-semibold text-[#1BBF00]`}>
                     {currency} {Number(discountPrice).toFixed(2)}
                 </div>
                 {!hideOriginalPrice && (
                     <div
-                        className={`font-medium text-[13px] text-[#898989] line-through ${
-                            textSize === "28" ? "text-[22px]" : ""
-                        }`}
+                        className={`font-medium text-[#898989] line-through text-[0.5em]`}
                     >
                         {currency} {Number(firstPrice).toFixed(2)}
                     </div>
@@ -42,9 +44,7 @@ export default function Price({
         return (
             <div className={poppins.className + ""}>
                 <div
-                    className={`font-semibold text-[17px] ${
-                        textSize === "28" ? "text-[28px]" : ""
-                    }`}
+                    className={`font-semibold ${textSize ? `text-[${textSize}px]` : ""}`}
                 >
                     {currency} {Number(firstPrice).toFixed(2)}
                 </div>

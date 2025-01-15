@@ -16,9 +16,16 @@ export async function getFilteredOrders({
     offset,
 }: OrderQueryParams) {
     const baseQuery = Prisma.sql`
-        WITH order_products AS (
+        WITH product_images_agg AS (
             SELECT 
-                order_id,
+                pi.product_id,
+                JSON_AGG(pi.image_blob) as images
+            FROM product_images pi
+            GROUP BY pi.product_id
+        ),
+        order_products AS (
+            SELECT 
+                op.order_id,
                 JSON_AGG(
                     JSON_BUILD_OBJECT(
                         'id', op.id,
@@ -27,24 +34,30 @@ export async function getFilteredOrders({
                         'product_sku', op.product_sku,
                         'quantity', op.quantity,
                         'purchase_price', op.purchase_price,
-                        'original_price', op.original_price
+                        'original_price', op.original_price,
+                        'subtotal', op.subtotal,
+                        'total', op.total,
+                        'images', COALESCE(pi.images, '[]')
                     )
                 ) as products
             FROM order_products op
-            GROUP BY order_id
+            LEFT JOIN product_images_agg pi ON op.product_id = pi.product_id
+            GROUP BY op.order_id
         )
         SELECT 
             o.id,
+            o.order_id,
             o.user_identifier,
             o.first_name,
             o.last_name,
-            o.street_address,
             o.city,
             o.state,
-            o.zip_code,
             o.phone,
             o.email,
             o.payment_method,
+            o.delivery_method,
+            o.delivery_address,
+            o.delivery_cost,
             o.paid,
             o.payment_date,
             o.notes,
@@ -81,6 +94,9 @@ export async function getFilteredOrders({
             ...product,
             purchase_price: Number(product.purchase_price),
             original_price: Number(product.original_price),
+            subtotal: product.subtotal ? Number(product.subtotal) : null,
+            total: product.total ? Number(product.total) : null,
+            images: Array.isArray(product.images) ? product.images : [],
         })),
     }));
 

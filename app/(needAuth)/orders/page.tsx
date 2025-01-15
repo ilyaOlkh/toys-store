@@ -4,10 +4,6 @@ import { getClientFilters, getClientSorts } from "@/app/service/orderFilters";
 import { fetchFilteredOrders } from "@/app/utils/fetchFilteredOrders";
 import { FilterValue, SortDirection } from "@/app/types/filters";
 import { getSession } from "@auth0/nextjs-auth0";
-import {
-    fetchNovaPoshtaPostomates,
-    fetchNovaPoshtaWarehouses,
-} from "@/app/utils/fetchNovaPost";
 
 export const dynamic = "force-dynamic";
 

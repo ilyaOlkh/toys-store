@@ -1,5 +1,5 @@
 import { createSlice, createAsyncThunk, PayloadAction } from "@reduxjs/toolkit";
-import { orders } from "@prisma/client";
+import { order_products, orders } from "@prisma/client";
 import { FilterValue, SortDirection, ClientFilter } from "../types/filters";
 import { OrdersDispatch } from "../components/OrdersContext";
 import { ClientSortConfig } from "../service/filters";
@@ -50,14 +50,7 @@ export interface OrderSortState {
 }
 
 export type OrderType = orders & {
-    products: {
-        id: number;
-        product_name: string;
-        product_sku: string;
-        quantity: number;
-        purchase_price: number;
-        original_price: number;
-    }[];
+    products: (order_products & { images: string[] })[];
 };
 
 export interface OrdersStateType {

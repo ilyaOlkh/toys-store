@@ -42,18 +42,18 @@ model orders {
 }
 
 model order_products {
-    id              Int      @id @default(autoincrement())
+    id              Int       @id @default(autoincrement())
     order_id        Int
-    product_id      Int?
+    product_id      Int
     quantity        Int
-    original_price  Decimal  @db.Decimal(10, 2)
-    purchase_price  Decimal  @db.Decimal(10, 2)
+    original_price  Decimal   @db.Decimal(10, 2)
+    purchase_price  Decimal   @db.Decimal(10, 2)
     product_name    String
     product_sku     String
     subtotal        Decimal?  @db.Decimal(10, 2)
     total           Decimal?  @db.Decimal(10, 2)
-    order           orders   @relation(fields: [order_id], references: [id], onDelete: Cascade)
-    product         products? @relation(fields: [product_id], references: [id], onDelete: SetNull)
+    order           orders    @relation(fields: [order_id], references: [id], onDelete: Cascade)
+    product         products  @relation(fields: [product_id], references: [id], onDelete: Cascade)
 }
 
 model products {

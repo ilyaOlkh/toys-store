@@ -14,7 +14,11 @@ import {
 import Image from "next/image";
 import { useAppSelector } from "../redux/hooks";
 import { Comfortaa } from "next/font/google";
-import { MENU_ITEM_LOGOUT, MENU_ITEMS } from "../constants/user-menu-constants";
+import {
+    ADMIN_MENU_ITEMS,
+    MENU_ITEM_LOGOUT,
+    MENU_ITEMS,
+} from "../constants/user-menu-constants";
 
 interface UserMenuProps {
     username: string;
@@ -26,6 +30,7 @@ const UserMenu: React.FC<UserMenuProps> = ({ username }) => {
     const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
     const open = Boolean(anchorEl);
     const avatarUrl = useAppSelector((state) => state.user.user!.picture);
+    const userRoles = useAppSelector((state) => state.user.user?.roles);
 
     const handleClick = (event: React.MouseEvent<HTMLElement>) => {
         setAnchorEl(event.currentTarget);
@@ -77,16 +82,30 @@ const UserMenu: React.FC<UserMenuProps> = ({ username }) => {
                 {Object.keys(MENU_ITEMS).map((key) => {
                     return (
                         <MenuItem onClick={handleClose}>
-                            <a href={MENU_ITEMS[key].link}>
+                            <a href={MENU_ITEMS[key].link} className="w-full">
                                 {MENU_ITEMS[key].name}
                             </a>
                         </MenuItem>
                     );
                 })}
-                {/* </MenuItem> */}
+                {userRoles?.some((role) => role.name === "admin") &&
+                    Object.keys(ADMIN_MENU_ITEMS).map((key) => {
+                        return (
+                            <MenuItem onClick={handleClose}>
+                                <a
+                                    href={ADMIN_MENU_ITEMS[key].link}
+                                    className="w-full"
+                                >
+                                    {ADMIN_MENU_ITEMS[key].name}
+                                </a>
+                            </MenuItem>
+                        );
+                    })}
                 <Divider />
                 <MenuItem onClick={handleClose} sx={{ color: "gray" }}>
-                    <a href={MENU_ITEM_LOGOUT.link}>{MENU_ITEM_LOGOUT.name}</a>
+                    <a href={MENU_ITEM_LOGOUT.link} className="w-full">
+                        {MENU_ITEM_LOGOUT.name}
+                    </a>
                 </MenuItem>
             </Menu>
         </>

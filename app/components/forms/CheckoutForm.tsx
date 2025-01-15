@@ -195,6 +195,7 @@ export default function CheckoutForm() {
                         notes: data.notes,
                         subtotal: cartTotal,
                         total: cartTotalWithDiscount,
+                        created_at: new Date(),
                         products: cartItemsWithProducts.map((item) => ({
                             product_id: item.id,
                             quantity: item.quantity,

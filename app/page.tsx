@@ -7,6 +7,8 @@ import { SortDirection } from "./types/filters";
 import MainProductScreen from "./components/productsList/MainProductScreen";
 import { IParams } from "./types/types";
 
+const popularToysSectionLimit = 10;
+
 export default async function Home({ searchParams }: IParams) {
     const [types, initialSorts] = await Promise.all([
         fetchTypes(),
@@ -31,7 +33,7 @@ export default async function Home({ searchParams }: IParams) {
         {},
         initialSort,
         initialSortingRuleSet,
-        { limit: 8, offset: 0 }
+        { limit: popularToysSectionLimit, offset: 0 }
     );
 
     return (
@@ -69,7 +71,7 @@ export default async function Home({ searchParams }: IParams) {
                             initialSortConfig={initialSorts[1]}
                             initialSortingRuleSet={initialSortingRuleSet}
                             initialSort={initialSort}
-                            limit={10}
+                            limit={popularToysSectionLimit}
                             offset={0}
                         />
                     </section>

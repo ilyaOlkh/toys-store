@@ -10,6 +10,7 @@ import { getCartItems } from "./utils/fetchCart";
 import AppProvider from "./appComponents/appProvider";
 import AppModals from "./appComponents/appModals";
 import { fetchProductsByIds, fetchUserRoles } from "./utils/fetch";
+import Footer from "./components/Footer";
 
 const comfortaa = Comfortaa({ subsets: ["latin"] });
 
@@ -70,6 +71,7 @@ export default async function RootLayout({
                                     <Header />
                                 </div>
                                 <main className="flex-1">{children}</main>
+                                <Footer />
                             </div>
                         </Fragment>
                     </StoreProvider>

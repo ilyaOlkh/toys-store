@@ -13,8 +13,8 @@ export const serverFilters: Filter[] = [
         name: "order_id",
         type: "input",
         defaultValue: "",
-        title: "Номер заказа",
-        placeholder: "Введите номер заказа",
+        title: "Номер замовлення",
+        placeholder: "Введіть номер замовлення",
         buildQuery: (value: string) => ({
             rawQuery: Prisma.sql`o.id = ${parseInt(value) || 0}`,
         }),
@@ -23,13 +23,13 @@ export const serverFilters: Filter[] = [
         name: "status",
         type: "multi-select",
         defaultValue: [],
-        title: "Статус заказа",
+        title: "Статус замовлення",
         options: [
-            { value: "pending", label: "Ожидает обработки" },
-            { value: "processing", label: "В обработке" },
-            { value: "shipped", label: "Отправлен" },
-            { value: "delivered", label: "Доставлен" },
-            { value: "cancelled", label: "Отменен" },
+            { value: "pending", label: "Очікує обробки" },
+            { value: "processing", label: "В обробці" },
+            { value: "shipped", label: "Відправлено" },
+            { value: "delivered", label: "Доставлено" },
+            { value: "cancelled", label: "Відмінено" },
         ],
         buildQuery: (values: payment_method[]) => ({
             rawQuery: values.length
@@ -42,11 +42,11 @@ export const serverFilters: Filter[] = [
         name: "payment_method",
         type: "select",
         defaultValue: null,
-        title: "Способ оплаты",
+        title: "Спосіб оплати",
         options: [
-            { value: "credit_card", label: "Кредитная карта" },
-            { value: "credit_card_later", label: "Карта при получении" },
-            { value: "cash", label: "Наличные" },
+            { value: "credit_card", label: "Кредитна картка" },
+            { value: "credit_card_later", label: "Картка при отриманні" },
+            { value: "cash", label: "Готівка" },
         ],
         buildQuery: (value: order_status | null) => ({
             rawQuery: value
@@ -58,7 +58,7 @@ export const serverFilters: Filter[] = [
         name: "paid",
         type: "toggle",
         defaultValue: false,
-        title: "Только оплаченные",
+        title: "Тільки оплачені",
         buildQuery: (value: boolean) => ({
             rawQuery: value ? Prisma.sql`o.paid = true` : Prisma.sql`TRUE`,
         }),
@@ -67,7 +67,7 @@ export const serverFilters: Filter[] = [
         name: "total",
         type: "range",
         defaultValue: { from: 0, to: 100000 },
-        title: "Сумма заказа",
+        title: "Сума замовлення",
         min: 0,
         max: 100000,
         unit: {
@@ -76,8 +76,8 @@ export const serverFilters: Filter[] = [
         },
         generateValues: async () => {
             const result = await prisma.$queryRaw<[{ max_total: number }]>`
-                SELECT MAX(total) as max_total FROM orders
-            `;
+               SELECT MAX(total) as max_total FROM orders
+           `;
             const maxTotal = Number(result[0]?.max_total) ?? 100000;
             return {
                 defaultValue: { from: 0, to: maxTotal },
@@ -93,45 +93,45 @@ export const serverFilters: Filter[] = [
 export const serverSorts: SortConfig[] = [
     {
         name: "mainSort",
-        title: "Сортировать по",
+        title: "Сортувати за",
         options: [
             {
                 field: "default",
-                label: "По умолчанию",
+                label: "За замовчуванням",
                 buildQuery: () => Prisma.sql`o.id DESC`,
             },
             {
                 field: "date_desc",
-                label: "По дате: сначала новые",
+                label: "За датою: спочатку нові",
                 buildQuery: () => Prisma.sql`o.created_at DESC`,
             },
             {
                 field: "date_asc",
-                label: "По дате: сначала старые",
+                label: "За датою: спочатку старі",
                 buildQuery: () => Prisma.sql`o.created_at ASC`,
             },
             {
                 field: "total_desc",
-                label: "По сумме: по убыванию",
+                label: "За сумою: за спаданням",
                 buildQuery: () => Prisma.sql`o.total DESC`,
             },
             {
                 field: "total_asc",
-                label: "По сумме: по возрастанию",
+                label: "За сумою: за зростанням",
                 buildQuery: () => Prisma.sql`o.total ASC`,
             },
             {
                 field: "status",
-                label: "По статусу",
+                label: "За статусом",
                 buildQuery: () => Prisma.sql`
-                    CASE o.status
-                        WHEN 'pending' THEN 1
-                        WHEN 'processing' THEN 2
-                        WHEN 'shipped' THEN 3
-                        WHEN 'delivered' THEN 4
-                        WHEN 'cancelled' THEN 5
-                    END ASC
-                `,
+                   CASE o.status
+                       WHEN 'pending' THEN 1
+                       WHEN 'processing' THEN 2 
+                       WHEN 'shipped' THEN 3
+                       WHEN 'delivered' THEN 4
+                       WHEN 'cancelled' THEN 5
+                   END ASC
+               `,
             },
         ],
         defaultOption: "default",

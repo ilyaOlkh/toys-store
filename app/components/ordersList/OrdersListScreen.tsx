@@ -104,7 +104,9 @@ function OrdersContent() {
                         <div className="flex flex-col gap-3">
                             {/* Header */}
                             <div className="flex justify-between items-center flex-wrap gap-2">
-                                <h1 className="text-2xl font-bold">Закази</h1>
+                                <h1 className="text-2xl font-bold">
+                                    Замовлення
+                                </h1>
                                 <div className="flex items-center w-full xs:w-auto">
                                     <div className="md:hidden w-full xs:w-auto">
                                         <Button
